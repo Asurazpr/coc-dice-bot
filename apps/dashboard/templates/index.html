@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Guilds</h2>
+{% if guilds %}
+<ul class="guilds">
+  {% for g in guilds %}
+    <li><a href="/guild/{{ g.guild_id }}">{{ g.guild_id }}</a></li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>No guilds yet. Once your bot creates characters, they’ll appear here.</p>
+{% endif %}
+{% endblock %}

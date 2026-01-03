@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Guild: {{ guild_id }}</h2>
+
+{% if not characters %}
+  <p>No characters found for this guild.</p>
+{% else %}
+<table>
+  <thead>
+    <tr>
+      <th>Character</th>
+      <th>User ID</th>
+      <th>HP</th>
+      <th>SAN</th>
+      <th>MP</th>
+      <th>Attributes</th>
+      <th>Notable Skills</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for ch in characters %}
+    <tr>
+      <td><a href="/guild/{{ guild_id }}/user/{{ ch.user_id }}">{{ ch.name }}</a></td>
+      <td>{{ ch.user_id }}</td>
+      <td>{{ ch.hp }}</td>
+      <td>{{ ch.san }}</td>
+      <td>{{ ch.mp }}</td>
+
+      <!-- Attributes column -->
+      <td class="attrs">
+        <div class="grid-attrs">
+          <span>STR / 力量: {{ ch.attributes.STR or "-" }}</span>
+          <span>CON / 体质: {{ ch.attributes.CON or "-" }}</span>
+          <span>SIZ / 体型: {{ ch.attributes.SIZ or "-" }}</span>
+          <span>DEX / 敏捷: {{ ch.attributes.DEX or "-" }}</span>
+          <span>APP / 外表: {{ ch.attributes.APP or "-" }}</span>
+          <span>INT / 智力: {{ ch.attributes.INT or "-" }}</span>
+          <span>POW / 意志: {{ ch.attributes.POW or "-" }}</span>
+          <span>EDU / 教育: {{ ch.attributes.EDU or "-" }}</span>
+          <span>LUCK / 幸运: {{ ch.attributes.LUCK or "-" }}</span>
+          <span>MOV / 移动: {{ ch.attributes.MOV or "-" }}</span>
+          {% if ch.attributes.DB %}<span>DB: {{ ch.attributes.DB }}</span>{% endif %}
+          {% if ch.attributes.Build is not none %}<span>Build: {{ ch.attributes.Build }}</span>{% endif %}
+        </div>
+      </td>
+
+      <!-- Notable (top) skills column with bilingual labels -->
+      <td class="skills">
+        <div class="skills-wrap">
+          {% for label, val in ch.top_skills %}
+            <div class="skill-pill">
+              <span class="skill-name">{{ label }}:</span>
+              <span class="skill-val">{{ val }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}

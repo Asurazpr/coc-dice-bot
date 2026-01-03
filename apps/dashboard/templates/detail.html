@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<a href="/guild/{{ guild_id }}">&larr; Back to guild</a>
+<h2>{{ character.name }}</h2>
+<p><strong>User ID:</strong> {{ character.user_id }}</p>
+
+<div class="stats">
+  <div class="stat">HP <span>{{ character.hp }}</span></div>
+  <div class="stat">SAN <span>{{ character.san }}</span></div>
+  <div class="stat">MP <span>{{ character.mp }}</span></div>
+</div>
+
+<h3>Attributes</h3>
+<div class="grid-attrs">
+  <span>STR / 力量: {{ character.attributes.STR or "-" }}</span>
+  <span>CON / 体质: {{ character.attributes.CON or "-" }}</span>
+  <span>SIZ / 体型: {{ character.attributes.SIZ or "-" }}</span>
+  <span>DEX / 敏捷: {{ character.attributes.DEX or "-" }}</span>
+  <span>APP / 外表: {{ character.attributes.APP or "-" }}</span>
+  <span>INT / 智力: {{ character.attributes.INT or "-" }}</span>
+  <span>POW / 意志: {{ character.attributes.POW or "-" }}</span>
+  <span>EDU / 教育: {{ character.attributes.EDU or "-" }}</span>
+  <span>LUCK / 幸运: {{ character.attributes.LUCK or "-" }}</span>
+  <span>MOV / 移动: {{ character.attributes.MOV or "-" }}</span>
+  {% if character.attributes.DB %}<span>DB: {{ character.attributes.DB }}</span>{% endif %}
+  {% if character.attributes.Build is not none %}<span>Build: {{ character.attributes.Build }}</span>{% endif %}
+</div>
+
+<h3>Skills</h3>
+{% if not skills %}
+  <p>No skills set.</p>
+{% else %}
+<table>
+  <thead><tr><th>Skill</th><th>Value</th></tr></thead>
+  <tbody>
+    {% for label, value in skills %}
+      <tr><td>{{ label }}</td><td>{{ value }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}

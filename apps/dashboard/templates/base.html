@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>CoC Keeper Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Auto-refresh every 20s (adjust or remove) -->
+  <meta http-equiv="refresh" content="20">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header>
+    <h1>CoC Keeper Dashboard</h1>
+    <nav><a href="/">Guilds</a></nav>
+  </header>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+  <footer>
+    <small>Reading {{ db_path|default('coc_bot.sqlite3') }}</small>
+  </footer>
+</body>
+</html>
