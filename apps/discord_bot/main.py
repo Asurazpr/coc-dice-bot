@@ -5,6 +5,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from cocbot.config import settings
+from cocbot.mechanics.dice import parse_and_roll
 
 
 class CocBot(commands.Bot):
@@ -39,6 +40,17 @@ async def on_ready() -> None:
 @bot.tree.command(name="ping", description="Check if the bot is alive.")
 async def ping(interaction: discord.Interaction) -> None:
     await interaction.response.send_message("pong")
+
+
+@bot.tree.command(name="roll", description="Roll dice like d20, 2d6+1, 1d100.")
+@app_commands.describe(expr="Dice expression (e.g., d20, 2d6+1, 1d100)")
+async def roll(interaction: discord.Interaction, expr: str) -> None:
+    try:
+        result = parse_and_roll(expr)
+    except Exception as e:
+        await interaction.response.send_message(f"❌ {e}", ephemeral=True)
+        return
+    await interaction.response.send_message(f"🎲 `{expr}` → **{result}**")
 
 
 def main() -> None:
