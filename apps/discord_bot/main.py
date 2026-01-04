@@ -6,6 +6,7 @@ from discord.ext import commands
 
 from cocbot.config import settings
 from cocbot.mechanics.dice import parse_and_roll
+from cocbot.mechanics.dice import d100_check
 
 
 class CocBot(commands.Bot):
@@ -51,6 +52,44 @@ async def roll(interaction: discord.Interaction, expr: str) -> None:
         await interaction.response.send_message(f"❌ {e}", ephemeral=True)
         return
     await interaction.response.send_message(f"🎲 `{expr}` → **{result}**")
+
+
+@bot.tree.command(name="check", description="Call of Cthulhu 7e skill/stat check (d100).")
+@app_commands.describe(
+    target="Target value (e.g. skill or stat, 1–100)",
+    bonus_penalty="Bonus (+) or penalty (-) dice count (optional)"
+)
+async def check(
+    interaction: discord.Interaction,
+    target: int,
+    bonus_penalty: int = 0,
+) -> None:
+    if target < 1 or target > 100:
+        await interaction.response.send_message(
+            "❌ Target must be between 1 and 100.",
+            ephemeral=True,
+        )
+        return
+
+    try:
+        result = d100_check(target=target, bp=bonus_penalty)
+    except Exception as e:
+        await interaction.response.send_message(f"❌ {e}", ephemeral=True)
+        return
+
+    bp_text = ""
+    if bonus_penalty > 0:
+        bp_text = f" (+{bonus_penalty} bonus)"
+    elif bonus_penalty < 0:
+        bp_text = f" ({bonus_penalty} penalty)"
+
+    msg = (
+        f"🎯 **Check** (Target **{target}**{bp_text})\n"
+        f"🎲 Roll: **{result.roll}**\n"
+        f"➡️ **{result.level.value}**"
+    )
+
+    await interaction.response.send_message(msg)
 
 
 def main() -> None:
