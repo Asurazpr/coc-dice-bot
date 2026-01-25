@@ -1,6 +1,6 @@
 # CoC Dice Bot (Discord)
 
-A Discord bot for **Call of Cthulhu 7th Edition**, focused on rules accuracy, clarity, and extensibility.  
+A Discord bot for **Call of Cthulhu 7th Edition**, focused on rules accuracy, clarity, and extensibility.
 Built as a personal passion project to support real tabletop play rather than a novelty dice roller.
 
 ---
@@ -8,34 +8,40 @@ Built as a personal passion project to support real tabletop play rather than a 
 ## Features
 
 ### Core Dice & Checks
-- **/roll** – Roll arbitrary dice expressions (`d20`, `2d6+1`, `1d100`, etc.)
-- **/check** – Call of Cthulhu 7e skill or target checks
-  - Accurate d100 mechanics
-  - **Bonus / Penalty dice** implemented per RAW
-  - Transparent **candidate roll visualization** (shows all possible tens combinations)
-  - Success tiers: Fail, Success, Hard, Extreme, Critical, Fumble
+
+* **/roll** – Roll arbitrary dice expressions (`d20`, `2d6+1`, `1d100`, etc.)
+* **/check** – Call of Cthulhu 7e skill or target checks
+
+  * Accurate d100 mechanics
+  * **Bonus / Penalty dice** implemented per RAW
+  * Transparent **candidate roll visualization** (shows all possible tens combinations)
+  * Success tiers: Fail, Success, Hard, Extreme, Critical, Fumble
 
 ### Skill System
-- Normalized **SQL / SQLite schema** for skills and categories
-- Canonical skill keys (language-independent)
-- **Multilingual support (EN / ZH)** via i18n tables and alias resolution
-- Supports derived skills (e.g. **Dodge = DEX / 2**)
-- Case-insensitive and alias-based skill lookup
+
+* Normalized **SQL / SQLite schema** for skills and categories
+* Canonical skill keys (language-independent)
+* **Multilingual support (EN / ZH)** via i18n tables and alias resolution
+* Supports derived skills (e.g. **Dodge = DEX / 2**)
+* Case-insensitive and alias-based skill lookup
 
 ### UI & Readability
-- Restored **classic tabletop-style /check embed**
-- Large, clear roll display
-- Visible Hard / Extreme thresholds
-- Bonus/Penalty candidate rolls marked explicitly
+
+* Restored **classic tabletop-style /check embed**
+* Large, clear roll display
+* Visible Hard / Extreme thresholds
+* Bonus/Penalty candidate rolls marked explicitly
 
 ### Design Goals
-- Rules correctness over shortcuts
-- Transparent mechanics (no hidden rerolls)
-- Clean separation between mechanics, UI, and app layer
-- Designed to support future extensions:
-  - Keeper-configurable house rules (critical/fumble ranges)
-  - Luck spending
-  - Additional languages
+
+* Rules correctness over shortcuts
+* Transparent mechanics (no hidden rerolls)
+* Clean separation between mechanics, UI, and app layer
+* Designed to support future extensions:
+
+  * Keeper-configurable house rules (critical/fumble ranges)
+  * Luck spending
+  * Additional languages
 
 ---
 
@@ -61,12 +67,24 @@ coc-dice-bot/
 
 ---
 
+## Invite the Bot
+
+You can invite **CoC Dice Bot** to your own Discord server using the official OAuth2 link below:
+
+👉 [https://discord.com/oauth2/authorize?client_id=1429217082297548812&permissions=2147502080&integration_type=0&scope=bot+applications.commands](https://discord.com/oauth2/authorize?client_id=1429217082297548812&permissions=2147502080&integration_type=0&scope=bot+applications.commands)
+
+> You must have **Manage Server** permission to add the bot.
+> The bot requests only the minimum permissions required for slash commands and embeds.
+
+---
+
 ## Setup & Installation
 
 ### 1. Prerequisites
-- Python **3.10+**
-- A Discord application + bot token
-- SQLite (bundled with Python)
+
+* Python **3.10+**
+* A Discord application + bot token
+* SQLite (bundled with Python)
 
 ---
 
@@ -108,9 +126,10 @@ DISCORD_TOKEN=your_discord_bot_token_here
 DISCORD_GUILD_ID=your_test_guild_id_here  # optional but recommended for dev
 ```
 
-- **DISCORD_TOKEN**: Bot token from Discord Developer Portal
-- **DISCORD_GUILD_ID**: Guild (server) ID for fast command sync during development
-  - If omitted, commands are registered globally (slower to update)
+* **DISCORD_TOKEN**: Bot token from Discord Developer Portal
+* **DISCORD_GUILD_ID**: Guild (server) ID for fast command sync during development
+
+  * If omitted, commands are registered globally (slower to update)
 
 ---
 
@@ -123,9 +142,10 @@ python scripts/apply_sql.py
 ```
 
 This will create and populate:
-- Skill definitions
-- Bases and derived rules
-- EN / ZH language packs
+
+* Skill definitions
+* Bases and derived rules
+* EN / ZH language packs
 
 ---
 
@@ -160,10 +180,12 @@ You should see the bot log in and sync slash commands.
 Language support is fully data-driven.
 
 To add a new language:
+
 1. Create a new SQL file in `data/sql/lang/`
 2. Insert only into:
-   - `skill_def_i18n`
-   - `skill_def_aliases`
+
+   * `skill_def_i18n`
+   * `skill_def_aliases`
 3. Apply with `apply_sql.py`
 
 No code changes required.
@@ -172,11 +194,11 @@ No code changes required.
 
 ## Roadmap
 
-- Keeper-configurable house rules (critical / fumble ranges)
-- Luck spending support
-- Career templates
-- Additional language packs
-- Optional dashboard features
+* Keeper-configurable house rules (critical / fumble ranges)
+* Luck spending support
+* Career templates
+* Additional language packs
+* Optional dashboard features
 
 ---
 
@@ -188,6 +210,5 @@ MIT License
 
 ## Notes
 
-This project is developed as a personal, long-term system rather than a quick demo.  
+This project is developed as a personal, long-term system rather than a quick demo.
 The focus is correctness, clarity, and maintainability over gimmicks.
-
