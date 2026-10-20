@@ -8,11 +8,11 @@ from typing import Iterable, List, Optional
 
 def fresh_db(path: Optional[str] = None) -> sqlite3.Connection:
     """A fully migrated database (in memory unless a path is given)."""
+    from cocbot.db.bootstrap import bootstrap
     from cocbot.db.connection import connect
-    from cocbot.db.migrate import migrate
 
     conn = connect(path or ":memory:")
-    migrate(conn)
+    bootstrap(conn)
     return conn
 
 

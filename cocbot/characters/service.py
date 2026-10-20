@@ -237,7 +237,7 @@ class InvestigatorService:
         if inv.status == STATUS_READY and any(v is None for v in changes.values()):
             raise ValidationError("A finished investigator cannot have blank characteristics.")
         changes.update(_clamp_resources_for(inv, changes))
-        return self._write(inv, changes)
+        return self._sync_allocations(self._write(inv, changes))
 
     def roll_characteristics(
         self, actor_id: object, investigator_id: int, rng: Optional[random.Random] = None
@@ -253,9 +253,9 @@ class InvestigatorService:
         rolled = generation.roll_all(rng).values
         changes: Dict[str, object] = {CHAR_COLUMNS[k]: rolled[k] for k in CHARACTERISTICS}
         changes["luck"] = rolled["LUCK"]
-        changes["creation_step"] = "skills"
+        changes["creation_step"] = "occupation"
         changes.update(_clamp_resources_for(inv, changes))
-        return self._write(inv, changes)
+        return self._sync_allocations(self._write(inv, changes))
 
     def set_skill(self, actor_id: object, investigator_id: int, skill: str, value: object) -> Investigator:
         """Set a trained skill value. ``value`` blank/None removes it (back to base)."""
@@ -264,6 +264,11 @@ class InvestigatorService:
         if sd is None:
             raise ValidationError(f"Unknown skill {skill!r}.")
         n = parse_int(value, sd.display_name, SKILL_MIN, SKILL_MAX)
+        if inv.status == STATUS_DRAFT and inv.occupation_id and self.conn.execute(
+            "SELECT 1 FROM investigator_skill_points WHERE investigator_id=? AND skill_key=?", (inv.id, sd.key)
+        ).fetchone():
+            raise InvalidState(f"{sd.display_name} gets its value from skill points during creation; "
+                               f"change its points in the allocation step instead.")
         if sd.key == "cthulhu_mythos" and n is not None and n > 99:
             raise ValidationError("Cthulhu Mythos cannot exceed 99 (Maximum SAN would be negative).")
         if n is None:
@@ -310,6 +315,13 @@ class InvestigatorService:
             return inv
         if not inv.is_complete:
             raise InvalidState("Still missing: " + ", ".join(inv.missing_characteristics) + ".")
+        if inv.occupation_id:
+            # Occupation-based creation: the full skill-point rules must pass.
+            from cocbot.occupations.service import CreationService
+            check = CreationService(self.conn).check_for(inv)
+            if not check.ok:
+                raise InvalidState("Not finished yet:\n- " + "\n- ".join(check.errors))
+            return self._write(inv, {"status": STATUS_READY, "creation_step": None, "creation_validated": 1})
         return self._write(inv, {"status": STATUS_READY, "creation_step": None})
 
     # --- lifecycle ---------------------------------------------------------------
@@ -368,6 +380,15 @@ class InvestigatorService:
         return existed
 
     # --- internals -----------------------------------------------------------------
+    def _sync_allocations(self, inv: Investigator) -> Investigator:
+        """Keep allocation-based skill values in step with characteristics (Dodge, Language (Own))."""
+        if inv.occupation_id and inv.status == STATUS_DRAFT:
+            from cocbot.occupations.service import sync_allocated_skills
+            sync_allocated_skills(self.conn, inv)
+            self.conn.commit()
+            return self.get(inv.owner_user_id, inv.id)
+        return inv
+
     def _write(self, inv: Investigator, changes: Mapping[str, object]) -> Investigator:
         try:
             repo.update(self.conn, inv.id, changes)

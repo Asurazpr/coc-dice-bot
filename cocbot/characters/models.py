@@ -34,6 +34,8 @@ class Investigator:
     creation_step: Optional[str] = None
     notes: Optional[str] = None
     status_before_archive: Optional[str] = None
+    occupation_id: Optional[int] = None          # set when created with the occupation rules
+    creation_validated: bool = False             # finished with occupation/skill-point validation
     created_at: str = ""
     updated_at: str = ""
     skills: Mapping[str, int] = field(default_factory=dict)  # trained values by skill key
