@@ -14,16 +14,17 @@ accounts (A and B), and a fresh database (`COC_DB_PATH=data/test.sqlite3`).
 - [ ] **Roll characteristics** on a sheet with values asks for a second click, then fills all nine values (multiples of 5, SIZ/INT/EDU ≥ 40).
 - [ ] **Skill**: "Spot Hidden" 70, then "侦查" blank → skill removed.
 - [ ] **HP·MP·SAN·Luck**: HP above max is rejected; blank HP resets to max.
-- [ ] **Finish** is disabled until all characteristics and Luck are set; afterwards status is Ready and Roll/Finish buttons disappear.
+- [ ] **Finish basic sheet** is disabled until all characteristics and Luck are set; afterwards the status reads "Basic sheet complete", the message says full CoC 7e creation is not checked, and Roll/Finish buttons disappear.
 - [ ] `/character create` "Harvey" — second investigator; "ada" as a name is rejected as a duplicate.
 
 ## Selection and checks
-- [ ] `/character list` shows both, ⭐ on Ada (auto-selected as the first one). Selecting Harvey from the menu opens his editor.
+- [ ] `/character list` shows both, ⭐ on Ada (auto-selected as the first one), and a line saying Ada is chosen for this server. Selecting Harvey from the menu opens his editor.
 - [ ] `/character select` autocompletes only A's investigators; select Harvey → `/check listen` footer shows "Harvey · A".
 - [ ] `/check spot hidden` uses the trained value; `/check dodge` uses DEX/2; `/check STR`, `/check luck`, `/check SAN`, `/check 力量` work.
 - [ ] `/check` autocomplete lists the active investigator's trained skills first.
 - [ ] `/check 60 bonus_penalty:2` and `-1` show candidate rolls; `/check 150` errors privately.
-- [ ] In a second server (or DM) with no selection there, `/check dodge` asks A to select an investigator; `/character select … everywhere:True` fixes that everywhere.
+- [ ] In a second server (or DM) with no selection there, `/check dodge` asks A to select an investigator; `/character select … everywhere:True` sets a default that then works there.
+- [ ] Back in the first server, `/character select Bram everywhere:True` says the server's own choice still applies; `/check listen` still uses the server choice; `/character unselect` then switches this server to the default.
 
 ## Two users
 - [ ] Account B creates "Bram" and selects him. A's and B's `/check listen` show their own investigator names.
@@ -34,3 +35,5 @@ accounts (A and B), and a fresh database (`COC_DB_PATH=data/test.sqlite3`).
 - [ ] `/character restore Harvey` works; `/character delete` on a live investigator is refused; on an archived one asks for confirmation.
 - [ ] Restart the bot: investigators, skills and selections are unchanged; startup log reports "0 migration(s) applied".
 - [ ] `/character view public:True` posts the sheet visibly to the channel.
+- [ ] Archive a draft whose characteristics are all filled in but which was never finished; restore it: it is still a Draft.
+- [ ] With 11+ investigators (archived count too), `/character list show_archived:True` shows page buttons; Next/Previous work and nothing is cut off.

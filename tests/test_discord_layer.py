@@ -201,6 +201,46 @@ class DiscordLayerTests(unittest.TestCase):
         self.arun(self.sub("select").callback(self.cog, it, "Harvey", False))
         self.assertIn("no investigator named", it.response.calls[0][1][0])
 
+    def test_list_paginates_many_archived(self):
+        from cocbot.characters.service import InvestigatorService
+        from cocbot.db.connection import get_conn
+        with get_conn(self.db) as conn:
+            svc = InvestigatorService(conn)
+            for n in range(35):
+                inv = svc.create(ALICE, f"Inv {n:02d} " + "x" * 50, occupation="y" * 100)
+                if n >= 5:
+                    svc.archive(ALICE, inv.id)
+        it = fake_interaction(ALICE)
+        self.arun(self.sub("list").callback(self.cog, it, True))
+        _, _, kwargs = it.response.calls[0]
+        embed, view = kwargs["embed"], kwargs["view"]
+        self.assertLessEqual(len(embed.description), 4096)
+        self.assertLessEqual(len(embed), 6000)
+        self.assertIn("Page 1/4", embed.footer.text)
+        nxt = [c for c in view.children if getattr(c, "label", "") == "Next ▶"][0]
+        it2 = fake_interaction(ALICE)
+        self.arun(nxt.callback(it2))
+        embed2 = it2.response.calls[0][2]["embed"]
+        self.assertIn("Page 2/4", embed2.footer.text)
+        self.assertLessEqual(len(embed2), 6000)
+
+    def test_select_everywhere_reports_server_override_and_unselect(self):
+        self.create(ALICE, "Ada")      # auto-selected for this server
+        self.create(ALICE, "Bram")
+        it = fake_interaction(ALICE)
+        self.arun(self.sub("select").callback(self.cog, it, "Bram", True))
+        msg = it.response.calls[0][1][0]
+        self.assertIn("default everywhere", msg)
+        self.assertIn("still applies here", msg)
+        _, _, kwargs = self.check(ALICE, "listen")
+        self.assertIn("Ada", kwargs["embed"].footer.text)
+
+        it = fake_interaction(ALICE)
+        self.arun(self.sub("unselect").callback(self.cog, it, False))
+        self.assertIn("now uses **Bram**", it.response.calls[0][1][0])
+        _, _, kwargs = self.check(ALICE, "listen")
+        self.assertIn("Bram", kwargs["embed"].footer.text)
+
 
 if __name__ == "__main__":
     unittest.main()

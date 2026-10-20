@@ -14,9 +14,9 @@ from discord.ext import commands
 
 from apps.discord_bot.views import (
     BioModal,
-    CollectionView,
     ConfirmDeleteView,
     Ctx,
+    render_collection,
     render_panel,
     reply_error,
     scope_label,
@@ -26,7 +26,6 @@ from apps.discord_bot.views import (
 from cocbot.characters.service import CharacterError, GLOBAL_SCOPE, guild_scope
 from cocbot.db.connection import get_conn
 from cocbot.db.repo_skill_defs import resolve_skill, search_skills
-from cocbot.ui.sheet_embed import build_list_embed
 
 INVESTIGATOR_DESC = "Your investigator (name or pick from the list)"
 
@@ -83,18 +82,11 @@ class CharacterCog(commands.GroupCog, group_name="character", group_description=
     async def create(self, interaction: discord.Interaction) -> None:
         await interaction.response.send_modal(BioModal(self.ctx(interaction), None, from_panel=False))
 
-    @app_commands.command(name="list", description="List your investigators")
+    @app_commands.command(name="list", description="List your investigators and which one is active here")
     @app_commands.describe(show_archived="Include archived investigators")
     async def list_(self, interaction: discord.Interaction, show_archived: bool = False) -> None:
-        ctx = self.ctx(interaction)
-        with service(ctx) as svc:
-            all_invs = svc.list(ctx.owner_id, include_archived=True)
-            active = svc.active(ctx.owner_id, ctx.guild_id)
-        shown = all_invs if show_archived else [i for i in all_invs if not i.is_archived]
-        archived = sum(1 for i in all_invs if i.is_archived)
-        embed = build_list_embed(shown, active.id if active else None, 0 if show_archived else archived)
-        live = [i for i in shown if not i.is_archived]
-        await interaction.response.send_message(embed=embed, view=CollectionView(ctx, live), ephemeral=True)
+        embed, view = render_collection(self.ctx(interaction), show_archived)
+        await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
     @app_commands.command(name="view", description="Show an investigator's sheet")
     @app_commands.describe(investigator=INVESTIGATOR_DESC, public="Post the sheet in the channel for everyone")
@@ -121,20 +113,42 @@ class CharacterCog(commands.GroupCog, group_name="character", group_description=
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
     @app_commands.command(name="select", description="Choose which investigator your rolls use")
-    @app_commands.describe(investigator=INVESTIGATOR_DESC,
-                           everywhere="Use as your default in every server and DMs (otherwise: this server only)")
+    @app_commands.describe(
+        investigator=INVESTIGATOR_DESC,
+        everywhere="Set your default for all servers and DMs. A server where you chose someone else keeps that choice.",
+    )
     async def select(self, interaction: discord.Interaction, investigator: str, everywhere: bool = False) -> None:
         try:
             with service(self.ctx(interaction)) as svc:
                 inv = svc.find(interaction.user.id, investigator)
                 svc.select(interaction.user.id, inv.id, interaction.guild_id, everywhere=everywhere)
+                here, here_scope = svc.active_with_scope(interaction.user.id, interaction.guild_id)
         except CharacterError as e:
             await reply_error(interaction, e)
             return
         scope = GLOBAL_SCOPE if everywhere or interaction.guild_id is None else guild_scope(interaction.guild_id)
-        await interaction.response.send_message(
-            f"⭐ **{inv.name}** is now your active investigator {scope_label(scope)}. "
-            f"`/check` will use their values.", ephemeral=True)
+        msg = f"⭐ **{inv.name}** is now active {scope_label(scope)}."
+        if here is not None and here.id != inv.id and here_scope and here_scope.startswith("guild:"):
+            msg += (f"\nIn **this** server you previously chose **{here.name}**, and that still applies here. "
+                    f"Use `/character unselect` to clear it so your default is used.")
+        else:
+            msg += " `/check` will use their values here."
+        await interaction.response.send_message(msg, ephemeral=True)
+
+    @app_commands.command(name="unselect", description="Clear your investigator choice for this server (or your default)")
+    @app_commands.describe(everywhere="Clear your default for all servers instead of this server's choice")
+    async def unselect(self, interaction: discord.Interaction, everywhere: bool = False) -> None:
+        with service(self.ctx(interaction)) as svc:
+            existed = svc.clear_selection(interaction.user.id, interaction.guild_id, everywhere=everywhere)
+            now = svc.active(interaction.user.id, interaction.guild_id)
+        what = "your default" if everywhere or interaction.guild_id is None else "this server's choice"
+        if not existed:
+            msg = f"There was no {what} to clear."
+        else:
+            msg = f"Cleared {what}."
+        msg += (f" `/check` here now uses **{now.name}**." if now
+                else " You have no active investigator here; `/check` uses base values.")
+        await interaction.response.send_message(msg, ephemeral=True)
 
     @app_commands.command(name="skill", description="Set a trained skill value on an investigator")
     @app_commands.describe(skill="Skill name (English or 中文)", value="Skill value (0-200)",

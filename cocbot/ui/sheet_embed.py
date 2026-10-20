@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from typing import Mapping, Optional, Sequence
+from typing import Mapping
 
 import discord
 
 from cocbot.characters.models import Investigator
-from cocbot.ui.sheet_text import build_list_text, build_sheet_text
+from cocbot.ui.sheet_text import ListPage, build_sheet_text
 
 _STATUS_COLOR = {
     "draft": discord.Color.light_grey(),
@@ -26,11 +26,13 @@ def build_sheet_embed(
     return e
 
 
-def build_list_embed(invs: Sequence[Investigator], active_id: Optional[int], archived_count: int = 0) -> discord.Embed:
-    e = discord.Embed(title="Your investigators", description=build_list_text(invs, active_id),
+def build_list_embed(page: ListPage, archived_hidden: int = 0) -> discord.Embed:
+    e = discord.Embed(title="Your investigators", description=page.description,
                       color=discord.Color.dark_teal())
-    footer = "⭐ = active here. Pick one below to open it."
-    if archived_count:
-        footer += f"  ·  {archived_count} archived (use show_archived)"
+    footer = "⭐ = active here · pick one below to open it"
+    if page.footer:
+        footer = f"{page.footer} · {footer}"
+    if archived_hidden:
+        footer += f" · {archived_hidden} archived hidden (show_archived:True)"
     e.set_footer(text=footer)
     return e

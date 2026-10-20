@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import random
 import sqlite3
-from typing import Dict, List, Mapping, Optional
+from typing import Dict, List, Mapping, Optional, Tuple
 
 from cocbot.characters.models import (
     CHAR_COLUMNS,
@@ -137,7 +137,14 @@ class InvestigatorService:
         matches.sort(key=lambda i: i.is_archived)
         return matches[0]
 
-    def active(self, actor_id: object, guild_id: Optional[object] = None) -> Optional[Investigator]:
+    def active_with_scope(
+        self, actor_id: object, guild_id: Optional[object] = None
+    ) -> Tuple[Optional[Investigator], Optional[str]]:
+        """The investigator /check uses here, and the scope that provided it.
+
+        A server-specific selection (``guild:<id>``) always wins over the
+        global default; the default only applies where no server selection exists.
+        """
         scopes = resolution_scopes(guild_id)
         ids = repo.active_ids(self.conn, str(actor_id), scopes)
         for scope in scopes:
@@ -145,8 +152,22 @@ class InvestigatorService:
                 inv = repo.get(self.conn, ids[scope])
                 # triggers keep this consistent, but never trust it blindly
                 if inv and inv.owner_user_id == str(actor_id) and not inv.is_archived:
-                    return inv
-        return None
+                    return inv, scope
+        return None, None
+
+    def active(self, actor_id: object, guild_id: Optional[object] = None) -> Optional[Investigator]:
+        return self.active_with_scope(actor_id, guild_id)[0]
+
+    def selections(self, actor_id: object, guild_id: Optional[object] = None) -> Dict[str, Optional[Investigator]]:
+        """Both layers for display: {'server': ..., 'default': ...} (server only in a guild)."""
+        out: Dict[str, Optional[Investigator]] = {}
+        ids = repo.active_ids(self.conn, str(actor_id), resolution_scopes(guild_id))
+        for label, scope in (("server", guild_scope(guild_id) if guild_id else None), ("default", GLOBAL_SCOPE)):
+            if scope is None:
+                continue
+            inv = repo.get(self.conn, ids[scope]) if scope in ids else None
+            out[label] = inv if inv and inv.owner_user_id == str(actor_id) and not inv.is_archived else None
+        return out
 
     def active_scopes(self, actor_id: object, investigator_id: int) -> List[str]:
         return repo.active_scopes_for(self.conn, str(actor_id), investigator_id)
@@ -241,10 +262,18 @@ class InvestigatorService:
         if sd is None:
             raise ValidationError(f"Unknown skill {skill!r}.")
         n = parse_int(value, sd.display_name, SKILL_MIN, SKILL_MAX)
+        if sd.key == "cthulhu_mythos" and n is not None and n > 99:
+            raise ValidationError("Cthulhu Mythos cannot exceed 99 (Maximum SAN would be negative).")
         if n is None:
             repo.remove_skill(self.conn, inv.id, sd.key)
         else:
             repo.set_skill(self.conn, inv.id, sd.key, n)
+        if sd.key == "cthulhu_mythos":
+            # Maximum SAN = 99 - Cthulhu Mythos: a stored current SAN above the
+            # new maximum is lowered to it (the implicit value is capped in the model).
+            san_max = 99 - (n or 0)
+            if inv.san_current is not None and inv.san_current > san_max:
+                repo.update(self.conn, inv.id, {"san_current": san_max})
         self.conn.commit()
         return self.get(actor_id, inv.id)
 
@@ -289,7 +318,7 @@ class InvestigatorService:
         # trigger trg_investigators_archive_clears_active removes active slots
         return self._write(
             inv,
-            {"status": STATUS_ARCHIVED, "archived_at": _now(self.conn)},
+            {"status": STATUS_ARCHIVED, "status_before_archive": inv.status, "archived_at": _now(self.conn)},
         )
 
     def restore(self, actor_id: object, investigator_id: int) -> Investigator:
@@ -300,8 +329,10 @@ class InvestigatorService:
             raise Conflict(f"You already have {MAX_LIVE_INVESTIGATORS} live investigators.")
         if repo.name_taken(self.conn, inv.owner_user_id, inv.name, exclude_id=inv.id):
             raise Conflict(f"Rename your other {inv.name!r} before restoring this one.")
-        status = STATUS_READY if inv.is_complete else STATUS_DRAFT
-        return self._write(inv, {"status": status, "archived_at": None})
+        # Restore exactly the status it had; never infer "ready" from completeness.
+        status = inv.status_before_archive if inv.status_before_archive in (STATUS_DRAFT, STATUS_READY) \
+            else STATUS_DRAFT
+        return self._write(inv, {"status": status, "status_before_archive": None, "archived_at": None})
 
     def delete(self, actor_id: object, investigator_id: int) -> None:
         """Permanent deletion. Only archived investigators can be deleted."""
@@ -322,10 +353,17 @@ class InvestigatorService:
         return inv
 
     def clear_selection(self, actor_id: object, guild_id: Optional[object] = None,
-                        everywhere: bool = False) -> None:
+                        everywhere: bool = False) -> bool:
+        """Remove this server's selection (default) or the global default.
+
+        Returns whether a selection existed. Clearing a server selection makes
+        the global default apply here again.
+        """
         scope = GLOBAL_SCOPE if everywhere or not guild_id else guild_scope(guild_id)
+        existed = scope in repo.active_ids(self.conn, str(actor_id), [scope])
         repo.clear_active(self.conn, str(actor_id), scope)
         self.conn.commit()
+        return existed
 
     # --- internals -----------------------------------------------------------------
     def _write(self, inv: Investigator, changes: Mapping[str, object]) -> Investigator:

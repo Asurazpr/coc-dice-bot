@@ -33,6 +33,7 @@ class Investigator:
     san_current: Optional[int] = None
     creation_step: Optional[str] = None
     notes: Optional[str] = None
+    status_before_archive: Optional[str] = None
     created_at: str = ""
     updated_at: str = ""
     skills: Mapping[str, int] = field(default_factory=dict)  # trained values by skill key
@@ -68,7 +69,17 @@ class Investigator:
 
     @property
     def san(self) -> Optional[int]:
-        return self.san_current if self.san_current is not None else self.derived().san_start
+        """Current SAN, never above Maximum SAN (99 - Cthulhu Mythos).
+
+        The cap applies both to the implicit starting value (POW) and to an
+        explicitly stored current SAN, e.g. one recorded before Cthulhu Mythos
+        increased.
+        """
+        d = self.derived()
+        value = self.san_current if self.san_current is not None else d.san_start
+        if value is None:
+            return None
+        return max(0, min(int(value), d.san_max))
 
     def stat(self, key: str) -> Optional[int]:
         key = key.upper()

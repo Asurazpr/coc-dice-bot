@@ -21,10 +21,15 @@ Built as a personal passion project to support real tabletop play rather than a 
 
 * **/character create** opens a form; a step-by-step editor (buttons + forms) handles
   characteristics (enter them, or roll with the standard 3D6×5 / (2D6+6)×5 method),
-  trained skills, current HP / MP / SAN / Luck, and finishing the sheet
+  trained skills, current HP / MP / SAN / Luck, and finishing the basic sheet
+* **"Finish basic sheet"** only means every characteristic and Luck is filled in, so the bot can
+  roll with it. It does **not** yet check full CoC 7e creation (occupation, skill-point
+  allocation, age adjustments); agree those with your Keeper until they are automated
 * Derived stats calculated automatically: HP, MP, SAN, Damage Bonus, Build, MOV (incl. age), Dodge
-* Each Discord user has a **personal collection** of investigators (drafts, ready, archived)
-* **Active investigator per user**, per server or everywhere — one player's choice never affects another's
+* Each Discord user has a **personal collection** of investigators (draft, basic sheet complete, archived)
+* **Active investigator per user** — one player's choice never affects another's. You can choose one
+  for a specific server, and set a **default** (`everywhere:True`) used wherever you haven't chosen
+  one. A server-specific choice always overrides the default; `/character unselect` clears it
 * **/check** uses the invoking player's active investigator: trained skill values, derived bases,
   characteristics, Luck and SAN. Numeric checks still work with no character at all
 * No spreadsheets: Excel files in `data/seed/` are optional developer resources only
@@ -198,7 +203,9 @@ and are skipped otherwise. Manual checks: [docs/MANUAL_TESTING.md](docs/MANUAL_T
 ```
 /character create                   form → editor with buttons for each part of the sheet
 /character list                     your collection (⭐ = active here)
-/character select Ada               use Ada for your rolls in this server (everywhere:True for all)
+/character select Ada               use Ada for your rolls in this server
+/character select Ada everywhere:True   make Ada your default (servers with their own choice keep it)
+/character unselect                 clear this server's choice so your default applies here
 /character skill skill:Spot Hidden value:70   set a trained skill (active investigator)
 /character view public:True         show your sheet to the table
 /character edit | archive | restore | delete

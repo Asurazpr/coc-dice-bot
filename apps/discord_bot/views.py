@@ -19,11 +19,19 @@ from cocbot.characters.service import CharacterError, InvestigatorService, guild
 from cocbot.db.connection import get_conn
 from cocbot.db.repo_skill_defs import skill_display_names
 from cocbot.mechanics.generation import ROLL_FORMULAS
-from cocbot.ui.sheet_embed import build_sheet_embed
+from cocbot.ui.sheet_embed import build_list_embed, build_sheet_embed
+from cocbot.ui.sheet_text import build_list_page, selection_summary
 
 log = logging.getLogger(__name__)
 
 PANEL_TIMEOUT = 15 * 60  # ephemeral interaction tokens live 15 minutes
+
+# "Finish" only certifies the basic sheet; full CoC 7e creation is not automated yet.
+FINISHED_MESSAGE = (
+    "✅ **{name}**'s basic sheet is complete: all characteristics and Luck are filled in, "
+    "so the bot can use it for checks. This does **not** check full CoC 7e creation "
+    "(occupation, skill-point allocation, age adjustments); confirm those with your Keeper."
+)
 
 
 @dataclass(frozen=True)
@@ -143,8 +151,9 @@ class BioModal(OwnedModal):
         return svc.update_bio(self.ctx.owner_id, self.investigator_id, name=self.name_input.value, **bio)
 
     def created_message(self, inv: Investigator) -> Optional[str]:
-        return (f"✅ Created **{inv.name}**. Next: enter characteristics (or roll them), "
-                f"add skills, then press **Finish**.")
+        return (f"✅ Created **{inv.name}** as a draft. Next: enter characteristics (or roll them), "
+                f"add skills, then press **Finish basic sheet**. Occupation and skill-point rules "
+                f"are not automated yet, so agree those with your Keeper.")
 
 
 class CharacteristicsModal(OwnedModal):
@@ -277,14 +286,15 @@ class EditorView(OwnedView):
     async def select_button(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         with service(self.ctx) as svc:
             inv = svc.select(self.ctx.owner_id, self.inv.id, self.ctx.guild_id)
-        where = "in this server" if self.ctx.guild_id else "everywhere"
+        where = ("in this server (overrides your default here)" if self.ctx.guild_id
+                 else "as your default everywhere (servers with their own choice keep it)")
         await refresh_panel(interaction, self.ctx, inv.id, content=f"⭐ **{inv.name}** is now active {where}.")
 
-    @discord.ui.button(label="Finish", style=discord.ButtonStyle.success, emoji="✅", row=2)
+    @discord.ui.button(label="Finish basic sheet", style=discord.ButtonStyle.success, emoji="✅", row=2)
     async def finish_button(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         with service(self.ctx) as svc:
             inv = svc.finalize(self.ctx.owner_id, self.inv.id)
-        await refresh_panel(interaction, self.ctx, inv.id, content=f"✅ **{inv.name}** is ready to play.")
+        await refresh_panel(interaction, self.ctx, inv.id, content=FINISHED_MESSAGE.format(name=inv.name))
 
     @discord.ui.button(label="Archive", style=discord.ButtonStyle.secondary, emoji="🗄️", row=2)
     async def archive_button(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
@@ -304,24 +314,60 @@ class EditorView(OwnedView):
             return svc.get(self.ctx.owner_id, self.inv.id, include_archived=False)
 
 
-class CollectionView(OwnedView):
-    """`/character list`: a select menu that opens an investigator's editor."""
+def render_collection(ctx: Ctx, show_archived: bool = False, page: int = 0) -> Tuple[discord.Embed, "CollectionView"]:
+    """`/character list` page: who is active here and why, plus a bounded page of investigators."""
+    with service(ctx) as svc:
+        all_invs = svc.list(ctx.owner_id, include_archived=True)
+        active = svc.active(ctx.owner_id, ctx.guild_id)
+        sel = svc.selections(ctx.owner_id, ctx.guild_id)
+    shown = all_invs if show_archived else [i for i in all_invs if not i.is_archived]
+    hidden = 0 if show_archived else sum(1 for i in all_invs if i.is_archived)
+    summary = selection_summary(sel.get("server"), sel.get("default"), in_guild=ctx.guild_id is not None)
+    list_page = build_list_page(shown, active.id if active else None, page, summary)
+    live = [i for i in all_invs if not i.is_archived]  # at most MAX_LIVE_INVESTIGATORS (25)
+    view = CollectionView(ctx, live, show_archived, list_page.page, list_page.pages)
+    return build_list_embed(list_page, hidden), view
 
-    def __init__(self, ctx: Ctx, invs: list):
+
+class CollectionView(OwnedView):
+    """`/character list`: page buttons plus a select menu that opens an editor."""
+
+    def __init__(self, ctx: Ctx, live: list, show_archived: bool = False, page: int = 0, pages: int = 1):
         super().__init__(ctx)
+        self.show_archived = show_archived
+        self.page = page
         options = [
             discord.SelectOption(
                 label=inv.name[:100],
                 value=str(inv.id),
                 description=(f"{inv.occupation or 'No occupation'} · {inv.status}")[:100],
             )
-            for inv in invs[:25]
+            for inv in live[:25]
         ]
         if options:
-            select = discord.ui.Select(placeholder="Open an investigator…", options=options)
+            select = discord.ui.Select(placeholder="Open an investigator…", options=options, row=0)
             select.callback = self._on_select  # type: ignore[assignment]
             self.select = select
             self.add_item(select)
+        if pages > 1:
+            prev_b = discord.ui.Button(label="◀ Previous", style=discord.ButtonStyle.secondary,
+                                       disabled=page <= 0, row=1)
+            next_b = discord.ui.Button(label="Next ▶", style=discord.ButtonStyle.secondary,
+                                       disabled=page >= pages - 1, row=1)
+            prev_b.callback = self._prev  # type: ignore[assignment]
+            next_b.callback = self._next  # type: ignore[assignment]
+            self.add_item(prev_b)
+            self.add_item(next_b)
+
+    async def _go(self, interaction: discord.Interaction, page: int) -> None:
+        embed, view = render_collection(self.ctx, self.show_archived, page)
+        await interaction.response.edit_message(embed=embed, view=view)
+
+    async def _prev(self, interaction: discord.Interaction) -> None:
+        await self._go(interaction, self.page - 1)
+
+    async def _next(self, interaction: discord.Interaction) -> None:
+        await self._go(interaction, self.page + 1)
 
     async def _on_select(self, interaction: discord.Interaction) -> None:
         investigator_id = int(self.select.values[0])
@@ -352,10 +398,14 @@ class ConfirmDeleteView(OwnedView):
 
 
 def scope_label(scope: str) -> str:
-    return "everywhere (default)" if scope == GLOBAL_SCOPE else "this server" if scope.startswith("guild:") else scope
+    if scope == GLOBAL_SCOPE:
+        return "as your default everywhere (servers where you chose someone else keep that choice)"
+    if scope.startswith("guild:"):
+        return "in this server (overrides your default here)"
+    return scope
 
 
 __all__ = [
-    "Ctx", "BioModal", "EditorView", "CollectionView", "ConfirmDeleteView",
+    "Ctx", "BioModal", "EditorView", "CollectionView", "ConfirmDeleteView", "render_collection",
     "render_panel", "reply_error", "service", "sheet_embed", "guild_scope", "scope_label",
 ]

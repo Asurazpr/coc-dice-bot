@@ -29,7 +29,9 @@ Dependencies point downwards only: `apps` → `cocbot.characters` → `cocbot.db
 ```
 investigators            one row per investigator, owned by a Discord user
   owner_user_id TEXT     Discord snowflake (TEXT avoids precision issues)
-  status                 draft | ready | archived
+  status                 draft | ready | archived  (ready = basic sheet complete, not
+                         a check of full CoC 7e creation)
+  status_before_archive  restored exactly on un-archive (migration 008)
   bio columns            occupation, age, pronouns, residence, birthplace
   char_str … char_edu    NULL until entered (drafts may be partial)
   luck
@@ -49,7 +51,7 @@ Database triggers refuse an active selection whose investigator is not owned by 
 ## Significant decisions
 
 1. **Investigators belong to users, not servers.** The personal library is independent of any server; servers only influence which investigator is *active*.
-2. **Scoped active selection.** Lookup order is most specific first: `guild:<id>` then `global`. `/character select` sets "this server" by default and "everywhere" on request; in DMs it is always global. A campaign scope slots in ahead of the guild without schema changes.
+2. **Scoped active selection.** Lookup order is most specific first: `guild:<id>` then `global`. `global` is a *default*: `/character select … everywhere:True` sets it, but any server where the player chose someone keeps that choice. `/character unselect` removes the server choice (or the default with `everywhere:True`); `/character list` shows which layer is in effect. In DMs only the default exists. A campaign scope slots in ahead of the guild without schema changes.
 3. **New table names.** The old code read `characters`/`attributes`/`guild_settings`, which no migration created, so real databases may contain hand-made versions of unknown shape. Using `investigators` etc. guarantees `CREATE TABLE IF NOT EXISTS` never silently adopts a legacy table. Migration 007 imports legacy rows when an owner can be determined and never modifies the originals.
 4. **Ownership enforced in one place.** `InvestigatorService` takes the acting user's ID on every call; "not found" and "not yours" are indistinguishable. Views re-check the clicking user, and triggers back this up in the database.
 5. **Characteristics as columns, skills as rows.** The eight characteristics are fixed by the rules and benefit from typed columns and CHECKs; skills are open-ended (85 now, specializations later).

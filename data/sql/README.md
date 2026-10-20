@@ -9,6 +9,7 @@ Versioned migrations, applied in numeric order by `cocbot/db/migrate.py`
   005_seed_i18n_zh.sql           Chinese names/aliases
   006_investigator_collection.sql  per-user investigators, skills, active selection
   007_import_legacy_characters.py  non-destructive import of pre-006 data
+  008_status_before_archive.sql  remember draft/ready status across archive
 
 Rules:
   - Never edit a migration that has shipped; add a new NNN_ file instead.

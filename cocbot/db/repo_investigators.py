@@ -15,6 +15,7 @@ NOW = "strftime('%Y-%m-%dT%H:%M:%fZ','now')"
 _UPDATABLE = {
     "name", "status", "occupation", "age", "pronouns", "residence", "birthplace",
     "luck", "hp_current", "mp_current", "san_current", "creation_step", "notes", "archived_at",
+    "status_before_archive",
     *CHAR_COLUMNS.values(),
 }
 
@@ -37,6 +38,7 @@ def _row_to_investigator(row: sqlite3.Row, skills: Mapping[str, int]) -> Investi
         san_current=row["san_current"],
         creation_step=row["creation_step"],
         notes=row["notes"],
+        status_before_archive=row["status_before_archive"],
         created_at=row["created_at"],
         updated_at=row["updated_at"],
         skills=dict(skills),

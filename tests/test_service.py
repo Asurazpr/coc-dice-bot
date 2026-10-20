@@ -249,5 +249,113 @@ class PersistenceTests(unittest.TestCase):
             conn2.close()
 
 
+class ArchiveStatusRegressionTests(ServiceTestCase):
+    """Review item 1: restore must return the exact pre-archive status."""
+
+    def test_complete_but_unfinished_draft_stays_draft(self):
+        inv = self.svc.create(ALICE, "Ada")
+        inv = self.svc.set_characteristics(ALICE, inv.id, FULL)
+        self.assertTrue(inv.is_complete)
+        self.assertEqual(inv.status, "draft")  # never finalized
+        self.svc.archive(ALICE, inv.id)
+        self.assertEqual(self.svc.restore(ALICE, inv.id).status, "draft")
+
+    def test_ready_stays_ready(self):
+        inv = self.svc.create(ALICE, "Ada")
+        self.svc.set_characteristics(ALICE, inv.id, FULL)
+        self.svc.finalize(ALICE, inv.id)
+        self.svc.archive(ALICE, inv.id)
+        restored = self.svc.restore(ALICE, inv.id)
+        self.assertEqual(restored.status, "ready")
+        self.assertIsNone(restored.status_before_archive)
+
+    def test_archived_before_migration_restores_as_draft(self):
+        inv = self.svc.create(ALICE, "Ada")
+        self.svc.set_characteristics(ALICE, inv.id, FULL)
+        self.svc.archive(ALICE, inv.id)
+        # simulate a row archived before migration 008 recorded the status
+        self.conn.execute("UPDATE investigators SET status_before_archive=NULL WHERE investigator_id=?", (inv.id,))
+        self.conn.commit()
+        self.assertEqual(self.svc.restore(ALICE, inv.id).status, "draft")
+
+
+class SanityCapRegressionTests(ServiceTestCase):
+    """Review item 2: current SAN never exceeds Maximum SAN (99 - Cthulhu Mythos)."""
+
+    def setUp(self):
+        super().setUp()
+        self.inv = self.svc.create(ALICE, "Ada")
+        self.svc.set_characteristics(ALICE, self.inv.id, {**FULL, "POW": 90})
+
+    def test_implicit_san_capped_by_mythos(self):
+        inv = self.svc.set_skill(ALICE, self.inv.id, "cthulhu_mythos", 20)
+        self.assertIsNone(inv.san_current)            # still "starting value"
+        self.assertEqual(inv.derived().san_max, 79)
+        self.assertEqual(inv.san, 79)                 # POW 90 capped to 79
+        self.assertEqual(inv.stat("SAN"), 79)         # what /check SAN uses
+
+    def test_stored_san_lowered_when_mythos_rises(self):
+        self.svc.set_resources(ALICE, self.inv.id, san=85)
+        inv = self.svc.set_skill(ALICE, self.inv.id, "cthulhu_mythos", 30)
+        self.assertEqual(inv.san_current, 69)         # persisted, not just displayed
+        self.assertEqual(inv.san, 69)
+
+    def test_stored_san_below_max_untouched(self):
+        self.svc.set_resources(ALICE, self.inv.id, san=40)
+        inv = self.svc.set_skill(ALICE, self.inv.id, "cthulhu_mythos", 30)
+        self.assertEqual(inv.san_current, 40)
+
+    def test_cannot_set_san_above_max(self):
+        self.svc.set_skill(ALICE, self.inv.id, "cthulhu_mythos", 30)
+        with self.assertRaises(ValidationError):
+            self.svc.set_resources(ALICE, self.inv.id, san=70)
+
+    def test_stored_value_above_max_is_still_capped_on_read(self):
+        # e.g. legacy-imported data or a direct database edit
+        self.svc.set_skill(ALICE, self.inv.id, "cthulhu_mythos", 30)
+        self.conn.execute("UPDATE investigators SET san_current=95 WHERE investigator_id=?", (self.inv.id,))
+        self.conn.commit()
+        self.assertEqual(self.svc.get(ALICE, self.inv.id).san, 69)
+
+    def test_mythos_limit(self):
+        with self.assertRaises(ValidationError):
+            self.svc.set_skill(ALICE, self.inv.id, "cthulhu_mythos", 100)
+
+
+class SelectionScopeRegressionTests(ServiceTestCase):
+    """Review item 4: a server choice overrides the default; unselect restores the default."""
+
+    def test_default_does_not_override_server_choice(self):
+        a = self.svc.create(ALICE, "Ada")
+        b = self.svc.create(ALICE, "Bram")
+        self.svc.select(ALICE, a.id, GUILD_A)                 # server-specific
+        self.svc.select(ALICE, b.id, GUILD_A, everywhere=True)  # default, issued from the same server
+        inv, scope = self.svc.active_with_scope(ALICE, GUILD_A)
+        self.assertEqual((inv.id, scope), (a.id, f"guild:{GUILD_A}"))
+        inv, scope = self.svc.active_with_scope(ALICE, GUILD_B)
+        self.assertEqual((inv.id, scope), (b.id, "global"))
+        sel = self.svc.selections(ALICE, GUILD_A)
+        self.assertEqual((sel["server"].id, sel["default"].id), (a.id, b.id))
+
+    def test_unselect_server_falls_back_to_default(self):
+        a = self.svc.create(ALICE, "Ada")
+        b = self.svc.create(ALICE, "Bram")
+        self.svc.select(ALICE, a.id, GUILD_A)
+        self.svc.select(ALICE, b.id, everywhere=True)
+        self.assertTrue(self.svc.clear_selection(ALICE, GUILD_A))
+        self.assertEqual(self.svc.active_with_scope(ALICE, GUILD_A), (self.svc.get(ALICE, b.id), "global"))
+        self.assertFalse(self.svc.clear_selection(ALICE, GUILD_A))   # nothing left to clear
+        self.assertTrue(self.svc.clear_selection(ALICE, GUILD_A, everywhere=True))
+        self.assertEqual(self.svc.active_with_scope(ALICE, GUILD_A), (None, None))
+
+    def test_unselect_only_affects_caller(self):
+        a = self.svc.create(ALICE, "Ada")
+        b = self.svc.create(BOB, "Bram")
+        self.svc.select(ALICE, a.id, GUILD_A)
+        self.svc.select(BOB, b.id, GUILD_A)
+        self.svc.clear_selection(ALICE, GUILD_A)
+        self.assertEqual(self.svc.active(BOB, GUILD_A).id, b.id)
+
+
 if __name__ == "__main__":
     unittest.main()
