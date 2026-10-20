@@ -83,7 +83,7 @@ class CreationTextTests(unittest.TestCase):
         for n, k in enumerate(("charm", "dodge")):
             self.svc.set_pick(ALICE, self.inv.id, 6, n, k)
         self.svc.allocate(ALICE, self.inv.id, "credit_rating", occupation_points=40)
-        inv = self.inv_svc.finalize(ALICE, self.inv.id)
+        inv = self.inv_svc.finalize(ALICE, self.inv.id, confirm_unspent=True)
         self.assertEqual(status_badge(inv), "✅ Created (occupation rules checked)")
         names = skill_display_names(self.conn, inv.skills.keys())
         self.assertEqual(names["credit_rating"], "Credit Rating")

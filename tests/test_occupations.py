@@ -11,6 +11,7 @@ from cocbot.characters.service import (
     InvalidState,
     InvestigatorService,
     NotFound,
+    UnspentPoints,
     ValidationError,
 )
 from cocbot.db.bootstrap import bootstrap
@@ -183,12 +184,12 @@ class AllocationTests(Base):
         self.assertIn("Occupation points overspent by 10.", c.errors)
         self.assertEqual(load_points(self.conn, self.inv.id)["law"], (70, 0))
 
-    def test_manual_edit_of_allocated_skill_blocked_during_creation(self):
+    def test_manual_edits_blocked_during_creation(self):
         self.svc.allocate(ALICE, self.inv.id, "law", occupation_points=30)
-        with self.assertRaises(InvalidState):
-            self.inv_svc.set_skill(ALICE, self.inv.id, "law", 90)
-        self.inv_svc.set_skill(ALICE, self.inv.id, "occult", 15)   # unallocated skill: allowed, flagged
-        self.assertTrue(any("Occult" in w for w in self.svc.check(ALICE, self.inv.id).warnings))
+        for skill, value in (("law", 90), ("occult", 15), ("cthulhu_mythos", 30), ("spot hidden", 150)):
+            with self.subTest(skill=skill), self.assertRaises(InvalidState):
+                self.inv_svc.set_skill(ALICE, self.inv.id, skill, value)
+        self.assertEqual(self.inv_svc.get(ALICE, self.inv.id).skills, {"law": 35})
 
 
 class ReviewAndFinishTests(Base):
@@ -209,7 +210,11 @@ class ReviewAndFinishTests(Base):
         c = self.svc.check(ALICE, self.inv.id)
         self.assertTrue(c.ok, c.errors)
         self.assertTrue(any("200 occupation points unspent" in w for w in c.warnings))
-        inv = self.inv_svc.finalize(ALICE, self.inv.id)
+        with self.assertRaises(UnspentPoints) as cm:          # unspent points need explicit confirmation
+            self.inv_svc.finalize(ALICE, self.inv.id)
+        self.assertEqual((cm.exception.occupation, cm.exception.interest), (200, 160))
+        self.assertEqual(self.inv_svc.get(ALICE, self.inv.id).status, "draft")
+        inv = self.inv_svc.finalize(ALICE, self.inv.id, confirm_unspent=True)
         self.assertEqual((inv.status, inv.creation_validated), ("ready", True))
         # creation steps are closed once finished; progression edits are manual again
         with self.assertRaises(InvalidState):
@@ -333,12 +338,179 @@ class PersistenceAndUpgradeTests(unittest.TestCase):
 
             conn = connect(path)
             applied = bootstrap(conn)
-            self.assertEqual(applied, ["009_fix_skill_base_values.sql", "010_occupations.sql"])
+            self.assertEqual(applied, ["009_fix_skill_base_values.sql", "010_occupations.sql",
+                                       "011_skill_point_stat_choice.sql"])
             inv = InvestigatorService(conn).get("1001", iid)
             self.assertEqual((inv.name, inv.status, inv.occupation_id, inv.skills), ("Old Ada", "ready", None,
                                                                                       {"listen": 55}))
             self.assertEqual(conn.execute("SELECT source FROM investigator_skills").fetchone()[0], "manual")
             conn.close()
+
+
+class ManualSkillBypassRegressionTests(Base):
+    """Review finding: hand-entered skills must never reach creation_validated."""
+
+    def _finishable(self, inv_id):
+        self.svc.set_occupation(ALICE, inv_id, "accountant")
+        self.svc.set_pick(ALICE, inv_id, 6, 0, "psychology")
+        self.svc.set_pick(ALICE, inv_id, 6, 1, "charm")
+        self.svc.allocate(ALICE, inv_id, "credit_rating", occupation_points=40)
+
+    def _manual_before_occupation(self, values):
+        """Hand-entered values made while the draft had no occupation (Milestone 1 behaviour)."""
+        for skill, value in values.items():
+            self.inv_svc.set_skill(ALICE, self.inv.id, skill, value)
+        self._finishable(self.inv.id)
+
+    def test_service_bypass_is_closed(self):
+        self._manual_before_occupation({"cthulhu_mythos": 30, "occult": 150, "listen": 60})
+        check = self.svc.check(ALICE, self.inv.id)
+        self.assertFalse(check.ok)
+        joined = " ".join(check.errors)
+        self.assertIn("Cthulhu Mythos is 30", joined)
+        self.assertIn("Occult is 150", joined)
+        self.assertIn("Listen is 60", joined)
+        for confirm in (False, True):
+            with self.assertRaises(InvalidState):
+                self.inv_svc.finalize(ALICE, self.inv.id, confirm_unspent=confirm)
+        inv = self.inv_svc.get(ALICE, self.inv.id)
+        self.assertEqual((inv.status, inv.creation_validated), ("draft", False))
+        # nothing was deleted behind the player's back
+        self.assertEqual({k: inv.skills[k] for k in ("cthulhu_mythos", "occult", "listen")},
+                         {"cthulhu_mythos": 30, "occult": 150, "listen": 60})
+        self.assertEqual(self.svc.next_step(inv), "review")
+
+    def test_value_equal_to_base_is_harmless(self):
+        self._manual_before_occupation({"listen": 20})
+        self.assertTrue(self.svc.check(ALICE, self.inv.id).ok)
+
+    def test_reconcile_convert_and_discard(self):
+        self._manual_before_occupation({"cthulhu_mythos": 30, "occult": 150, "listen": 60, "accounting": 45})
+        # Cthulhu Mythos cannot be converted; a value above 99 cannot be converted
+        with self.assertRaises(ValidationError):
+            self.svc.reconcile(ALICE, self.inv.id, "cthulhu_mythos", "convert")
+        with self.assertRaises(ValidationError):
+            self.svc.reconcile(ALICE, self.inv.id, "occult", "convert")
+        self.svc.reconcile(ALICE, self.inv.id, "cthulhu_mythos", "discard")
+        self.svc.reconcile(ALICE, self.inv.id, "occult", "discard")
+        # Listen is an occupation skill: 40 occupation points; Climb-like skills would use interest
+        inv = self.svc.reconcile(ALICE, self.inv.id, "listen", "convert")
+        self.assertEqual(load_points(self.conn, self.inv.id)["listen"], (40, 0))
+        self.assertEqual(inv.skills["listen"], 60)
+        inv = self.svc.reconcile(ALICE, self.inv.id, "accounting", "convert")
+        self.assertEqual(inv.skills["accounting"], 45)
+        self.assertNotIn("cthulhu_mythos", inv.skills)
+        self.assertNotIn("occult", inv.skills)
+        self.assertEqual(self.svc.unreconciled(inv), {})
+        inv = self.inv_svc.finalize(ALICE, self.inv.id, confirm_unspent=True)
+        self.assertTrue(inv.creation_validated)
+
+    def test_convert_non_occupation_skill_uses_interest_and_respects_budget(self):
+        self.inv_svc.set_skill(ALICE, self.inv.id, "climb", 70)       # base 20 -> 50 interest
+        self.inv_svc.set_skill(ALICE, self.inv.id, "swim", 99)        # base 20 -> 79 interest
+        self.inv_svc.set_skill(ALICE, self.inv.id, "jump", 90)        # base 20 -> 70 interest
+        self._finishable(self.inv.id)
+        self.svc.reconcile(ALICE, self.inv.id, "climb", "convert")
+        self.svc.reconcile(ALICE, self.inv.id, "swim", "convert")      # 129 of 160 interest used
+        self.assertEqual(load_points(self.conn, self.inv.id)["climb"], (0, 50))
+        with self.assertRaises(ValidationError) as cm:
+            self.svc.reconcile(ALICE, self.inv.id, "jump", "convert")
+        self.assertIn("31 personal interest points are left", str(cm.exception))
+        self.assertEqual(self.inv_svc.get(ALICE, self.inv.id).skills["jump"], 90)   # unchanged
+
+    def test_allocate_on_unreconciled_skill_refused(self):
+        self._manual_before_occupation({"listen": 60})
+        with self.assertRaises(InvalidState):
+            self.svc.allocate(ALICE, self.inv.id, "listen", occupation_points=10)
+
+    def test_other_user_cannot_reconcile(self):
+        self._manual_before_occupation({"listen": 60})
+        with self.assertRaises(NotFound):
+            self.svc.reconcile(BOB, self.inv.id, "listen", "discard")
+
+    def test_m1_ready_investigators_untouched(self):
+        basic = self.inv_svc.create(ALICE, "Basic")
+        self.inv_svc.set_characteristics(ALICE, basic.id, FULL)
+        self.inv_svc.set_skill(ALICE, basic.id, "cthulhu_mythos", 12)
+        self.inv_svc.finalize(ALICE, basic.id)
+        inv = self.inv_svc.set_skill(ALICE, basic.id, "occult", 150)      # progression edits still allowed
+        self.assertEqual((inv.skills["cthulhu_mythos"], inv.skills["occult"], inv.creation_validated),
+                         (12, 150, False))
+
+
+class FormulaChoiceTests(Base):
+    def test_choice_persisted_and_used(self):
+        self.svc.set_occupation(ALICE, self.inv.id, "private_investigator")   # EDU×2 + (DEX or STR)×2
+        c = self.svc.check(ALICE, self.inv.id)
+        self.assertEqual(c.occupation_budget.total, 150 + 140)             # suggested: DEX 70
+        self.assertIn("suggested", c.occupation_budget.explanation)
+        inv = self.svc.set_formula_stat(ALICE, self.inv.id, "str")
+        self.assertEqual(inv.skill_point_stat, "STR")
+        c = self.svc.check(ALICE, self.inv.id)
+        self.assertEqual(c.occupation_budget.total, 150 + 120)
+        self.assertIn("chosen from DEX/STR", c.occupation_budget.explanation)
+        with self.assertRaises(ValidationError):
+            self.svc.set_formula_stat(ALICE, self.inv.id, "APP")
+        inv = self.svc.set_formula_stat(ALICE, self.inv.id, None)
+        self.assertIsNone(inv.skill_point_stat)
+
+    def test_choice_cleared_on_occupation_change_and_rejected_without_alternatives(self):
+        self.svc.set_occupation(ALICE, self.inv.id, "private_investigator")
+        self.svc.set_formula_stat(ALICE, self.inv.id, "STR")
+        inv = self.svc.set_occupation(ALICE, self.inv.id, "accountant", force=True)
+        self.assertIsNone(inv.skill_point_stat)
+        with self.assertRaises(ValidationError):
+            self.svc.set_formula_stat(ALICE, self.inv.id, "STR")
+
+    def test_lower_choice_can_overspend_but_keeps_points(self):
+        self.svc.set_occupation(ALICE, self.inv.id, "private_investigator")
+        for skill in ("law", "library_use", "psychology", "stealth"):
+            self.svc.allocate(ALICE, self.inv.id, skill, occupation_points=70)      # 280 of 290
+        self.svc.set_formula_stat(ALICE, self.inv.id, "STR")                       # budget 270
+        self.assertIn("Occupation points overspent by 10.", self.svc.check(ALICE, self.inv.id).errors)
+        self.assertEqual(load_points(self.conn, self.inv.id)["law"], (70, 0))
+
+
+class CatalogueReplaceabilityTests(unittest.TestCase):
+    def _bootstrap_with(self, value):
+        import cocbot.occupations.catalogue as cat
+        old = os.environ.get("COC_OCCUPATIONS_PATH")
+        os.environ["COC_OCCUPATIONS_PATH"] = value
+        try:
+            conn = connect(":memory:")
+            logs = []
+            bootstrap(conn, log=logs.append)
+            n = conn.execute("SELECT COUNT(*) FROM occupations").fetchone()[0]
+            conn.close()
+            return n, logs, cat
+        finally:
+            if old is None:
+                os.environ.pop("COC_OCCUPATIONS_PATH", None)
+            else:
+                os.environ["COC_OCCUPATIONS_PATH"] = old
+
+    def test_catalogue_can_be_disabled(self):
+        n, logs, _ = self._bootstrap_with("none")
+        self.assertEqual(n, 0)
+        self.assertTrue(any("disabled" in line for line in logs))
+
+    def test_empty_value_means_default(self):
+        n, _, _ = self._bootstrap_with("")
+        self.assertEqual(n, 113)
+
+    def test_missing_file_is_reported_not_fatal(self):
+        n, logs, _ = self._bootstrap_with("/nonexistent/occupations.json")
+        self.assertEqual(n, 0)
+        self.assertTrue(any("not found" in line for line in logs))
+
+    def test_alternative_catalogue_file(self):
+        data = json.loads(catalogue.CATALOGUE_PATH.read_text(encoding="utf-8"))
+        data["occupations"] = data["occupations"][:3]
+        with tempfile.TemporaryDirectory() as d:
+            p = Path(d) / "mine.json"
+            p.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+            n, logs, _ = self._bootstrap_with(str(p))
+        self.assertEqual(n, 3)
 
 
 if __name__ == "__main__":

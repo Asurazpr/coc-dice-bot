@@ -19,6 +19,7 @@ creation. Details and open rule questions: `docs/OCCUPATIONS.md`.
 
 Remaining:
 
+0. **Release blockers (licensing)**: no clearance for public distribution of the bot or its game data; Chaosium's Fan Material Policy excludes software, and the community spreadsheet's rights are unknown. See `docs/OCCUPATIONS.md` §2. Required before any public release.
 1. **Verify the catalogue** against the rulebooks and mark entries `verified`; resolve the flagged items in `docs/OCCUPATIONS.md` (Musician formula, unreviewed English names, approximated specializations).
 2. **Specializations**: Art/Craft (Technical Drawing, Instrument, Farming, …), Language (Other) per language, Pilot (Aircraft/Boat), Survival (environment), using the reserved `specialization` column, so the approximations can be removed.
 3. **Age step** (RAW table): STR/CON/DEX/APP deductions with player choice where the rules allow it, EDU improvement checks, Luck re-roll for 15–19.

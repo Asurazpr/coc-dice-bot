@@ -8,6 +8,7 @@ that disappear from the JSON are marked retired, never deleted.
 from __future__ import annotations
 
 import json
+import os
 import re
 import sqlite3
 from dataclasses import dataclass
@@ -18,6 +19,22 @@ from cocbot.config import repo_root
 from cocbot.occupations.zh_parser import CATEGORY_OPTIONS
 
 CATALOGUE_PATH = repo_root() / "data" / "occupations" / "occupations.json"
+DISABLED_VALUES = ("none", "off", "disabled")
+
+
+def configured_catalogue_path() -> Optional[Path]:
+    """Built-in catalogue to load: COC_OCCUPATIONS_PATH, or the bundled file.
+
+    The dataset is deliberately replaceable (see docs/OCCUPATIONS.md, licensing):
+    point the variable at another JSON in the same schema, or set it to "none" to
+    run with homebrew occupations only.
+    """
+    raw = os.getenv("COC_OCCUPATIONS_PATH")
+    if raw is None or not raw.strip():          # unset or empty (as in .env.example): bundled file
+        return CATALOGUE_PATH
+    if raw.strip().lower() in DISABLED_VALUES:
+        return None
+    return Path(raw).expanduser()
 STATS = ("STR", "CON", "SIZ", "DEX", "APP", "INT", "POW", "EDU")
 NOT_SELECTABLE = ("credit_rating", "cthulhu_mythos")   # never fill an occupation slot
 HOMEBREW_SKILL_COUNT = 8

@@ -320,8 +320,15 @@ class DiscordLayerTests(unittest.TestCase):
         embed, review = self.build(lambda: render_step(ctx, inv_id, "review"))
         self.assertIsInstance(review, ReviewStepView)
         self.assertIn("Meets the occupation", embed.description)
+        # unspent points: first click asks for confirmation, second click finishes
+        self.assertIn("unspent", review.finish_btn.label)
         it = fake_interaction(ALICE)
         self.arun(review._finish(it))
+        kw = it.response.calls[0][2]
+        self.assertIn("Click again", kw["content"])
+        self.assertTrue(kw["view"].confirm)
+        it = fake_interaction(ALICE)
+        self.arun(kw["view"]._finish(it))
         kind, _, kw = it.response.calls[0]
         self.assertIn("is created", kw["content"])
         self.assertIsInstance(kw["view"], EditorView)
@@ -353,6 +360,82 @@ class DiscordLayerTests(unittest.TestCase):
         it = fake_interaction(BOB)
         self.arun(self.sub("occupation").callback(self.cog, it, "antiquarian", str(inv_id)))
         self.assertIn("not found", it.response.calls[0][1][0].lower())
+
+    def _accountant_ready_but_for(self, inv_id):
+        from apps.discord_bot.creation_views import creation
+        from apps.discord_bot.views import Ctx
+        with creation(Ctx(self.db, ALICE, GUILD)) as (_, svc):
+            svc.set_occupation(ALICE, inv_id, "accountant")
+            svc.set_pick(ALICE, inv_id, 6, 0, "psychology")
+            svc.set_pick(ALICE, inv_id, 6, 1, "charm")
+            svc.allocate(ALICE, inv_id, "credit_rating", occupation_points=40)
+
+    def test_skill_command_cannot_bypass_creation_rules(self):
+        inv_id = self._draft_with_characteristics()
+        self._accountant_ready_but_for(inv_id)
+        for skill, value in (("cthulhu_mythos", 30), ("occult", 150), ("listen", 60)):
+            it = fake_interaction(ALICE)
+            self.arun(self.sub("skill").callback(self.cog, it, skill, value, str(inv_id)))
+            kind, args, kw = it.response.calls[0]
+            self.assertIn("skill points", args[0])
+            self.assertTrue(kw["ephemeral"])
+        # the editor routes Finish to Review and disables manual skill entry
+        from apps.discord_bot.views import Ctx, render_panel
+        panel = self.build(lambda: render_panel(Ctx(self.db, ALICE, GUILD), inv_id)[1])
+        self.assertTrue(panel.skill_button.disabled)
+        self.assertEqual(panel.finish_button.label, "Review & finish")
+
+    def test_hand_entered_values_must_be_reconciled_in_review(self):
+        from apps.discord_bot.creation_views import ReviewStepView, render_step
+        from apps.discord_bot.views import Ctx
+        inv_id = self._draft_with_characteristics()
+        # M1-style entries made before choosing an occupation
+        for skill, value in (("cthulhu_mythos", 30), ("listen", 60)):
+            it = fake_interaction(ALICE)
+            self.arun(self.sub("skill").callback(self.cog, it, skill, value, str(inv_id)))
+        self._accountant_ready_but_for(inv_id)
+        ctx = Ctx(self.db, ALICE, GUILD)
+        embed, review = self.build(lambda: render_step(ctx, inv_id, "review"))
+        self.assertIsInstance(review, ReviewStepView)
+        self.assertTrue(review.finish_btn.disabled)
+        self.assertTrue(any(f.name == "Hand-entered values to reconcile" for f in embed.fields))
+        self.assertIn("Cthulhu Mythos is 30", embed.description)
+        values = [o.value for o in review.reconcile_select.options]
+        self.assertIn("discard:cthulhu_mythos", values)
+        self.assertIn("convert:listen", values)
+
+        it = fake_interaction(ALICE)
+        self.arun(review.apply_reconcile(it, "convert:cthulhu_mythos"))          # refused
+        self.assertIn("discard", it.response.calls[0][1][0])
+        it = fake_interaction(ALICE)
+        self.arun(review.apply_reconcile(it, "discard:cthulhu_mythos"))
+        review2 = it.response.calls[0][2]["view"]
+        it = fake_interaction(ALICE)
+        self.arun(review2.apply_reconcile(it, "convert:listen"))
+        kw = it.response.calls[0][2]
+        self.assertFalse(kw["view"].finish_btn.disabled)
+        self.assertFalse(any(f.name == "Hand-entered values to reconcile" for f in kw["embed"].fields))
+        # /check now uses the converted value
+        _, _, ck = self.check(ALICE, "listen")
+        self.assertIn("`60`", ck["embed"].description)
+
+    def test_formula_choice_select(self):
+        from apps.discord_bot.creation_views import AllocationStepView, render_step
+        from apps.discord_bot.views import Ctx
+        inv_id = self._draft_with_characteristics()
+        it = fake_interaction(ALICE)
+        self.arun(self.sub("occupation").callback(self.cog, it, "private_investigator", str(inv_id)))
+        ctx = Ctx(self.db, ALICE, GUILD)
+        embed, view = self.build(lambda: render_step(ctx, inv_id, "allocation"))
+        self.assertIsInstance(view, AllocationStepView)
+        labels = {o.value: o.label for o in view.stat_select.options}
+        self.assertEqual(labels["DEX"], "DEX×2 = 140 (suggested)")
+        self.assertEqual(labels["STR"], "STR×2 = 120")
+        it = fake_interaction(ALICE)
+        self.arun(view.choose_stat(it, "STR"))
+        kw = it.response.calls[0][2]
+        self.assertIn("STR", kw["content"])
+        self.assertIn("270", kw["embed"].description)      # EDU 75×2 + STR 60×2
 
 
 if __name__ == "__main__":

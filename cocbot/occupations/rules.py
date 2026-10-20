@@ -28,8 +28,25 @@ class Budget:
     explanation: str
 
 
-def occupation_budget(occ: Occupation, chars: Mapping[str, Optional[int]]) -> Budget:
-    """Sum of formula terms; a term with alternatives uses the highest value."""
+def alternative_stats(occ: Occupation) -> Tuple[str, ...]:
+    """Characteristics the player may choose between (e.g. STR or DEX), or () if none."""
+    for term in occ.skill_points:
+        if len(term["stats"]) > 1:
+            return tuple(term["stats"])
+    return ()
+
+
+def suggested_stat(occ: Occupation, chars: Mapping[str, Optional[int]]) -> Optional[str]:
+    """The alternative giving the most points (the default suggestion)."""
+    alts = [(s, chars.get(s)) for s in alternative_stats(occ)]
+    known = [(s, v) for s, v in alts if v is not None]
+    return max(known, key=lambda kv: kv[1])[0] if known and len(known) == len(alts) else None
+
+
+def occupation_budget(occ: Occupation, chars: Mapping[str, Optional[int]],
+                      chosen_stat: Optional[str] = None) -> Budget:
+    """Sum of formula terms. For a term with alternatives the player's choice is
+    used; without a (valid) choice the higher value is suggested and used."""
     total, parts = 0, []
     for term in occ.skill_points:
         values = {s: chars.get(s) for s in term["stats"]}
@@ -37,12 +54,14 @@ def occupation_budget(occ: Occupation, chars: Mapping[str, Optional[int]]) -> Bu
         if len(known) < len(values):
             missing = [s for s, v in values.items() if v is None]
             return Budget(None, f"needs {', '.join(missing)}")
-        stat, value = max(known.items(), key=lambda kv: kv[1])
+        if len(values) > 1 and chosen_stat in values:
+            stat, value = chosen_stat, known[chosen_stat]
+            note = f" (chosen from {'/'.join(term['stats'])})"
+        else:
+            stat, value = max(known.items(), key=lambda kv: kv[1])
+            note = f" (suggested: higher of {'/'.join(term['stats'])})" if len(values) > 1 else ""
         total += value * term["mult"]
-        label = f"{stat}×{term['mult']}"
-        if len(values) > 1:
-            label += f" (higher of {'/'.join(term['stats'])})"
-        parts.append(f"{label} = {value * term['mult']}")
+        parts.append(f"{stat}×{term['mult']}{note} = {value * term['mult']}")
     return Budget(total, " + ".join(parts))
 
 
@@ -137,6 +156,11 @@ class CreationCheck:
     def ok(self) -> bool:
         return not self.errors
 
+    @property
+    def unspent(self) -> Tuple[int, int]:
+        """(occupation, interest) points left over; finishing with any requires confirmation."""
+        return max(0, self.occupation_remaining or 0), max(0, self.interest_remaining or 0)
+
 
 def check_creation(
     occ: Occupation,
@@ -144,15 +168,22 @@ def check_creation(
     picks: Mapping[Tuple[int, int], str],
     points: Mapping[str, Tuple[int, int]],          # skill -> (occupation, interest)
     bases: Mapping[str, Optional[int]],             # skill -> base (derived bases resolved)
-    manual_skills: Sequence[str] = (),
+    manual_values: Mapping[str, int] = None,  # type: ignore[assignment]
     skill_names: Optional[Mapping[str, str]] = None,
+    chosen_stat: Optional[str] = None,
 ) -> CreationCheck:
+    """Validate a whole occupation-based creation.
+
+    Every trained value must be explained by base + points: a value entered by
+    hand (``manual_values``) that differs from the skill's base is an error
+    until the player reconciles it (convert it into points, or discard it).
+    """
     names = skill_names or {}
 
     def nm(k: str) -> str:
         return names.get(k, k)
 
-    ob, ib = occupation_budget(occ, chars), interest_budget(chars)
+    ob, ib = occupation_budget(occ, chars, chosen_stat), interest_budget(chars)
     occ_skills = occupation_skills(occ, picks)
     missing = len(pick_positions(occ)) - sum(1 for pos in pick_positions(occ) if picks.get(pos))
 
@@ -189,10 +220,13 @@ def check_creation(
         c.warnings.append(f"{c.occupation_remaining} occupation points unspent (they are not carried over).")
     if (c.interest_remaining or 0) > 0:
         c.warnings.append(f"{c.interest_remaining} personal interest points unspent.")
-    paid = {r.key for r in rows if r.occupation_points or r.interest_points}
-    unpaid = [k for k in manual_skills if k not in paid]
-    if unpaid:
-        c.warnings.append("Entered by hand, not paid for with skill points: " + ", ".join(nm(k) for k in unpaid) + ".")
+    for key, value in sorted((manual_values or {}).items()):
+        base = bases.get(key)
+        if key == CTHULHU_MYTHOS and value:
+            c.errors.append(f"Cthulhu Mythos is {value} (entered by hand); it must be 0 at creation. Discard it.")
+        elif base is None or value != base:
+            c.errors.append(f"{nm(key)} is {value}, entered by hand rather than paid for with points "
+                            f"(base {base if base is not None else '?'}). Reconcile it: convert to points or discard.")
     if occ.issues:
         c.warnings.append("Occupation data needs Keeper review: " + "; ".join(occ.issues[:3]))
     c.warnings.append("Age adjustments (rulebook ch. 3) are not applied automatically; check them with your Keeper.")

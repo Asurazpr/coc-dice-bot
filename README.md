@@ -250,9 +250,20 @@ spending, Sanity rolls, campaigns with Keeper permissions. Details in
 
 ---
 
+## Licensing status — not cleared for public release
+
+This is a personal development project. **No licensing clearance has been obtained** for the bot or
+its game data. Chaosium's Fan Material Policy excludes software and apps, so it does not cover this
+bot, and the redistribution rights of the community spreadsheet the occupation data comes from are
+unknown. These are open release blockers; see [docs/OCCUPATIONS.md §2](docs/OCCUPATIONS.md). The
+occupation catalogue is a single replaceable file (`COC_OCCUPATIONS_PATH`, or `none` to disable it).
+
+Call of Cthulhu is a trademark of Chaosium Inc. This project is not affiliated with or endorsed by Chaosium.
+
 ## License
 
-MIT License
+MIT License (applies to this project's own code only; it grants no rights to third-party game
+content or data).
 
 ---
 

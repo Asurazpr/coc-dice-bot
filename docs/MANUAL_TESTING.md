@@ -61,9 +61,13 @@ Use a fresh draft with characteristics entered (account A).
 - [ ] Occupation points on a non-occupation skill (via **Other skill** is interest only; `/character allocate skill:Climb occupation_points:10`) are refused.
 - [ ] A skill above 99, Cthulhu Mythos, overspending either budget, or Credit Rating above the range are refused with a clear reason; valid entries in the same form are still saved.
 - [ ] `/check accounting` uses base + points immediately.
+- [ ] **Private Investigator** (EDU×2 + DEX or STR ×2): the Points step offers a characteristic choice with the higher one marked *suggested*; picking the other changes the budget, and the choice is still there after reopening.
 
 ### Review and resume
 - [ ] Review lists blocking problems (missing choices, Credit Rating out of range, overspending) and notes (unspent points, unverified data, age adjustments not automated). **Finish creation** stays disabled until there are no problems.
+- [ ] With unspent points the button reads **Finish (N points unspent)…**; the first click asks for confirmation, the second finishes.
+- [ ] During occupation creation, `/character skill` is refused and the editor's **Skill** button is disabled; **Review & finish** opens the Review step.
+- [ ] On a draft with hand-entered skills from before choosing an occupation (e.g. Cthulhu Mythos 30, Listen 60): Review blocks finishing and lists them; **Discard** Cthulhu Mythos (convert is refused), **Convert** Listen (points are spent, value kept); then finishing works.
 - [ ] Close the panel mid-way, run `/character edit` later (or restart the bot): **Occupation & skills** resumes at the right step with everything kept.
 - [ ] Picking a different occupation after spending points asks for confirmation; interest points survive the change.
 - [ ] After finishing: badge "Created (occupation rules checked)", creation steps disappear, `/character skill` edits work again.

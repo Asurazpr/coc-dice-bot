@@ -25,8 +25,10 @@ from cocbot.mechanics.derived import eval_derived_formula
 from cocbot.occupations import catalogue
 from cocbot.occupations.catalogue import CatalogueError, Occupation
 from cocbot.occupations.rules import (
+    CTHULHU_MYTHOS,
     CreationCheck,
     allocation_error,
+    alternative_stats,
     check_creation,
     interest_budget,
     occupation_budget,
@@ -69,6 +71,15 @@ def load_points(conn: sqlite3.Connection, investigator_id: int) -> Dict[str, Tup
         "WHERE investigator_id=?", (investigator_id,),
     ).fetchall()
     return {r[0]: (int(r[1]), int(r[2])) for r in rows}
+
+
+def load_manual_values(conn: sqlite3.Connection, investigator_id: int) -> Dict[str, int]:
+    """Skill values typed in by hand (Milestone 1 style), not produced by points."""
+    rows = conn.execute(
+        "SELECT skill_key, value FROM investigator_skills WHERE investigator_id=? AND source='manual' "
+        "AND specialization=''", (investigator_id,),
+    ).fetchall()
+    return {r[0]: int(r[1]) for r in rows}
 
 
 def sync_allocated_skills(conn: sqlite3.Connection, inv: Investigator) -> None:
@@ -152,7 +163,8 @@ class CreationService:
                               (inv.id,))
             self.conn.execute("DELETE FROM investigator_skill_points WHERE investigator_id=? "
                               "AND occupation_points=0 AND interest_points=0", (inv.id,))
-            repo.update(self.conn, inv.id, {"occupation_id": occ.id, "occupation": occ.name_en[:100]})
+            repo.update(self.conn, inv.id, {"occupation_id": occ.id, "occupation": occ.name_en[:100],
+                                            "skill_point_stat": None})
             return self._commit_and_reload(actor_id, inv, "choices" if pick_positions(occ) else "allocation")
         except sqlite3.Error:
             self.conn.rollback()
@@ -239,13 +251,21 @@ class CreationService:
         base = bases.get(sd.key)
         if base is None:
             raise InvalidState(f"{sd.display_name}'s base needs characteristics that are not entered yet.")
+        manual = load_manual_values(self.conn, inv.id).get(sd.key)
+        if manual is not None and manual != base:
+            raise InvalidState(f"{sd.display_name} has a hand-entered value ({manual}). Reconcile it first "
+                               f"(convert to points or discard) on the Review step.")
         spent = (sum(o for k, (o, _) in current.items() if k != sd.key),
                  sum(i for k, (_, i) in current.items() if k != sd.key))
-        budgets = (occupation_budget(occ, inv.characteristics).total, interest_budget(inv.characteristics).total)
+        budgets = (occupation_budget(occ, inv.characteristics, inv.skill_point_stat).total,
+                   interest_budget(inv.characteristics).total)
         err = allocation_error(occ, load_picks(self.conn, inv.id), sd.key, new_o, new_i, int(base), budgets, spent)
         if err:
             raise ValidationError(err)
         try:
+            if manual is not None:  # equal to base: carries no information
+                self.conn.execute("DELETE FROM investigator_skills WHERE investigator_id=? AND skill_key=? "
+                                  "AND source='manual' AND specialization=''", (inv.id, sd.key))
             if new_o == 0 and new_i == 0:
                 self.conn.execute("DELETE FROM investigator_skill_points WHERE investigator_id=? AND skill_key=?",
                                   (inv.id, sd.key))
@@ -271,14 +291,12 @@ class CreationService:
 
     def check_for(self, inv: Investigator) -> CreationCheck:
         occ = self._require_occupation(inv)
-        manual = [r[0] for r in self.conn.execute(
-            "SELECT skill_key FROM investigator_skills WHERE investigator_id=? AND source='manual' "
-            "AND specialization=''", (inv.id,))]
+        manual = load_manual_values(self.conn, inv.id)
         points = load_points(self.conn, inv.id)
         names = skill_display_names(self.conn, list(points) + occupation_skills(occ, load_picks(self.conn, inv.id))
-                                    + manual)
+                                    + list(manual))
         return check_creation(occ, inv.characteristics, load_picks(self.conn, inv.id), points,
-                              skill_bases(self.conn, inv), manual, names)
+                              skill_bases(self.conn, inv), manual, names, inv.skill_point_stat)
 
     def next_step(self, inv: Investigator) -> str:
         if inv.missing_characteristics:
@@ -288,10 +306,94 @@ class CreationService:
             return "occupation"
         if len(load_picks(self.conn, inv.id)) < len(pick_positions(occ)):
             return "choices"
+        if self.unreconciled(inv):
+            return "review"
         c = self.check_for(inv)
-        if (c.occupation_remaining or 0) > 0 or (c.interest_remaining or 0) > 0 or not c.ok:
+        if any(c.unspent) or not c.ok:
             return "allocation"
         return "review"
+
+    # --- formula choice ------------------------------------------------------------
+    def set_formula_stat(self, actor_id: object, investigator_id: int, stat: Optional[str]) -> Investigator:
+        """Choose which characteristic an "X or Y" formula term uses (None = use the suggestion)."""
+        inv = self._draft(actor_id, investigator_id)
+        occ = self._require_occupation(inv)
+        alts = alternative_stats(occ)
+        if stat is not None:
+            stat = str(stat).upper()
+            if stat not in alts:
+                raise ValidationError(f"{occ.name_en} lets you choose from {', '.join(alts) or 'nothing'}.")
+        repo.update(self.conn, inv.id, {"skill_point_stat": stat})
+        self.conn.commit()
+        return self.investigators.get(actor_id, inv.id)
+
+    # --- reconciling hand-entered values ------------------------------------------------
+    def unreconciled(self, inv: Investigator) -> Dict[str, int]:
+        """Hand-entered values that differ from base and therefore block validation."""
+        bases = skill_bases(self.conn, inv)
+        return {k: v for k, v in load_manual_values(self.conn, inv.id).items() if bases.get(k) != v}
+
+    def reconcile(self, actor_id: object, investigator_id: int, skill: str, action: str) -> Investigator:
+        """Resolve one hand-entered value: 'discard' it (back to base) or 'convert' it into points.
+
+        Converting uses occupation points first when the skill is an occupation
+        skill, then personal interest points, and only succeeds if the result
+        satisfies the allocation rules. Nothing is removed without this explicit action.
+        """
+        inv = self._draft(actor_id, investigator_id)
+        occ = self._require_occupation(inv)
+        sd = resolve_skill(skill, conn=self.conn)
+        if sd is None:
+            raise ValidationError(f"Unknown skill {skill!r}.")
+        manual = load_manual_values(self.conn, inv.id)
+        if sd.key not in manual:
+            raise NotFound(f"{sd.display_name} has no hand-entered value.")
+        value = manual[sd.key]
+        if action == "discard":
+            self.conn.execute("DELETE FROM investigator_skills WHERE investigator_id=? AND skill_key=? "
+                              "AND source='manual' AND specialization=''", (inv.id, sd.key))
+            return self._commit_and_reload(actor_id, inv)
+        if action != "convert":
+            raise ValidationError("Action must be 'convert' or 'discard'.")
+
+        base = skill_bases(self.conn, inv).get(sd.key)
+        if base is None:
+            raise InvalidState(f"{sd.display_name}'s base needs characteristics that are not entered yet.")
+        if sd.key == CTHULHU_MYTHOS:
+            raise ValidationError("Cthulhu Mythos cannot be bought with points at creation; discard it.")
+        needed = value - int(base)
+        if needed < 0:
+            raise ValidationError(f"{sd.display_name} ({value}) is below its base ({base}); discard it instead.")
+        points = load_points(self.conn, inv.id)
+        cur_o, cur_i = points.get(sd.key, (0, 0))
+        spent_o = sum(o for k, (o, _) in points.items() if k != sd.key)
+        spent_i = sum(i for k, (_, i) in points.items() if k != sd.key)
+        ob = occupation_budget(occ, inv.characteristics, inv.skill_point_stat).total
+        ib = interest_budget(inv.characteristics).total
+        picks = load_picks(self.conn, inv.id)
+        use_o = 0
+        if sd.key in occupation_skills(occ, picks) and ob is not None:
+            use_o = max(0, min(needed, ob - spent_o))
+        use_i = needed - use_o
+        err = allocation_error(occ, picks, sd.key, use_o, use_i, int(base), (ob, ib), (spent_o, spent_i))
+        if err:
+            raise ValidationError(f"Cannot convert {sd.display_name} {value} into points: {err}")
+        try:
+            self.conn.execute("DELETE FROM investigator_skills WHERE investigator_id=? AND skill_key=? "
+                              "AND source='manual' AND specialization=''", (inv.id, sd.key))
+            self.conn.execute(
+                """
+                INSERT INTO investigator_skill_points (investigator_id, skill_key, occupation_points, interest_points)
+                VALUES (?, ?, ?, ?)
+                ON CONFLICT(investigator_id, skill_key)
+                DO UPDATE SET occupation_points=excluded.occupation_points, interest_points=excluded.interest_points
+                """,
+                (inv.id, sd.key, use_o, use_i),
+            )
+            return self._commit_and_reload(actor_id, inv)
+        except sqlite3.Error:
+            self.conn.rollback()
+            raise
 
 
 __all__ = ["CharacterError", "CreationService", "STEPS", "load_picks", "load_points", "skill_bases",

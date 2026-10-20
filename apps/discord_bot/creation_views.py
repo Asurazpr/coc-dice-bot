@@ -21,10 +21,10 @@ from apps.discord_bot.views import (
     reply_error,
 )
 from cocbot.characters.models import STATUS_DRAFT, Investigator
-from cocbot.characters.service import CharacterError, InvalidState, InvestigatorService
+from cocbot.characters.service import CharacterError, InvalidState, InvestigatorService, UnspentPoints
 from cocbot.db.connection import get_conn
 from cocbot.occupations import catalogue
-from cocbot.occupations.rules import pick_positions
+from cocbot.occupations.rules import alternative_stats, pick_positions, suggested_stat
 from cocbot.occupations.service import CreationService, load_picks
 from cocbot.ui.creation_text import (
     STEP_TITLES,
@@ -347,15 +347,38 @@ def _allocation_step(ctx: Ctx, svc: CreationService, inv: Investigator, names: d
                                    "**Other skill** adds personal interest points to any skill. "
                                    "Max 99 per skill; Credit Rating must end in the occupation's range."),
                 inline=False)
+    occ = svc.occupation_of(inv)
+    alts = alternative_stats(occ)
+    stat_options = []
+    if alts:
+        suggested = suggested_stat(occ, inv.characteristics)
+        chosen = inv.skill_point_stat if inv.skill_point_stat in alts else None
+        mult = next(t["mult"] for t in occ.skill_points if len(t["stats"]) > 1)
+        for s in alts:
+            v = inv.characteristics.get(s)
+            label = f"{s}×{mult} = {v * mult if v is not None else '?'}" + (" (suggested)" if s == suggested else "")
+            stat_options.append((s, label, s == (chosen or suggested)))
+        e.add_field(name="Skill-point formula", value=(
+            f"{occ.formula_text()}: you choose which characteristic counts. "
+            + (f"Chosen: **{chosen}**." if chosen else f"Using the suggestion **{suggested}** until you choose.")),
+            inline=False)
     return e, AllocationStepView(ctx, inv.id, [r.key for r in pages[page]], page, len(pages), names,
-                                 {r.key: (r.base, r.occupation_points, r.interest_points) for r in check.rows})
+                                 {r.key: (r.base, r.occupation_points, r.interest_points) for r in check.rows},
+                                 stat_options)
 
 
 class AllocationStepView(StepView):
     def __init__(self, ctx: Ctx, investigator_id: int, keys: List[str], page: int, pages: int, names: dict,
-                 values: dict):
+                 values: dict, stat_options: Optional[list] = None):
         super().__init__(ctx, investigator_id, "allocation")
         self.keys, self.page, self.names, self.values = keys, page, names, values
+        if stat_options:
+            sel = discord.ui.Select(placeholder="Characteristic for skill points", row=2, options=[
+                discord.SelectOption(label=label[:100], value=stat, default=default)
+                for stat, label, default in stat_options])
+            sel.callback = self._on_stat  # type: ignore[assignment]
+            self.stat_select = sel
+            self.add_item(sel)
         for label, budget, style in (("Occupation points", "occupation", discord.ButtonStyle.primary),
                                      ("Interest points", "interest", discord.ButtonStyle.secondary)):
             b = discord.ui.Button(label=label, row=0, style=style, disabled=not keys)
@@ -374,6 +397,18 @@ class AllocationStepView(StepView):
         async def cb(interaction: discord.Interaction) -> None:
             await self.show(interaction, "allocation", page=self.page + delta)
         return cb
+
+    async def _on_stat(self, interaction: discord.Interaction) -> None:
+        await self.choose_stat(interaction, self.stat_select.values[0])
+
+    async def choose_stat(self, interaction: discord.Interaction, stat: str) -> None:
+        try:
+            with creation(self.ctx) as (_, svc):
+                svc.set_formula_stat(self.ctx.owner_id, self.investigator_id, stat)
+        except CharacterError as e:
+            await reply_error(interaction, e)
+            return
+        await self.show(interaction, "allocation", content=f"Skill points now use **{stat}**.", page=self.page)
 
     def _open(self, budget: str):
         async def cb(interaction: discord.Interaction) -> None:
@@ -449,30 +484,88 @@ class OtherSkillModal(discord.ui.Modal):
 
 # --- step: review -------------------------------------------------------------------------
 
-def _review_step(ctx: Ctx, svc: CreationService, inv: Investigator, names: dict) -> Tuple[discord.Embed,
-                                                                                          discord.ui.View]:
+def _review_step(ctx: Ctx, svc: CreationService, inv: Investigator, names: dict,
+                 confirm: bool = False) -> Tuple[discord.Embed, discord.ui.View]:
     occ = svc.occupation_of(inv)
     check = svc.check_for(inv)
+    manual = svc.unreconciled(inv)
+    bases = {k: v for k, v in check_bases(svc, inv, manual).items()}
     e = _base_embed(inv, "review")
     e.description = f"**{occupation_label(occ)}**\n{budget_line(check)}\n\n{review_text(check)}"
     rows = [r for r in check.rows if r.occupation_points or r.interest_points or r.is_occupation_skill]
     e.add_field(name="Skills", value=rows_table(rows[:15], names), inline=False)
-    return e, ReviewStepView(ctx, inv.id, check.ok)
+    if manual:
+        e.add_field(name="Hand-entered values to reconcile", value=(
+            "These were typed in before the occupation was chosen, so they are not paid for with points. "
+            "Choose for each: **convert** (spend points to reach the same value, if the budgets and rules "
+            "allow) or **discard** (back to the base value). Nothing changes until you choose.\n"
+            + "\n".join(f"• {names.get(k, k)}: {v} (base {bases.get(k, '?')})" for k, v in sorted(manual.items()))
+        )[:1024], inline=False)
+    unspent = check.unspent if check.ok else (0, 0)
+    return e, ReviewStepView(ctx, inv.id, check.ok, unspent, confirm,
+                             [(k, names.get(k, k), v) for k, v in sorted(manual.items())])
+
+
+def check_bases(svc: CreationService, inv: Investigator, keys) -> dict:
+    from cocbot.occupations.service import skill_bases
+    all_bases = skill_bases(svc.conn, inv)
+    return {k: all_bases.get(k) for k in keys}
 
 
 class ReviewStepView(StepView):
-    def __init__(self, ctx: Ctx, investigator_id: int, ok: bool):
+    def __init__(self, ctx: Ctx, investigator_id: int, ok: bool, unspent: Tuple[int, int] = (0, 0),
+                 confirm: bool = False, manual: Optional[list] = None):
         super().__init__(ctx, investigator_id, "review")
-        b = discord.ui.Button(label="Finish creation", emoji="✅", row=0, style=discord.ButtonStyle.success,
-                              disabled=not ok)
+        self.unspent, self.confirm = unspent, confirm
+        left = sum(unspent)
+        if not left:
+            label, style = "Finish creation", discord.ButtonStyle.success
+        elif not confirm:
+            label, style = f"Finish ({left} points unspent)…", discord.ButtonStyle.secondary
+        else:
+            label, style = f"Confirm: finish and lose {left} points", discord.ButtonStyle.danger
+        b = discord.ui.Button(label=label, emoji="✅", row=0, style=style, disabled=not ok)
         b.callback = self._finish  # type: ignore[assignment]
+        self.finish_btn = b
         self.add_item(b)
+        if manual:
+            sel = discord.ui.Select(placeholder="Reconcile a hand-entered value…", row=1, options=[
+                discord.SelectOption(label=f"{verb} {name} ({value})"[:100], value=f"{action}:{key}",
+                                     description=desc[:100])
+                for key, name, value in manual[:12]
+                for action, verb, desc in (("convert", "Convert", "Spend points to keep this value"),
+                                           ("discard", "Discard", "Remove it; the skill returns to its base"))])
+            sel.callback = self._on_reconcile  # type: ignore[assignment]
+            self.reconcile_select = sel
+            self.add_item(sel)
+
+    async def _on_reconcile(self, interaction: discord.Interaction) -> None:
+        await self.apply_reconcile(interaction, self.reconcile_select.values[0])
+
+    async def apply_reconcile(self, interaction: discord.Interaction, choice: str) -> None:
+        action, key = choice.split(":", 1)
+        try:
+            with creation(self.ctx) as (_, svc):
+                svc.reconcile(self.ctx.owner_id, self.investigator_id, key, action)
+        except CharacterError as e:
+            await reply_error(interaction, e)
+            return
+        done = "converted into points" if action == "convert" else "discarded (back to base)"
+        await self.show(interaction, "review", content=f"{key.replace('_', ' ').title()} {done}.")
 
     async def _finish(self, interaction: discord.Interaction) -> None:
         from apps.discord_bot.views import refresh_panel
+        if sum(self.unspent) and not self.confirm:
+            await self.show(interaction, "review", confirm=True,
+                            content="Unspent points are not carried over. Click again to finish anyway.")
+            return
         try:
             with creation(self.ctx) as (inv_svc, _):
-                inv = inv_svc.finalize(self.ctx.owner_id, self.investigator_id)
+                inv = inv_svc.finalize(self.ctx.owner_id, self.investigator_id, confirm_unspent=self.confirm)
+        except UnspentPoints:
+            await self.show(interaction, "review", confirm=True,
+                            content="Unspent points are not carried over. Click again to finish anyway.")
+            return
         except CharacterError as e:
             await reply_error(interaction, e)
             return

@@ -57,6 +57,16 @@ class InvalidState(CharacterError):
     pass
 
 
+class UnspentPoints(InvalidState):
+    """Finishing would forfeit points; the player must confirm explicitly."""
+
+    def __init__(self, occupation: int, interest: int) -> None:
+        self.occupation, self.interest = occupation, interest
+        parts = [f"{n} {label}" for n, label in ((occupation, "occupation"), (interest, "personal interest")) if n]
+        super().__init__(f"{' and '.join(parts)} points are unspent and will be lost. "
+                         f"Confirm to finish anyway.")
+
+
 # --- scopes ------------------------------------------------------------------
 
 def guild_scope(guild_id: Optional[object]) -> str:
@@ -264,11 +274,12 @@ class InvestigatorService:
         if sd is None:
             raise ValidationError(f"Unknown skill {skill!r}.")
         n = parse_int(value, sd.display_name, SKILL_MIN, SKILL_MAX)
-        if inv.status == STATUS_DRAFT and inv.occupation_id and self.conn.execute(
-            "SELECT 1 FROM investigator_skill_points WHERE investigator_id=? AND skill_key=?", (inv.id, sd.key)
-        ).fetchone():
-            raise InvalidState(f"{sd.display_name} gets its value from skill points during creation; "
-                               f"change its points in the allocation step instead.")
+        if inv.status == STATUS_DRAFT and inv.occupation_id:
+            # Occupation-based creation: every skill value must come from points, so
+            # hand-entered values would bypass the rules. Progression edits resume
+            # once the investigator is finished.
+            raise InvalidState(f"During occupation-based creation, skills are set with skill points "
+                               f"(Occupation & skills, or /character allocate). {sd.display_name} was not changed.")
         if sd.key == "cthulhu_mythos" and n is not None and n > 99:
             raise ValidationError("Cthulhu Mythos cannot exceed 99 (Maximum SAN would be negative).")
         if n is None:
@@ -309,7 +320,7 @@ class InvestigatorService:
             changes[column] = parse_int(raw, label, 0, maximum)
         return self._write(inv, changes)
 
-    def finalize(self, actor_id: object, investigator_id: int) -> Investigator:
+    def finalize(self, actor_id: object, investigator_id: int, confirm_unspent: bool = False) -> Investigator:
         inv = self.get(actor_id, investigator_id, include_archived=False)
         if inv.status == STATUS_READY:
             return inv
@@ -321,6 +332,9 @@ class InvestigatorService:
             check = CreationService(self.conn).check_for(inv)
             if not check.ok:
                 raise InvalidState("Not finished yet:\n- " + "\n- ".join(check.errors))
+            occ_left, int_left = check.unspent
+            if (occ_left or int_left) and not confirm_unspent:
+                raise UnspentPoints(occ_left, int_left)
             return self._write(inv, {"status": STATUS_READY, "creation_step": None, "creation_validated": 1})
         return self._write(inv, {"status": STATUS_READY, "creation_step": None})
 

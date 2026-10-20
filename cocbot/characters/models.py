@@ -36,6 +36,7 @@ class Investigator:
     status_before_archive: Optional[str] = None
     occupation_id: Optional[int] = None          # set when created with the occupation rules
     creation_validated: bool = False             # finished with occupation/skill-point validation
+    skill_point_stat: Optional[str] = None       # chosen alternative in the occupation formula
     created_at: str = ""
     updated_at: str = ""
     skills: Mapping[str, int] = field(default_factory=dict)  # trained values by skill key

@@ -238,7 +238,10 @@ class EditorView(OwnedView):
             self.remove_item(self.finish_button)
             self.remove_item(self.creation_button)
         elif inv.occupation_id:
-            self.finish_button.label = "Finish creation"
+            # Occupation-based creation: finishing happens on the Review step (with its
+            # reconcile and unspent-points confirmations); skills come from points only.
+            self.finish_button.label = "Review & finish"
+            self.skill_button.disabled = True
         if confirm == "roll":
             self.roll_button.label = "Confirm: overwrite with new rolls"
             self.roll_button.style = discord.ButtonStyle.danger
@@ -301,6 +304,10 @@ class EditorView(OwnedView):
 
     @discord.ui.button(label="Finish basic sheet", style=discord.ButtonStyle.success, emoji="✅", row=2)
     async def finish_button(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        if self.inv.occupation_id:
+            from apps.discord_bot.creation_views import open_creation
+            await open_creation(interaction, self.ctx, self.inv.id, "review")
+            return
         with service(self.ctx) as svc:
             inv = svc.finalize(self.ctx.owner_id, self.inv.id)
         if inv.creation_validated:
