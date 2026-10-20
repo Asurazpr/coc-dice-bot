@@ -22,3 +22,5 @@ data/*.db
 
 # Logs
 *.log
+*.sqlite3
+.pytest_cache/
