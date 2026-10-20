@@ -1,0 +1,10478 @@
+{
+ "schema": 1,
+ "source": {
+  "workbook": "COC七版人物卡v1.35.xlsx",
+  "sheet": "职业列表",
+  "english_names": "career.xlsx",
+  "note": "Structured data (names, Credit Rating ranges, skill-point formulas, occupation skill structure) extracted from a community character sheet for Call of Cthulhu 7th Edition. Call of Cthulhu is a trademark of Chaosium Inc. No rulebook text is reproduced. Entries are unverified against the rulebooks unless 'verified' is true."
+ },
+ "occupations": [
+  {
+   "key": "accountant",
+   "name_en": "Accountant",
+   "name_zh": "会计师",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 2,
+   "credit_rating": [
+    30,
+    70
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "accounting"
+     ],
+     "source_zh": "会计"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "law"
+     ],
+     "source_zh": "法律"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "library_use"
+     ],
+     "source_zh": "图书馆"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "persuade"
+     ],
+     "source_zh": "说服"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    },
+    {
+     "kind": "any",
+     "count": 2,
+     "options": [],
+     "source_zh": "任意其他两项个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "acrobat",
+   "name_en": "Acrobat",
+   "name_zh": "杂技演员",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 3,
+   "credit_rating": [
+    9,
+    20
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "climb"
+     ],
+     "source_zh": "攀爬"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "dodge"
+     ],
+     "source_zh": "闪避"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "jump"
+     ],
+     "source_zh": "跳跃"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "throw"
+     ],
+     "source_zh": "投掷"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "swim"
+     ],
+     "source_zh": "游泳"
+    },
+    {
+     "kind": "any",
+     "count": 2,
+     "options": [],
+     "source_zh": "任意两项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "actor_theater_actor",
+   "name_en": "Actor-Theater Actor",
+   "name_zh": "演员-戏剧演员",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 4,
+   "credit_rating": [
+    9,
+    40
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "APP"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "acting"
+     ],
+     "source_zh": "技艺（表演）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "disguise"
+     ],
+     "source_zh": "乔装"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "axe",
+      "brawl",
+      "chainsaw",
+      "flail",
+      "garrote",
+      "spear",
+      "sword",
+      "whip"
+     ],
+     "source_zh": "格斗"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "history"
+     ],
+     "source_zh": "历史"
+    },
+    {
+     "kind": "choose",
+     "count": 2,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "两项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "actor_film_actor",
+   "name_en": "Actor-Film Actor",
+   "name_zh": "演员-电影演员",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 5,
+   "credit_rating": [
+    20,
+    90
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "APP"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "acting"
+     ],
+     "source_zh": "技艺（表演）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "disguise"
+     ],
+     "source_zh": "乔装"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "drive_auto"
+     ],
+     "source_zh": "汽车驾驶"
+    },
+    {
+     "kind": "choose",
+     "count": 2,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "两项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "any",
+     "count": 2,
+     "options": [],
+     "source_zh": "任意两项其他个人或时代特长（如骑乘或格斗）"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "private_investigator",
+   "name_en": "Private Investigator",
+   "name_zh": "中介调查员",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 6,
+   "credit_rating": [
+    20,
+    45
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX",
+      "STR"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "brawl"
+     ],
+     "source_zh": "格斗（斗殴）"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "bow",
+      "flamethrower",
+      "handgun",
+      "heavy_weapon",
+      "machine_gun",
+      "rifle_shotgun",
+      "submachine_gun"
+     ],
+     "source_zh": "射击"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "law"
+     ],
+     "source_zh": "法律"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "library_use"
+     ],
+     "source_zh": "图书馆"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "stealth"
+     ],
+     "source_zh": "潜行"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "track"
+     ],
+     "source_zh": "追踪"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "psychiatrist_classic",
+   "name_en": "Psychiatrist (Classic)",
+   "name_zh": "精神病医生（古典）",
+   "era": "classic",
+   "rulebook_variant": false,
+   "source_row": 7,
+   "credit_rating": [
+    10,
+    60
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "law"
+     ],
+     "source_zh": "法律"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "medicine"
+     ],
+     "source_zh": "医学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_foreign"
+     ],
+     "source_zh": "外语"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychoanalysis"
+     ],
+     "source_zh": "精神分析"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "biology"
+     ],
+     "source_zh": "科学（生物学，化学）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "chemistry"
+     ],
+     "source_zh": "科学（生物学，化学）"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "animal_trainer",
+   "name_en": "Animal Trainer",
+   "name_zh": "动物训练师",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 8,
+   "credit_rating": [
+    10,
+    40
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "APP",
+      "POW"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "jump"
+     ],
+     "source_zh": "跳跃"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "natural_world"
+     ],
+     "source_zh": "自然"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "zoology"
+     ],
+     "source_zh": "科学（动物学）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "stealth"
+     ],
+     "source_zh": "潜行"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "track"
+     ],
+     "source_zh": "追踪"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "antiquarian",
+   "name_en": "Antiquarian",
+   "name_zh": "文物学家（原作向）",
+   "era": null,
+   "rulebook_variant": true,
+   "source_row": 9,
+   "credit_rating": [
+    30,
+    70
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "appraise"
+     ],
+     "source_zh": "估价"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "acting",
+      "calligraphy",
+      "cuisine",
+      "fine_art",
+      "forgery",
+      "literature",
+      "music_theory",
+      "photography"
+     ],
+     "source_zh": "技艺（任一）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "history"
+     ],
+     "source_zh": "历史"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "library_use"
+     ],
+     "source_zh": "图书馆"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_foreign"
+     ],
+     "source_zh": "外语"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "antique_dealer",
+   "name_en": "Antique Dealer",
+   "name_zh": "古董商",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 10,
+   "credit_rating": [
+    30,
+    50
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "accounting"
+     ],
+     "source_zh": "会计"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "appraise"
+     ],
+     "source_zh": "估价"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "drive_auto"
+     ],
+     "source_zh": "汽车驾驶"
+    },
+    {
+     "kind": "choose",
+     "count": 2,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "两项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "history"
+     ],
+     "source_zh": "历史"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "library_use"
+     ],
+     "source_zh": "图书馆"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "navigate"
+     ],
+     "source_zh": "导航"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "archaeologist",
+   "name_en": "Archaeologist",
+   "name_zh": "考古学家（原作向）",
+   "era": null,
+   "rulebook_variant": true,
+   "source_row": 11,
+   "credit_rating": [
+    10,
+    40
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "appraise"
+     ],
+     "source_zh": "估价"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "archaeology"
+     ],
+     "source_zh": "考古"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "history"
+     ],
+     "source_zh": "历史"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_foreign"
+     ],
+     "source_zh": "外语"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "library_use"
+     ],
+     "source_zh": "图书馆"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "mechanical_repair"
+     ],
+     "source_zh": "机械维修"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "navigate",
+      "astronomy",
+      "biology",
+      "botany",
+      "chemistry",
+      "cryptography",
+      "engineering",
+      "forensic",
+      "geology",
+      "mathematics",
+      "meteorology",
+      "pharmacy",
+      "physics",
+      "zoology"
+     ],
+     "source_zh": "导航或科学（任一：如化学、物理、地理等）"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "architect",
+   "name_en": "Architect",
+   "name_zh": "建筑师",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 12,
+   "credit_rating": [
+    30,
+    70
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "accounting"
+     ],
+     "source_zh": "会计"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "acting",
+      "calligraphy",
+      "cuisine",
+      "fine_art",
+      "forgery",
+      "literature",
+      "music_theory",
+      "photography"
+     ],
+     "source_zh": "技艺（技术制图）",
+     "note": "技艺（技术制图）: specialization '技术制图' not in the skill catalogue; any Art/Craft offered"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "law"
+     ],
+     "source_zh": "法律"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_own"
+     ],
+     "source_zh": "母语"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "computer_use",
+      "library_use"
+     ],
+     "source_zh": "计算机或图书馆"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "persuade"
+     ],
+     "source_zh": "说服"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "mathematics"
+     ],
+     "source_zh": "科学（数学）"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": [
+    "approximation: 技艺（技术制图）: specialization '技术制图' not in the skill catalogue; any Art/Craft offered"
+   ]
+  },
+  {
+   "key": "artist",
+   "name_en": "Artist",
+   "name_zh": "艺术家",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 13,
+   "credit_rating": [
+    9,
+    50
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX",
+      "POW"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "acting",
+      "calligraphy",
+      "cuisine",
+      "fine_art",
+      "forgery",
+      "literature",
+      "music_theory",
+      "photography"
+     ],
+     "source_zh": "技艺（任一）"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "history",
+      "natural_world"
+     ],
+     "source_zh": "历史或自然"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_foreign"
+     ],
+     "source_zh": "外语"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    },
+    {
+     "kind": "any",
+     "count": 2,
+     "options": [],
+     "source_zh": "任意两项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "asylum_nurse",
+   "name_en": "Asylum Nurse",
+   "name_zh": "精神病院护工",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 14,
+   "credit_rating": [
+    8,
+    20
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX",
+      "STR"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "dodge"
+     ],
+     "source_zh": "闪避"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "brawl"
+     ],
+     "source_zh": "格斗（斗殴）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "first_aid"
+     ],
+     "source_zh": "急救"
+    },
+    {
+     "kind": "choose",
+     "count": 2,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "两项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "stealth"
+     ],
+     "source_zh": "潜行"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "athlete",
+   "name_en": "Athlete",
+   "name_zh": "运动员",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 15,
+   "credit_rating": [
+    9,
+    70
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX",
+      "STR"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "climb"
+     ],
+     "source_zh": "攀爬"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "jump"
+     ],
+     "source_zh": "跳跃"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "brawl"
+     ],
+     "source_zh": "格斗（斗殴）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "ride"
+     ],
+     "source_zh": "骑乘"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "swim"
+     ],
+     "source_zh": "游泳"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "throw"
+     ],
+     "source_zh": "投掷"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "writer",
+   "name_en": "Writer",
+   "name_zh": "作家（原作向）",
+   "era": null,
+   "rulebook_variant": true,
+   "source_row": 16,
+   "credit_rating": [
+    9,
+    30
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "literature"
+     ],
+     "source_zh": "技艺（文学）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "history"
+     ],
+     "source_zh": "历史"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "library_use"
+     ],
+     "source_zh": "图书馆"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "natural_world",
+      "occult"
+     ],
+     "source_zh": "自然或神秘学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_foreign"
+     ],
+     "source_zh": "外语"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_own"
+     ],
+     "source_zh": "母语"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "bartender",
+   "name_en": "Bartender",
+   "name_zh": "酒保",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 17,
+   "credit_rating": [
+    8,
+    25
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "APP"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "accounting"
+     ],
+     "source_zh": "会计"
+    },
+    {
+     "kind": "choose",
+     "count": 2,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "两项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "brawl"
+     ],
+     "source_zh": "格斗（斗殴）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "hunter",
+   "name_en": "Hunter",
+   "name_zh": "猎人",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 18,
+   "credit_rating": [
+    20,
+    50
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX",
+      "STR"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "bow",
+      "flamethrower",
+      "handgun",
+      "heavy_weapon",
+      "machine_gun",
+      "rifle_shotgun",
+      "submachine_gun"
+     ],
+     "source_zh": "射击"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "listen",
+      "spot_hidden"
+     ],
+     "source_zh": "聆听或侦查"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "natural_world"
+     ],
+     "source_zh": "自然"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "navigate"
+     ],
+     "source_zh": "导航"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "language_foreign",
+      "survival"
+     ],
+     "source_zh": "外语或生存（任一）"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "biology",
+      "botany"
+     ],
+     "source_zh": "科学（生物学或植物学）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "stealth"
+     ],
+     "source_zh": "潜行"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "track"
+     ],
+     "source_zh": "追踪"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "bookseller",
+   "name_en": "Bookseller",
+   "name_zh": "书商",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 19,
+   "credit_rating": [
+    20,
+    40
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "accounting"
+     ],
+     "source_zh": "会计"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "appraise"
+     ],
+     "source_zh": "估价"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "drive_auto"
+     ],
+     "source_zh": "汽车驾驶"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "history"
+     ],
+     "source_zh": "历史"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "library_use"
+     ],
+     "source_zh": "图书馆"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_own"
+     ],
+     "source_zh": "母语"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_foreign"
+     ],
+     "source_zh": "外语"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "bounty_hunter",
+   "name_en": "Bounty Hunter",
+   "name_zh": "赏金猎人",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 20,
+   "credit_rating": [
+    9,
+    30
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX",
+      "STR"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "drive_auto"
+     ],
+     "source_zh": "汽车驾驶"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "electronics",
+      "electrical_repair"
+     ],
+     "source_zh": "电子学或电工维修"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "axe",
+      "brawl",
+      "chainsaw",
+      "flail",
+      "garrote",
+      "spear",
+      "sword",
+      "whip",
+      "bow",
+      "flamethrower",
+      "handgun",
+      "heavy_weapon",
+      "machine_gun",
+      "rifle_shotgun",
+      "submachine_gun"
+     ],
+     "source_zh": "格斗或射击"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "law"
+     ],
+     "source_zh": "法律"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "track"
+     ],
+     "source_zh": "追踪"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "stealth"
+     ],
+     "source_zh": "潜行"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "boxer_wrestler",
+   "name_en": "Boxer/Wrestler",
+   "name_zh": "拳击手、摔跤手",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 21,
+   "credit_rating": [
+    9,
+    60
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "STR"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "dodge"
+     ],
+     "source_zh": "闪避"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "brawl"
+     ],
+     "source_zh": "格斗（斗殴）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "intimidate"
+     ],
+     "source_zh": "恐吓"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "jump"
+     ],
+     "source_zh": "跳跃"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    },
+    {
+     "kind": "any",
+     "count": 2,
+     "options": [],
+     "source_zh": "任意两项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "butler_valet_maid",
+   "name_en": "Butler/Valet/Maid",
+   "name_zh": "管家、男仆、女仆",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 22,
+   "credit_rating": [
+    9,
+    40
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "accounting",
+      "appraise"
+     ],
+     "source_zh": "会计或估价"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "acting",
+      "calligraphy",
+      "cuisine",
+      "fine_art",
+      "forgery",
+      "literature",
+      "music_theory",
+      "photography"
+     ],
+     "source_zh": "技艺（任一：如烹饪、裁缝、理发）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "first_aid"
+     ],
+     "source_zh": "急救"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_foreign"
+     ],
+     "source_zh": "外语"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "clergy",
+   "name_en": "Clergy",
+   "name_zh": "神职人员",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 23,
+   "credit_rating": [
+    9,
+    60
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "accounting"
+     ],
+     "source_zh": "会计"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "history"
+     ],
+     "source_zh": "历史"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "library_use"
+     ],
+     "source_zh": "图书馆"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_foreign"
+     ],
+     "source_zh": "外语"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他技能"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "programmer_electronic_engineer",
+   "name_en": "Programmer/Electronic Engineer",
+   "name_zh": "程序员、电子工程师",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 24,
+   "credit_rating": [
+    10,
+    70
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "computer_use"
+     ],
+     "source_zh": "计算机"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "electrical_repair"
+     ],
+     "source_zh": "电工维修"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "electronics"
+     ],
+     "source_zh": "电子学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "library_use"
+     ],
+     "source_zh": "图书馆"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "mathematics"
+     ],
+     "source_zh": "科学（数学）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    },
+    {
+     "kind": "any",
+     "count": 2,
+     "options": [],
+     "source_zh": "任意两项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "hacker",
+   "name_en": "Hacker",
+   "name_zh": "黑客/骇客",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 25,
+   "credit_rating": [
+    10,
+    70
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "computer_use"
+     ],
+     "source_zh": "计算机"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "electrical_repair"
+     ],
+     "source_zh": "电工维修"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "electronics"
+     ],
+     "source_zh": "电子学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "library_use"
+     ],
+     "source_zh": "图书馆"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "any",
+     "count": 2,
+     "options": [],
+     "source_zh": "任意两项其他技能"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "cowboy",
+   "name_en": "Cowboy",
+   "name_zh": "牛仔",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 26,
+   "credit_rating": [
+    9,
+    20
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX",
+      "STR"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "dodge"
+     ],
+     "source_zh": "闪避"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "axe",
+      "brawl",
+      "chainsaw",
+      "flail",
+      "garrote",
+      "spear",
+      "sword",
+      "whip",
+      "bow",
+      "flamethrower",
+      "handgun",
+      "heavy_weapon",
+      "machine_gun",
+      "rifle_shotgun",
+      "submachine_gun"
+     ],
+     "source_zh": "格斗或射击"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "first_aid",
+      "natural_world"
+     ],
+     "source_zh": "急救或自然"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "jump"
+     ],
+     "source_zh": "跳跃"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "ride"
+     ],
+     "source_zh": "骑乘"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "survival"
+     ],
+     "source_zh": "生存（任一）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "throw"
+     ],
+     "source_zh": "投掷"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "track"
+     ],
+     "source_zh": "追踪"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "artisan",
+   "name_en": "Artisan",
+   "name_zh": "工匠",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 27,
+   "credit_rating": [
+    10,
+    40
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "accounting"
+     ],
+     "source_zh": "会计"
+    },
+    {
+     "kind": "choose",
+     "count": 2,
+     "options": [
+      "acting",
+      "calligraphy",
+      "cuisine",
+      "fine_art",
+      "forgery",
+      "literature",
+      "music_theory",
+      "photography"
+     ],
+     "source_zh": "技艺（任二）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "mechanical_repair"
+     ],
+     "source_zh": "机械维修"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "natural_world"
+     ],
+     "source_zh": "自然"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    },
+    {
+     "kind": "any",
+     "count": 2,
+     "options": [],
+     "source_zh": "任意两项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "criminal_assassin",
+   "name_en": "Criminal-Assassin",
+   "name_zh": "罪犯-刺客",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 28,
+   "credit_rating": [
+    30,
+    60
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX",
+      "STR"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "disguise"
+     ],
+     "source_zh": "乔装"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "electrical_repair"
+     ],
+     "source_zh": "电工维修"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "axe",
+      "brawl",
+      "chainsaw",
+      "flail",
+      "garrote",
+      "spear",
+      "sword",
+      "whip"
+     ],
+     "source_zh": "格斗"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "bow",
+      "flamethrower",
+      "handgun",
+      "heavy_weapon",
+      "machine_gun",
+      "rifle_shotgun",
+      "submachine_gun"
+     ],
+     "source_zh": "射击"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "locksmith"
+     ],
+     "source_zh": "锁匠"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "mechanical_repair"
+     ],
+     "source_zh": "机械维修"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "stealth"
+     ],
+     "source_zh": "潜行"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "criminals_bank_robbers",
+   "name_en": "Criminals-Bank Robbers",
+   "name_zh": "罪犯-银行劫匪",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 29,
+   "credit_rating": [
+    5,
+    75
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX",
+      "STR"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "drive_auto"
+     ],
+     "source_zh": "汽车驾驶"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "electrical_repair",
+      "mechanical_repair"
+     ],
+     "source_zh": "电工维修或机械维修"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "axe",
+      "brawl",
+      "chainsaw",
+      "flail",
+      "garrote",
+      "spear",
+      "sword",
+      "whip"
+     ],
+     "source_zh": "格斗"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "bow",
+      "flamethrower",
+      "handgun",
+      "heavy_weapon",
+      "machine_gun",
+      "rifle_shotgun",
+      "submachine_gun"
+     ],
+     "source_zh": "射击"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "intimidate"
+     ],
+     "source_zh": "恐吓"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "locksmith"
+     ],
+     "source_zh": "锁匠"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "operate_heavy_machinery"
+     ],
+     "source_zh": "操作重型机械"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "criminals_thugs",
+   "name_en": "Criminals-Thugs",
+   "name_zh": "罪犯-打手、暴徒",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 30,
+   "credit_rating": [
+    5,
+    30
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "STR"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "drive_auto"
+     ],
+     "source_zh": "汽车驾驶"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "axe",
+      "brawl",
+      "chainsaw",
+      "flail",
+      "garrote",
+      "spear",
+      "sword",
+      "whip"
+     ],
+     "source_zh": "格斗"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "bow",
+      "flamethrower",
+      "handgun",
+      "heavy_weapon",
+      "machine_gun",
+      "rifle_shotgun",
+      "submachine_gun"
+     ],
+     "source_zh": "射击"
+    },
+    {
+     "kind": "choose",
+     "count": 2,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "两项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "stealth"
+     ],
+     "source_zh": "潜行"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "criminal_thief",
+   "name_en": "Criminal-Thief",
+   "name_zh": "罪犯-窃贼",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 31,
+   "credit_rating": [
+    5,
+    40
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "appraise"
+     ],
+     "source_zh": "估价"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "climb"
+     ],
+     "source_zh": "攀爬"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "electrical_repair",
+      "mechanical_repair"
+     ],
+     "source_zh": "电工维修或机械维修"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "locksmith"
+     ],
+     "source_zh": "锁匠"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "sleight_of_hand"
+     ],
+     "source_zh": "妙手"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "stealth"
+     ],
+     "source_zh": "潜行"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "criminal_fraudster",
+   "name_en": "Criminal-Fraudster",
+   "name_zh": "罪犯-欺诈师",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 32,
+   "credit_rating": [
+    10,
+    65
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "APP"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "appraise"
+     ],
+     "source_zh": "估价"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "acting"
+     ],
+     "source_zh": "技艺（表演）"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "law",
+      "language_foreign"
+     ],
+     "source_zh": "法律或外语"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "choose",
+     "count": 2,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "两项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "sleight_of_hand"
+     ],
+     "source_zh": "妙手"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "criminals_lone_criminals",
+   "name_en": "Criminals - Lone Criminals",
+   "name_zh": "罪犯-独行罪犯",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 33,
+   "credit_rating": [
+    5,
+    65
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "APP",
+      "DEX"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "acting",
+      "disguise"
+     ],
+     "source_zh": "技艺（表演）或乔装"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "appraise"
+     ],
+     "source_zh": "估价"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "axe",
+      "brawl",
+      "chainsaw",
+      "flail",
+      "garrote",
+      "spear",
+      "sword",
+      "whip",
+      "bow",
+      "flamethrower",
+      "handgun",
+      "heavy_weapon",
+      "machine_gun",
+      "rifle_shotgun",
+      "submachine_gun"
+     ],
+     "source_zh": "格斗或射击"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "locksmith",
+      "mechanical_repair"
+     ],
+     "source_zh": "锁匠或机械维修"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "stealth"
+     ],
+     "source_zh": "潜行"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "criminal_female_burglar_classic",
+   "name_en": "Criminal-Female Burglar (Classic)",
+   "name_zh": "罪犯-女飞贼（古典）",
+   "era": "classic",
+   "rulebook_variant": false,
+   "source_row": 34,
+   "credit_rating": [
+    10,
+    80
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "APP"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "acting",
+      "calligraphy",
+      "cuisine",
+      "fine_art",
+      "forgery",
+      "literature",
+      "music_theory",
+      "photography"
+     ],
+     "source_zh": "技艺（任意）"
+    },
+    {
+     "kind": "choose",
+     "count": 2,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "两项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "brawl",
+      "handgun"
+     ],
+     "source_zh": "格斗（斗殴）或射击（手枪）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "drive_auto"
+     ],
+     "source_zh": "汽车驾驶"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "stealth"
+     ],
+     "source_zh": "潜行"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "criminal_stolen_goods_dealer",
+   "name_en": "Criminal-Stolen Goods Dealer",
+   "name_zh": "罪犯-赃物贩子",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 35,
+   "credit_rating": [
+    20,
+    40
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "APP"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "accounting"
+     ],
+     "source_zh": "会计"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "appraise"
+     ],
+     "source_zh": "估价"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "forgery"
+     ],
+     "source_zh": "技艺（伪造）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "history"
+     ],
+     "source_zh": "历史"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "library_use"
+     ],
+     "source_zh": "图书馆"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他技能"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "criminal_forger",
+   "name_en": "Criminal-Forger",
+   "name_zh": "罪犯-赝造者",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 36,
+   "credit_rating": [
+    20,
+    60
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "accounting"
+     ],
+     "source_zh": "会计"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "appraise"
+     ],
+     "source_zh": "估价"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "forgery"
+     ],
+     "source_zh": "技艺（伪造）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "history"
+     ],
+     "source_zh": "历史"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "library_use"
+     ],
+     "source_zh": "图书馆"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "sleight_of_hand"
+     ],
+     "source_zh": "妙手"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他个人或时代特长（如计算机）"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "criminal_smuggler",
+   "name_en": "Criminal-Smuggler",
+   "name_zh": "罪犯-走私者",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 37,
+   "credit_rating": [
+    20,
+    60
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "APP",
+      "DEX"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "bow",
+      "flamethrower",
+      "handgun",
+      "heavy_weapon",
+      "machine_gun",
+      "rifle_shotgun",
+      "submachine_gun"
+     ],
+     "source_zh": "射击"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "navigate"
+     ],
+     "source_zh": "导航"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "drive_auto",
+      "pilot"
+     ],
+     "source_zh": "汽车驾驶或驾驶（飞行器或船）",
+     "note": "驾驶（飞行器或船）: specialization '飞行器或船' kept as generic pilot"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "sleight_of_hand"
+     ],
+     "source_zh": "妙手"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": [
+    "approximation: 驾驶（飞行器或船）: specialization '飞行器或船' kept as generic pilot"
+   ]
+  },
+  {
+   "key": "criminal_gangster",
+   "name_en": "Criminal-Gangster",
+   "name_zh": "罪犯-混混",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 38,
+   "credit_rating": [
+    3,
+    10
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX",
+      "STR"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "climb"
+     ],
+     "source_zh": "攀爬"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "axe",
+      "brawl",
+      "chainsaw",
+      "flail",
+      "garrote",
+      "spear",
+      "sword",
+      "whip"
+     ],
+     "source_zh": "格斗"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "bow",
+      "flamethrower",
+      "handgun",
+      "heavy_weapon",
+      "machine_gun",
+      "rifle_shotgun",
+      "submachine_gun"
+     ],
+     "source_zh": "射击"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "jump"
+     ],
+     "source_zh": "跳跃"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "sleight_of_hand"
+     ],
+     "source_zh": "妙手"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "stealth"
+     ],
+     "source_zh": "潜行"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "throw"
+     ],
+     "source_zh": "投掷"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "cult_leader",
+   "name_en": "Cult Leader",
+   "name_zh": "教团首领",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 39,
+   "credit_rating": [
+    30,
+    60
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "accounting"
+     ],
+     "source_zh": "会计"
+    },
+    {
+     "kind": "choose",
+     "count": 2,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "两项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "occult"
+     ],
+     "source_zh": "神秘学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    },
+    {
+     "kind": "any",
+     "count": 2,
+     "options": [],
+     "source_zh": "任意其他两项其他个人特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "disenchanter_modern",
+   "name_en": "Disenchanter (Modern)",
+   "name_zh": "除魅师（现代）",
+   "era": "modern",
+   "rulebook_variant": false,
+   "source_row": 40,
+   "credit_rating": [
+    20,
+    50
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "choose",
+     "count": 2,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "两项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "drive_auto"
+     ],
+     "source_zh": "汽车驾驶"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "brawl",
+      "bow",
+      "flamethrower",
+      "handgun",
+      "heavy_weapon",
+      "machine_gun",
+      "rifle_shotgun",
+      "submachine_gun"
+     ],
+     "source_zh": "格斗（斗殴）或射击"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "history"
+     ],
+     "source_zh": "历史"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "occult"
+     ],
+     "source_zh": "神秘学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "stealth"
+     ],
+     "source_zh": "潜行"
+    }
+   ],
+   "keeper_note_zh": "经KP允许 可用催眠替换其中一项。",
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "designer",
+   "name_en": "Designer",
+   "name_zh": "设计师",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 41,
+   "credit_rating": [
+    20,
+    60
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "accounting"
+     ],
+     "source_zh": "会计"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "photography"
+     ],
+     "source_zh": "技艺（摄影）"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "acting",
+      "calligraphy",
+      "cuisine",
+      "fine_art",
+      "forgery",
+      "literature",
+      "music_theory",
+      "photography"
+     ],
+     "source_zh": "技艺（任一）"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "computer_use",
+      "library_use"
+     ],
+     "source_zh": "计算机或图书馆"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "mechanical_repair"
+     ],
+     "source_zh": "机械维修"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他个人特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "amateur_art_craft_enthusiast",
+   "name_en": "Amateur Art/Craft Enthusiast",
+   "name_zh": "业余技艺爱好者（原作向）",
+   "era": null,
+   "rulebook_variant": true,
+   "source_row": 42,
+   "credit_rating": [
+    50,
+    99
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "APP"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "acting",
+      "calligraphy",
+      "cuisine",
+      "fine_art",
+      "forgery",
+      "literature",
+      "music_theory",
+      "photography"
+     ],
+     "source_zh": "技艺（任一）"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "bow",
+      "flamethrower",
+      "handgun",
+      "heavy_weapon",
+      "machine_gun",
+      "rifle_shotgun",
+      "submachine_gun"
+     ],
+     "source_zh": "射击"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_foreign"
+     ],
+     "source_zh": "外语"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "ride"
+     ],
+     "source_zh": "骑乘"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "any",
+     "count": 3,
+     "options": [],
+     "source_zh": "任意三项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "diver",
+   "name_en": "Diver",
+   "name_zh": "潜水员",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 43,
+   "credit_rating": [
+    9,
+    30
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "diving"
+     ],
+     "source_zh": "潜水"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "first_aid"
+     ],
+     "source_zh": "急救"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "mechanical_repair"
+     ],
+     "source_zh": "机械维修"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "pilot"
+     ],
+     "source_zh": "驾驶（船）",
+     "note": "驾驶（船）: specialization '船' kept as generic pilot"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "biology"
+     ],
+     "source_zh": "科学（生物）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "swim"
+     ],
+     "source_zh": "游泳"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": [
+    "approximation: 驾驶（船）: specialization '船' kept as generic pilot"
+   ]
+  },
+  {
+   "key": "doctor",
+   "name_en": "Doctor",
+   "name_zh": "医生（原作向）",
+   "era": null,
+   "rulebook_variant": true,
+   "source_row": 44,
+   "credit_rating": [
+    30,
+    80
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "first_aid"
+     ],
+     "source_zh": "急救"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "medicine"
+     ],
+     "source_zh": "医学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_foreign"
+     ],
+     "source_zh": "外语（拉丁文）",
+     "note": "外语（拉丁文）: specialization '拉丁文' kept as generic language_foreign"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "biology"
+     ],
+     "source_zh": "科学（生物学，制药）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "pharmacy"
+     ],
+     "source_zh": "科学（生物学，制药）"
+    },
+    {
+     "kind": "any",
+     "count": 2,
+     "options": [],
+     "source_zh": "任两种其他学术或个人特长",
+     "note": "restriction to academic/study skills is not enforced; agree with your Keeper"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": [
+    "approximation: 外语（拉丁文）: specialization '拉丁文' kept as generic language_foreign",
+    "approximation: restriction to academic/study skills is not enforced; agree with your Keeper"
+   ]
+  },
+  {
+   "key": "wanderer",
+   "name_en": "Wanderer",
+   "name_zh": "流浪者",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 45,
+   "credit_rating": [
+    0,
+    5
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "APP",
+      "DEX",
+      "STR"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "climb"
+     ],
+     "source_zh": "攀爬"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "jump"
+     ],
+     "source_zh": "跳跃"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "navigate"
+     ],
+     "source_zh": "导航"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "stealth"
+     ],
+     "source_zh": "潜行"
+    },
+    {
+     "kind": "any",
+     "count": 2,
+     "options": [],
+     "source_zh": "任意两项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "driver_private_driver",
+   "name_en": "Driver-Private Driver",
+   "name_zh": "司机-私人司机",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 46,
+   "credit_rating": [
+    10,
+    40
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "drive_auto"
+     ],
+     "source_zh": "汽车驾驶"
+    },
+    {
+     "kind": "choose",
+     "count": 2,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "两项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "mechanical_repair"
+     ],
+     "source_zh": "机械维修"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "navigate"
+     ],
+     "source_zh": "导航"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "driver_driver",
+   "name_en": "Driver-Driver",
+   "name_zh": "司机-司机",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 47,
+   "credit_rating": [
+    9,
+    20
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX",
+      "STR"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "accounting"
+     ],
+     "source_zh": "会计"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "drive_auto"
+     ],
+     "source_zh": "汽车驾驶"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "mechanical_repair"
+     ],
+     "source_zh": "机械维修"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "navigate"
+     ],
+     "source_zh": "导航"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "driver_taxi_driver",
+   "name_en": "Driver-Taxi Driver",
+   "name_zh": "司机-出租车司机",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 48,
+   "credit_rating": [
+    9,
+    30
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "accounting"
+     ],
+     "source_zh": "会计"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "drive_auto"
+     ],
+     "source_zh": "汽车驾驶"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "electrical_repair"
+     ],
+     "source_zh": "电工维修"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "fast_talk"
+     ],
+     "source_zh": "话术"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "mechanical_repair"
+     ],
+     "source_zh": "机械维修"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "navigate"
+     ],
+     "source_zh": "导航"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "editor",
+   "name_en": "Editor",
+   "name_zh": "编辑",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 49,
+   "credit_rating": [
+    10,
+    30
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "accounting"
+     ],
+     "source_zh": "会计"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "history"
+     ],
+     "source_zh": "历史"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_own"
+     ],
+     "source_zh": "母语"
+    },
+    {
+     "kind": "choose",
+     "count": 2,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "两项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "government_officials",
+   "name_en": "Government Officials",
+   "name_zh": "政府官员",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 50,
+   "credit_rating": [
+    50,
+    90
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "APP"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "charm"
+     ],
+     "source_zh": "魅惑"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "history"
+     ],
+     "source_zh": "历史"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "intimidate"
+     ],
+     "source_zh": "恐吓"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "fast_talk"
+     ],
+     "source_zh": "话术"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_own"
+     ],
+     "source_zh": "母语"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "persuade"
+     ],
+     "source_zh": "说服"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "engineer",
+   "name_en": "Engineer",
+   "name_zh": "工程师",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 51,
+   "credit_rating": [
+    30,
+    60
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "acting",
+      "calligraphy",
+      "cuisine",
+      "fine_art",
+      "forgery",
+      "literature",
+      "music_theory",
+      "photography"
+     ],
+     "source_zh": "技艺（技术制图）",
+     "note": "技艺（技术制图）: specialization '技术制图' not in the skill catalogue; any Art/Craft offered"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "electrical_repair"
+     ],
+     "source_zh": "电工维修"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "library_use"
+     ],
+     "source_zh": "图书馆"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "mechanical_repair"
+     ],
+     "source_zh": "机械维修"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "operate_heavy_machinery"
+     ],
+     "source_zh": "操作重型机械"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "engineering"
+     ],
+     "source_zh": "科学（工程学，物理）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "physics"
+     ],
+     "source_zh": "科学（工程学，物理）"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": [
+    "approximation: 技艺（技术制图）: specialization '技术制图' not in the skill catalogue; any Art/Craft offered"
+   ]
+  },
+  {
+   "key": "entertainer",
+   "name_en": "Entertainer",
+   "name_zh": "艺人",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 52,
+   "credit_rating": [
+    9,
+    70
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "APP"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "acting",
+      "calligraphy",
+      "cuisine",
+      "fine_art",
+      "forgery",
+      "literature",
+      "music_theory",
+      "photography"
+     ],
+     "source_zh": "技艺（表演类，如表演、演唱、喜剧等）",
+     "note": "技艺（表演类，如表演、演唱、喜剧等）: specialization '表演类，如表演、演唱、喜剧等' not in the skill catalogue; any Art/Craft offered"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "disguise"
+     ],
+     "source_zh": "乔装"
+    },
+    {
+     "kind": "choose",
+     "count": 2,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "两项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "any",
+     "count": 2,
+     "options": [],
+     "source_zh": "任意两项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": [
+    "approximation: 技艺（表演类，如表演、演唱、喜剧等）: specialization '表演类，如表演、演唱、喜剧等' not in the skill catalogue; any Art/Craft offered"
+   ]
+  },
+  {
+   "key": "explorer_classic",
+   "name_en": "Explorer (Classic)",
+   "name_zh": "探险家（古典）",
+   "era": "classic",
+   "rulebook_variant": false,
+   "source_row": 53,
+   "credit_rating": [
+    55,
+    80
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "APP",
+      "DEX",
+      "STR"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "climb",
+      "swim"
+     ],
+     "source_zh": "攀爬或游泳"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "bow",
+      "flamethrower",
+      "handgun",
+      "heavy_weapon",
+      "machine_gun",
+      "rifle_shotgun",
+      "submachine_gun"
+     ],
+     "source_zh": "射击"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "history"
+     ],
+     "source_zh": "历史"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "jump"
+     ],
+     "source_zh": "跳跃"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "natural_world"
+     ],
+     "source_zh": "自然"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "navigate"
+     ],
+     "source_zh": "导航"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_foreign"
+     ],
+     "source_zh": "外语"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "survival"
+     ],
+     "source_zh": "生存"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "farmer",
+   "name_en": "Farmer",
+   "name_zh": "农民",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 54,
+   "credit_rating": [
+    9,
+    30
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX",
+      "STR"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "acting",
+      "calligraphy",
+      "cuisine",
+      "fine_art",
+      "forgery",
+      "literature",
+      "music_theory",
+      "photography"
+     ],
+     "source_zh": "技艺（耕作）",
+     "note": "技艺（耕作）: specialization '耕作' not in the skill catalogue; any Art/Craft offered"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "drive_auto"
+     ],
+     "source_zh": "汽车驾驶（或运货马车）"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "mechanical_repair"
+     ],
+     "source_zh": "机械维修"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "natural_world"
+     ],
+     "source_zh": "自然"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "operate_heavy_machinery"
+     ],
+     "source_zh": "操作重型机械"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "track"
+     ],
+     "source_zh": "追踪"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": [
+    "approximation: 技艺（耕作）: specialization '耕作' not in the skill catalogue; any Art/Craft offered"
+   ]
+  },
+  {
+   "key": "judicial_officer",
+   "name_en": "Judicial Officer",
+   "name_zh": "司法人员",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 55,
+   "credit_rating": [
+    20,
+    40
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "drive_auto"
+     ],
+     "source_zh": "汽车驾驶"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "brawl"
+     ],
+     "source_zh": "格斗（斗殴）"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "bow",
+      "flamethrower",
+      "handgun",
+      "heavy_weapon",
+      "machine_gun",
+      "rifle_shotgun",
+      "submachine_gun"
+     ],
+     "source_zh": "射击"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "law"
+     ],
+     "source_zh": "法律"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "persuade"
+     ],
+     "source_zh": "说服"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "stealth"
+     ],
+     "source_zh": "潜行"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "firefighter",
+   "name_en": "Firefighter",
+   "name_zh": "消防员",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 56,
+   "credit_rating": [
+    9,
+    30
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX",
+      "STR"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "climb"
+     ],
+     "source_zh": "攀爬"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "dodge"
+     ],
+     "source_zh": "闪避"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "drive_auto"
+     ],
+     "source_zh": "汽车驾驶"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "first_aid"
+     ],
+     "source_zh": "急救"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "jump"
+     ],
+     "source_zh": "跳跃"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "mechanical_repair"
+     ],
+     "source_zh": "机械维修"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "operate_heavy_machinery"
+     ],
+     "source_zh": "操作重型机械"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "throw"
+     ],
+     "source_zh": "投掷"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "foreign_correspondent",
+   "name_en": "Foreign Correspondent",
+   "name_zh": "驻外记者",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 57,
+   "credit_rating": [
+    10,
+    40
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "history"
+     ],
+     "source_zh": "历史"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_foreign"
+     ],
+     "source_zh": "外语"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_own"
+     ],
+     "source_zh": "母语"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "choose",
+     "count": 2,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "两项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "forensic_doctor",
+   "name_en": "Forensic Doctor",
+   "name_zh": "法医",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 58,
+   "credit_rating": [
+    40,
+    60
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_foreign"
+     ],
+     "source_zh": "外语（拉丁文）",
+     "note": "外语（拉丁文）: specialization '拉丁文' kept as generic language_foreign"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "library_use"
+     ],
+     "source_zh": "图书馆"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "medicine"
+     ],
+     "source_zh": "医学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "persuade"
+     ],
+     "source_zh": "说服"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "biology"
+     ],
+     "source_zh": "科学（生物学，鉴证，制药）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "forensic"
+     ],
+     "source_zh": "科学（生物学，鉴证，制药）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "pharmacy"
+     ],
+     "source_zh": "科学（生物学，鉴证，制药）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": [
+    "approximation: 外语（拉丁文）: specialization '拉丁文' kept as generic language_foreign"
+   ]
+  },
+  {
+   "key": "gambler",
+   "name_en": "Gambler",
+   "name_zh": "赌徒",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 59,
+   "credit_rating": [
+    8,
+    50
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "APP",
+      "DEX"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "accounting"
+     ],
+     "source_zh": "会计"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "acting"
+     ],
+     "source_zh": "技艺（表演）"
+    },
+    {
+     "kind": "choose",
+     "count": 2,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "两项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "sleight_of_hand"
+     ],
+     "source_zh": "妙手"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "gangster_gangster_boss",
+   "name_en": "Gangster-Gangster Boss",
+   "name_zh": "黑帮-黑帮老大",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 60,
+   "credit_rating": [
+    60,
+    95
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "APP"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "axe",
+      "brawl",
+      "chainsaw",
+      "flail",
+      "garrote",
+      "spear",
+      "sword",
+      "whip"
+     ],
+     "source_zh": "格斗"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "bow",
+      "flamethrower",
+      "handgun",
+      "heavy_weapon",
+      "machine_gun",
+      "rifle_shotgun",
+      "submachine_gun"
+     ],
+     "source_zh": "射击"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "law"
+     ],
+     "source_zh": "法律"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "choose",
+     "count": 2,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "两项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "gangster_henchman",
+   "name_en": "Gangster-Henchman",
+   "name_zh": "黑帮-马仔",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 61,
+   "credit_rating": [
+    9,
+    20
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX",
+      "STR"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "drive_auto"
+     ],
+     "source_zh": "汽车驾驶"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "axe",
+      "brawl",
+      "chainsaw",
+      "flail",
+      "garrote",
+      "spear",
+      "sword",
+      "whip"
+     ],
+     "source_zh": "格斗"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "bow",
+      "flamethrower",
+      "handgun",
+      "heavy_weapon",
+      "machine_gun",
+      "rifle_shotgun",
+      "submachine_gun"
+     ],
+     "source_zh": "射击"
+    },
+    {
+     "kind": "choose",
+     "count": 2,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "两项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "any",
+     "count": 2,
+     "options": [],
+     "source_zh": "任意两项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "gentlemen_ladies",
+   "name_en": "Gentlemen/Ladies",
+   "name_zh": "绅士、淑女",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 62,
+   "credit_rating": [
+    40,
+    90
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "APP"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "acting",
+      "calligraphy",
+      "cuisine",
+      "fine_art",
+      "forgery",
+      "literature",
+      "music_theory",
+      "photography"
+     ],
+     "source_zh": "技艺（任一）"
+    },
+    {
+     "kind": "choose",
+     "count": 2,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "两项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "rifle_shotgun"
+     ],
+     "source_zh": "射击（步枪/霰弹枪）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "history"
+     ],
+     "source_zh": "历史"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_foreign"
+     ],
+     "source_zh": "外语（任一）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "navigate"
+     ],
+     "source_zh": "导航"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "ride"
+     ],
+     "source_zh": "骑乘"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "vagrant",
+   "name_en": "Vagrant",
+   "name_zh": "游民",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 63,
+   "credit_rating": [
+    0,
+    5
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "APP",
+      "DEX"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "acting",
+      "calligraphy",
+      "cuisine",
+      "fine_art",
+      "forgery",
+      "literature",
+      "music_theory",
+      "photography"
+     ],
+     "source_zh": "技艺（任一）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "climb"
+     ],
+     "source_zh": "攀爬"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "jump"
+     ],
+     "source_zh": "跳跃"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "locksmith",
+      "sleight_of_hand"
+     ],
+     "source_zh": "锁匠或妙手"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "navigate"
+     ],
+     "source_zh": "导航"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "stealth"
+     ],
+     "source_zh": "潜行"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "handyman",
+   "name_en": "Handyman",
+   "name_zh": "勤杂护工",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 64,
+   "credit_rating": [
+    6,
+    15
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "STR"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "electrical_repair"
+     ],
+     "source_zh": "电工维修"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "brawl"
+     ],
+     "source_zh": "格斗（斗殴）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "first_aid"
+     ],
+     "source_zh": "急救"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "mechanical_repair"
+     ],
+     "source_zh": "机械维修"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "stealth"
+     ],
+     "source_zh": "潜行"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "reporter_investigative_reporter",
+   "name_en": "Reporter-Investigative Reporter",
+   "name_zh": "记者(原作向)-调查记者",
+   "era": null,
+   "rulebook_variant": true,
+   "source_row": 65,
+   "credit_rating": [
+    9,
+    30
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "fine_art",
+      "photography"
+     ],
+     "source_zh": "技艺（技艺或摄影）",
+     "note": "技艺（技艺或摄影）: 'Art' approximated as Fine Art"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "history"
+     ],
+     "source_zh": "历史"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "library_use"
+     ],
+     "source_zh": "图书馆"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_own"
+     ],
+     "source_zh": "母语"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "any",
+     "count": 2,
+     "options": [],
+     "source_zh": "任意两项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": [
+    "approximation: 技艺（技艺或摄影）: 'Art' approximated as Fine Art"
+   ]
+  },
+  {
+   "key": "reporter_correspondent",
+   "name_en": "Reporter-Correspondent",
+   "name_zh": "记者(原作向)-通讯记者",
+   "era": null,
+   "rulebook_variant": true,
+   "source_row": 66,
+   "credit_rating": [
+    9,
+    30
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "acting"
+     ],
+     "source_zh": "技艺（表演）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "history"
+     ],
+     "source_zh": "历史"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_own"
+     ],
+     "source_zh": "母语"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "stealth"
+     ],
+     "source_zh": "潜行"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "judge",
+   "name_en": "Judge",
+   "name_zh": "法官",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 67,
+   "credit_rating": [
+    50,
+    80
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "history"
+     ],
+     "source_zh": "历史"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "intimidate"
+     ],
+     "source_zh": "恐吓"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "law"
+     ],
+     "source_zh": "法律"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "library_use"
+     ],
+     "source_zh": "图书馆"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_own"
+     ],
+     "source_zh": "母语"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "persuade"
+     ],
+     "source_zh": "说服"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "laboratory_assistant",
+   "name_en": "Laboratory Assistant",
+   "name_zh": "实验室助理",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 68,
+   "credit_rating": [
+    10,
+    30
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "computer_use",
+      "library_use"
+     ],
+     "source_zh": "计算机或图书馆"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "electrical_repair"
+     ],
+     "source_zh": "电工维修"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_foreign"
+     ],
+     "source_zh": "外语"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "chemistry"
+     ],
+     "source_zh": "科学（化学和任意两项）"
+    },
+    {
+     "kind": "choose",
+     "count": 2,
+     "options": [
+      "astronomy",
+      "biology",
+      "botany",
+      "chemistry",
+      "cryptography",
+      "engineering",
+      "forensic",
+      "geology",
+      "mathematics",
+      "meteorology",
+      "pharmacy",
+      "physics",
+      "zoology"
+     ],
+     "source_zh": "科学（化学和任意两项）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他个人特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "worker_lumberjack",
+   "name_en": "Worker-Lumberjack",
+   "name_zh": "工人-伐木工",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 69,
+   "credit_rating": [
+    9,
+    30
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX",
+      "STR"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "climb"
+     ],
+     "source_zh": "攀爬"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "dodge"
+     ],
+     "source_zh": "闪避"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "chainsaw"
+     ],
+     "source_zh": "格斗（链锯）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "first_aid"
+     ],
+     "source_zh": "急救"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "jump"
+     ],
+     "source_zh": "跳跃"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "mechanical_repair"
+     ],
+     "source_zh": "机械维修"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "natural_world",
+      "biology",
+      "botany"
+     ],
+     "source_zh": "自然或科学（生物学或植物学）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "throw"
+     ],
+     "source_zh": "投掷"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "worker_miner",
+   "name_en": "Worker-Miner",
+   "name_zh": "工人-矿工",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 70,
+   "credit_rating": [
+    9,
+    30
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX",
+      "STR"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "climb"
+     ],
+     "source_zh": "攀爬"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "geology"
+     ],
+     "source_zh": "科学（地质）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "jump"
+     ],
+     "source_zh": "跳跃"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "mechanical_repair"
+     ],
+     "source_zh": "机械维修"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "operate_heavy_machinery"
+     ],
+     "source_zh": "操作重型机械"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "stealth"
+     ],
+     "source_zh": "潜行"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "lawyer",
+   "name_en": "Lawyer",
+   "name_zh": "律师",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 71,
+   "credit_rating": [
+    30,
+    80
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "accounting"
+     ],
+     "source_zh": "会计"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "law"
+     ],
+     "source_zh": "法律"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "library_use"
+     ],
+     "source_zh": "图书馆"
+    },
+    {
+     "kind": "choose",
+     "count": 2,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "两项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "any",
+     "count": 2,
+     "options": [],
+     "source_zh": "两项其他技能"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "librarian",
+   "name_en": "Librarian",
+   "name_zh": "图书馆管理员（原作向）",
+   "era": null,
+   "rulebook_variant": true,
+   "source_row": 72,
+   "credit_rating": [
+    9,
+    35
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "accounting"
+     ],
+     "source_zh": "会计"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "library_use"
+     ],
+     "source_zh": "图书馆"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_foreign"
+     ],
+     "source_zh": "外语"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_own"
+     ],
+     "source_zh": "母语"
+    },
+    {
+     "kind": "any",
+     "count": 4,
+     "options": [],
+     "source_zh": "任意四项其他个人特长或专业书籍主题",
+     "note": "restriction to academic/study skills is not enforced; agree with your Keeper"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": [
+    "approximation: restriction to academic/study skills is not enforced; agree with your Keeper"
+   ]
+  },
+  {
+   "key": "technician",
+   "name_en": "Technician",
+   "name_zh": "技师",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 73,
+   "credit_rating": [
+    9,
+    40
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "acting",
+      "calligraphy",
+      "cuisine",
+      "fine_art",
+      "forgery",
+      "literature",
+      "music_theory",
+      "photography"
+     ],
+     "source_zh": "技艺（木工、焊接、管道工等）",
+     "note": "技艺（木工、焊接、管道工等）: specialization '木工、焊接、管道工等' not in the skill catalogue; any Art/Craft offered"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "climb"
+     ],
+     "source_zh": "攀爬"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "drive_auto"
+     ],
+     "source_zh": "汽车驾驶"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "electrical_repair"
+     ],
+     "source_zh": "电工维修"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "mechanical_repair"
+     ],
+     "source_zh": "机械维修"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "operate_heavy_machinery"
+     ],
+     "source_zh": "操作重型机械"
+    },
+    {
+     "kind": "any",
+     "count": 2,
+     "options": [],
+     "source_zh": "任意两项其他个人或时代或技术特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": [
+    "approximation: 技艺（木工、焊接、管道工等）: specialization '木工、焊接、管道工等' not in the skill catalogue; any Art/Craft offered"
+   ]
+  },
+  {
+   "key": "officer_military",
+   "name_en": "Officer(military)",
+   "name_zh": "军官",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 74,
+   "credit_rating": [
+    20,
+    70
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX",
+      "STR"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "accounting"
+     ],
+     "source_zh": "会计"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "bow",
+      "flamethrower",
+      "handgun",
+      "heavy_weapon",
+      "machine_gun",
+      "rifle_shotgun",
+      "submachine_gun"
+     ],
+     "source_zh": "射击"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "navigate"
+     ],
+     "source_zh": "导航"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "first_aid"
+     ],
+     "source_zh": "急救"
+    },
+    {
+     "kind": "choose",
+     "count": 2,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "两项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "missionary",
+   "name_en": "Missionary",
+   "name_zh": "传教士",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 75,
+   "credit_rating": [
+    0,
+    30
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "APP"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "acting",
+      "calligraphy",
+      "cuisine",
+      "fine_art",
+      "forgery",
+      "literature",
+      "music_theory",
+      "photography"
+     ],
+     "source_zh": "技艺（任一）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "first_aid"
+     ],
+     "source_zh": "急救"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "mechanical_repair"
+     ],
+     "source_zh": "机械维修"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "medicine"
+     ],
+     "source_zh": "医学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "natural_world"
+     ],
+     "source_zh": "自然"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "any",
+     "count": 2,
+     "options": [],
+     "source_zh": "任意两项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "mountaineer",
+   "name_en": "Mountaineer",
+   "name_zh": "登山家",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 76,
+   "credit_rating": [
+    30,
+    60
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX",
+      "STR"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "climb"
+     ],
+     "source_zh": "攀爬"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "first_aid"
+     ],
+     "source_zh": "急救"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "jump"
+     ],
+     "source_zh": "跳跃"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "navigate"
+     ],
+     "source_zh": "导航"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_foreign"
+     ],
+     "source_zh": "外语"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "survival"
+     ],
+     "source_zh": "生存（阿尔卑斯或类似）",
+     "note": "生存（阿尔卑斯或类似）: specialization '阿尔卑斯或类似' kept as generic survival"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "track"
+     ],
+     "source_zh": "追踪"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": [
+    "approximation: 生存（阿尔卑斯或类似）: specialization '阿尔卑斯或类似' kept as generic survival"
+   ]
+  },
+  {
+   "key": "museum_administrator",
+   "name_en": "Museum Administrator",
+   "name_zh": "博物馆管理员",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 77,
+   "credit_rating": [
+    10,
+    30
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "accounting"
+     ],
+     "source_zh": "会计"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "appraise"
+     ],
+     "source_zh": "估价"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "archaeology"
+     ],
+     "source_zh": "考古"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "history"
+     ],
+     "source_zh": "历史"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "library_use"
+     ],
+     "source_zh": "图书馆"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "occult"
+     ],
+     "source_zh": "神秘学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_foreign"
+     ],
+     "source_zh": "外语"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "musician",
+   "name_en": "Musician",
+   "name_zh": "音乐家",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 78,
+   "credit_rating": [
+    9,
+    30
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX",
+      "POW"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "acting",
+      "calligraphy",
+      "cuisine",
+      "fine_art",
+      "forgery",
+      "literature",
+      "music_theory",
+      "photography"
+     ],
+     "source_zh": "技艺（乐器）",
+     "note": "技艺（乐器）: specialization '乐器' not in the skill catalogue; any Art/Craft offered"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "any",
+     "count": 4,
+     "options": [],
+     "source_zh": "四项其他技能"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": [
+    "formula conflict: workbook 教育×2＋意志或敏捷×2 vs career.xlsx EDU*2+DEX/APP*2; workbook used",
+    "approximation: 技艺（乐器）: specialization '乐器' not in the skill catalogue; any Art/Craft offered"
+   ]
+  },
+  {
+   "key": "nurse",
+   "name_en": "Nurse",
+   "name_zh": "护士",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 79,
+   "credit_rating": [
+    9,
+    30
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "first_aid"
+     ],
+     "source_zh": "急救"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "medicine"
+     ],
+     "source_zh": "医学"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "biology"
+     ],
+     "source_zh": "科学（生物学，化学）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "chemistry"
+     ],
+     "source_zh": "科学（生物学，化学）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "occultist",
+   "name_en": "Occultist",
+   "name_zh": "神秘学家",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 80,
+   "credit_rating": [
+    9,
+    65
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "anthropology"
+     ],
+     "source_zh": "人类学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "history"
+     ],
+     "source_zh": "历史"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "library_use"
+     ],
+     "source_zh": "图书馆"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "occult"
+     ],
+     "source_zh": "神秘学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_foreign"
+     ],
+     "source_zh": "外语"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "astronomy"
+     ],
+     "source_zh": "科学（天文）"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": "经KP允许 可以包含克苏鲁神话",
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "traveler",
+   "name_en": "Traveler",
+   "name_zh": "旅行家",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 81,
+   "credit_rating": [
+    5,
+    20
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX",
+      "STR"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "bow",
+      "flamethrower",
+      "handgun",
+      "heavy_weapon",
+      "machine_gun",
+      "rifle_shotgun",
+      "submachine_gun"
+     ],
+     "source_zh": "射击"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "first_aid"
+     ],
+     "source_zh": "急救"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "natural_world"
+     ],
+     "source_zh": "自然"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "navigate"
+     ],
+     "source_zh": "导航"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "survival"
+     ],
+     "source_zh": "生存（任一）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "track"
+     ],
+     "source_zh": "追踪"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "parapsychologist",
+   "name_en": "Parapsychologist",
+   "name_zh": "超心理学家",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 82,
+   "credit_rating": [
+    9,
+    30
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "anthropology"
+     ],
+     "source_zh": "人类学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "photography"
+     ],
+     "source_zh": "技艺（摄影）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "history"
+     ],
+     "source_zh": "历史"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "library_use"
+     ],
+     "source_zh": "图书馆"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "occult"
+     ],
+     "source_zh": "神秘学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_foreign"
+     ],
+     "source_zh": "外语"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "pharmacist",
+   "name_en": "Pharmacist",
+   "name_zh": "药剂师",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 83,
+   "credit_rating": [
+    35,
+    75
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "accounting"
+     ],
+     "source_zh": "会计"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "first_aid"
+     ],
+     "source_zh": "急救"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_foreign"
+     ],
+     "source_zh": "外语（拉丁文）",
+     "note": "外语（拉丁文）: specialization '拉丁文' kept as generic language_foreign"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "library_use"
+     ],
+     "source_zh": "图书馆"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "pharmacy"
+     ],
+     "source_zh": "科学（制药，化学）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "chemistry"
+     ],
+     "source_zh": "科学（制药，化学）"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": [
+    "approximation: 外语（拉丁文）: specialization '拉丁文' kept as generic language_foreign"
+   ]
+  },
+  {
+   "key": "photographer",
+   "name_en": "Photographer",
+   "name_zh": "摄影师-摄影师",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 84,
+   "credit_rating": [
+    9,
+    30
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "photography"
+     ],
+     "source_zh": "技艺（摄影）"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "chemistry"
+     ],
+     "source_zh": "科学（化学）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "stealth"
+     ],
+     "source_zh": "潜行"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    },
+    {
+     "kind": "any",
+     "count": 2,
+     "options": [],
+     "source_zh": "任意两项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "photojournalist",
+   "name_en": "Photojournalist",
+   "name_zh": "摄影师-摄影记者",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 85,
+   "credit_rating": [
+    10,
+    30
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "photography"
+     ],
+     "source_zh": "技艺（摄影）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "climb"
+     ],
+     "source_zh": "攀爬"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_foreign"
+     ],
+     "source_zh": "外语"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "chemistry"
+     ],
+     "source_zh": "科学（化学）"
+    },
+    {
+     "kind": "any",
+     "count": 2,
+     "options": [],
+     "source_zh": "任意两项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "pilot",
+   "name_en": "Pilot",
+   "name_zh": "飞行员-飞行员",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 86,
+   "credit_rating": [
+    20,
+    70
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "electrical_repair"
+     ],
+     "source_zh": "电工维修"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "mechanical_repair"
+     ],
+     "source_zh": "机械维修"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "navigate"
+     ],
+     "source_zh": "导航"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "operate_heavy_machinery"
+     ],
+     "source_zh": "操作重型机械"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "pilot"
+     ],
+     "source_zh": "驾驶（飞行器）",
+     "note": "驾驶（飞行器）: specialization '飞行器' kept as generic pilot"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "astronomy"
+     ],
+     "source_zh": "科学（天文）"
+    },
+    {
+     "kind": "any",
+     "count": 2,
+     "options": [],
+     "source_zh": "任意两项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": [
+    "approximation: 驾驶（飞行器）: specialization '飞行器' kept as generic pilot"
+   ]
+  },
+  {
+   "key": "aerobatic_pilot_classic",
+   "name_en": "Aerobatic Pilot (Classic)",
+   "name_zh": "飞行员-特技飞行员（古典）",
+   "era": "classic",
+   "rulebook_variant": false,
+   "source_row": 87,
+   "credit_rating": [
+    30,
+    60
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "accounting"
+     ],
+     "source_zh": "会计"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "electrical_repair"
+     ],
+     "source_zh": "电工维修"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "mechanical_repair"
+     ],
+     "source_zh": "机械维修"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "navigate"
+     ],
+     "source_zh": "导航"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "pilot"
+     ],
+     "source_zh": "驾驶（飞行器）",
+     "note": "驾驶（飞行器）: specialization '飞行器' kept as generic pilot"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": [
+    "approximation: 驾驶（飞行器）: specialization '飞行器' kept as generic pilot"
+   ]
+  },
+  {
+   "key": "police_detective",
+   "name_en": "Police-Detective",
+   "name_zh": "警方(原作向)-警探",
+   "era": null,
+   "rulebook_variant": true,
+   "source_row": 88,
+   "credit_rating": [
+    20,
+    50
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX",
+      "STR"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "acting",
+      "disguise"
+     ],
+     "source_zh": "技艺（表演）或乔装"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "bow",
+      "flamethrower",
+      "handgun",
+      "heavy_weapon",
+      "machine_gun",
+      "rifle_shotgun",
+      "submachine_gun"
+     ],
+     "source_zh": "射击"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "law"
+     ],
+     "source_zh": "法律"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "一项其他技能"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "police_patrol",
+   "name_en": "Police-Patrol",
+   "name_zh": "警方(原作向)-巡警",
+   "era": null,
+   "rulebook_variant": true,
+   "source_row": 89,
+   "credit_rating": [
+    9,
+    30
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX",
+      "STR"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "brawl"
+     ],
+     "source_zh": "格斗（斗殴）"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "bow",
+      "flamethrower",
+      "handgun",
+      "heavy_weapon",
+      "machine_gun",
+      "rifle_shotgun",
+      "submachine_gun"
+     ],
+     "source_zh": "射击"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "first_aid"
+     ],
+     "source_zh": "急救"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "law"
+     ],
+     "source_zh": "法律"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "drive_auto",
+      "ride"
+     ],
+     "source_zh": "侦查和下面的一种个人特长：汽车驾驶或骑乘"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "private_detective",
+   "name_en": "Private Detective",
+   "name_zh": "私家侦探",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 90,
+   "credit_rating": [
+    9,
+    30
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX",
+      "STR"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "photography"
+     ],
+     "source_zh": "技艺（摄影）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "disguise"
+     ],
+     "source_zh": "乔装"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "law"
+     ],
+     "source_zh": "法律"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "library_use"
+     ],
+     "source_zh": "图书馆"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "一项其他个人或时代特长（如计算机、锁匠、格斗、射击）"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "professor",
+   "name_en": "Professor",
+   "name_zh": "教授（原作向）",
+   "era": null,
+   "rulebook_variant": true,
+   "source_row": 91,
+   "credit_rating": [
+    20,
+    70
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "library_use"
+     ],
+     "source_zh": "图书馆"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_foreign"
+     ],
+     "source_zh": "外语"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_own"
+     ],
+     "source_zh": "母语"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "any",
+     "count": 4,
+     "options": [],
+     "source_zh": "任意四项其他学术或时代或个人特长",
+     "note": "restriction to academic/study skills is not enforced; agree with your Keeper"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": [
+    "approximation: restriction to academic/study skills is not enforced; agree with your Keeper"
+   ]
+  },
+  {
+   "key": "gold_digger",
+   "name_en": "Gold Digger",
+   "name_zh": "淘金客",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 92,
+   "credit_rating": [
+    0,
+    10
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX",
+      "STR"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "climb"
+     ],
+     "source_zh": "攀爬"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "first_aid"
+     ],
+     "source_zh": "急救"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "history"
+     ],
+     "source_zh": "历史"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "mechanical_repair"
+     ],
+     "source_zh": "机械维修"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "navigate"
+     ],
+     "source_zh": "导航"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "geology"
+     ],
+     "source_zh": "科学（地质）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "sex_worker",
+   "name_en": "Sex Worker",
+   "name_zh": "性工作者",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 93,
+   "credit_rating": [
+    5,
+    50
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "APP"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "acting",
+      "calligraphy",
+      "cuisine",
+      "fine_art",
+      "forgery",
+      "literature",
+      "music_theory",
+      "photography"
+     ],
+     "source_zh": "技艺（任一）"
+    },
+    {
+     "kind": "choose",
+     "count": 2,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "两项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "dodge"
+     ],
+     "source_zh": "闪避"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "sleight_of_hand"
+     ],
+     "source_zh": "妙手"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "stealth"
+     ],
+     "source_zh": "潜行"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "psychiatrist",
+   "name_en": "Psychiatrist",
+   "name_zh": "精神病学家",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 94,
+   "credit_rating": [
+    30,
+    80
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_foreign"
+     ],
+     "source_zh": "外语"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "medicine"
+     ],
+     "source_zh": "医学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "persuade"
+     ],
+     "source_zh": "说服"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychoanalysis"
+     ],
+     "source_zh": "精神分析"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "biology"
+     ],
+     "source_zh": "科学（生物学，化学）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "chemistry"
+     ],
+     "source_zh": "科学（生物学，化学）"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "psychologist_psychoanalyst",
+   "name_en": "Psychologist/Psychoanalyst",
+   "name_zh": "心理学家、精神分析学家",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 95,
+   "credit_rating": [
+    10,
+    40
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "accounting"
+     ],
+     "source_zh": "会计"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "library_use"
+     ],
+     "source_zh": "图书馆"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "persuade"
+     ],
+     "source_zh": "说服"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychoanalysis"
+     ],
+     "source_zh": "精神分析"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "any",
+     "count": 2,
+     "options": [],
+     "source_zh": "任意两项其他学术或个人或时代特长",
+     "note": "restriction to academic/study skills is not enforced; agree with your Keeper"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": [
+    "approximation: restriction to academic/study skills is not enforced; agree with your Keeper"
+   ]
+  },
+  {
+   "key": "researcher",
+   "name_en": "Researcher",
+   "name_zh": "研究员",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 96,
+   "credit_rating": [
+    9,
+    30
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "history"
+     ],
+     "source_zh": "历史"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "library_use"
+     ],
+     "source_zh": "图书馆"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_foreign"
+     ],
+     "source_zh": "外语"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    },
+    {
+     "kind": "any",
+     "count": 3,
+     "options": [],
+     "source_zh": "任意三项其他学术领域",
+     "note": "restriction to academic/study skills is not enforced; agree with your Keeper"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": [
+    "approximation: restriction to academic/study skills is not enforced; agree with your Keeper"
+   ]
+  },
+  {
+   "key": "seafarers_warship_seafarers",
+   "name_en": "Seafarers-Warship Seafarers",
+   "name_zh": "海员-军舰海员",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 97,
+   "credit_rating": [
+    9,
+    30
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "electrical_repair",
+      "mechanical_repair"
+     ],
+     "source_zh": "电工或机械维修"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "axe",
+      "brawl",
+      "chainsaw",
+      "flail",
+      "garrote",
+      "spear",
+      "sword",
+      "whip"
+     ],
+     "source_zh": "格斗"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "bow",
+      "flamethrower",
+      "handgun",
+      "heavy_weapon",
+      "machine_gun",
+      "rifle_shotgun",
+      "submachine_gun"
+     ],
+     "source_zh": "射击"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "first_aid"
+     ],
+     "source_zh": "急救"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "navigate"
+     ],
+     "source_zh": "导航"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "pilot"
+     ],
+     "source_zh": "驾驶（船）",
+     "note": "驾驶（船）: specialization '船' kept as generic pilot"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "survival"
+     ],
+     "source_zh": "生存（海上）",
+     "note": "生存（海上）: specialization '海上' kept as generic survival"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "swim"
+     ],
+     "source_zh": "游泳"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": [
+    "approximation: 驾驶（船）: specialization '船' kept as generic pilot",
+    "approximation: 生存（海上）: specialization '海上' kept as generic survival"
+   ]
+  },
+  {
+   "key": "seafarers_civilian_ship_seafarers",
+   "name_en": "Seafarers-Civilian Ship Seafarers",
+   "name_zh": "海员-民船海员",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 98,
+   "credit_rating": [
+    20,
+    40
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "first_aid"
+     ],
+     "source_zh": "急救"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "mechanical_repair"
+     ],
+     "source_zh": "机械维修"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "natural_world"
+     ],
+     "source_zh": "自然"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "navigate"
+     ],
+     "source_zh": "导航"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "pilot"
+     ],
+     "source_zh": "驾驶（船）",
+     "note": "驾驶（船）: specialization '船' kept as generic pilot"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "swim"
+     ],
+     "source_zh": "游泳"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": [
+    "approximation: 驾驶（船）: specialization '船' kept as generic pilot"
+   ]
+  },
+  {
+   "key": "salesman",
+   "name_en": "Salesman",
+   "name_zh": "推销员",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 99,
+   "credit_rating": [
+    9,
+    40
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "APP"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "accounting"
+     ],
+     "source_zh": "会计"
+    },
+    {
+     "kind": "choose",
+     "count": 2,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "两项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "drive_auto"
+     ],
+     "source_zh": "汽车驾驶"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "stealth",
+      "sleight_of_hand"
+     ],
+     "source_zh": "潜行或妙手"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "一项其他技能"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "scientist",
+   "name_en": "Scientist",
+   "name_zh": "科学家",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 100,
+   "credit_rating": [
+    9,
+    50
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "choose",
+     "count": 3,
+     "options": [
+      "astronomy",
+      "biology",
+      "botany",
+      "chemistry",
+      "cryptography",
+      "engineering",
+      "forensic",
+      "geology",
+      "mathematics",
+      "meteorology",
+      "pharmacy",
+      "physics",
+      "zoology"
+     ],
+     "source_zh": "任意三项科学专业领域"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "computer_use",
+      "library_use"
+     ],
+     "source_zh": "计算机或图书馆"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_foreign"
+     ],
+     "source_zh": "外语"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_own"
+     ],
+     "source_zh": "母语"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "secretary",
+   "name_en": "Secretary",
+   "name_zh": "秘书",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 101,
+   "credit_rating": [
+    9,
+    30
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "APP",
+      "DEX"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "accounting"
+     ],
+     "source_zh": "会计"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "acting",
+      "calligraphy",
+      "cuisine",
+      "fine_art",
+      "forgery",
+      "literature",
+      "music_theory",
+      "photography"
+     ],
+     "source_zh": "技艺（打字或速记）",
+     "note": "技艺（打字或速记）: specialization '打字或速记' not in the skill catalogue; any Art/Craft offered"
+    },
+    {
+     "kind": "choose",
+     "count": 2,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "两项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_own"
+     ],
+     "source_zh": "母语"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "library_use",
+      "computer_use"
+     ],
+     "source_zh": "图书馆或计算机"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": [
+    "approximation: 技艺（打字或速记）: specialization '打字或速记' not in the skill catalogue; any Art/Craft offered"
+   ]
+  },
+  {
+   "key": "shop_owner",
+   "name_en": "Shop Owner",
+   "name_zh": "店老板",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 102,
+   "credit_rating": [
+    20,
+    40
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "APP",
+      "DEX"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "accounting"
+     ],
+     "source_zh": "会计"
+    },
+    {
+     "kind": "choose",
+     "count": 2,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "两项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "electrical_repair"
+     ],
+     "source_zh": "电工维修"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "mechanical_repair"
+     ],
+     "source_zh": "机械维修"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "soldiers_marines",
+   "name_en": "Soldiers/Marines",
+   "name_zh": "士兵、海军陆战队士兵",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 103,
+   "credit_rating": [
+    9,
+    30
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX",
+      "STR"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "climb",
+      "swim"
+     ],
+     "source_zh": "攀爬或游泳"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "dodge"
+     ],
+     "source_zh": "闪避"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "axe",
+      "brawl",
+      "chainsaw",
+      "flail",
+      "garrote",
+      "spear",
+      "sword",
+      "whip"
+     ],
+     "source_zh": "格斗"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "bow",
+      "flamethrower",
+      "handgun",
+      "heavy_weapon",
+      "machine_gun",
+      "rifle_shotgun",
+      "submachine_gun"
+     ],
+     "source_zh": "射击"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "stealth"
+     ],
+     "source_zh": "潜行"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "survival"
+     ],
+     "source_zh": "生存"
+    },
+    {
+     "kind": "choose",
+     "count": 2,
+     "options": [
+      "first_aid",
+      "mechanical_repair",
+      "language_foreign"
+     ],
+     "source_zh": "下面任选两项：急救、机械维修、外语"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "spy",
+   "name_en": "Spy",
+   "name_zh": "间谍",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 104,
+   "credit_rating": [
+    20,
+    60
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "APP",
+      "DEX"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "acting",
+      "disguise"
+     ],
+     "source_zh": "技艺（表演）或乔装"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "bow",
+      "flamethrower",
+      "handgun",
+      "heavy_weapon",
+      "machine_gun",
+      "rifle_shotgun",
+      "submachine_gun"
+     ],
+     "source_zh": "射击"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_foreign"
+     ],
+     "source_zh": "外语"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "sleight_of_hand"
+     ],
+     "source_zh": "妙手"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "stealth"
+     ],
+     "source_zh": "潜行"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "students_interns",
+   "name_en": "Students/Interns",
+   "name_zh": "学生、实习生",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 105,
+   "credit_rating": [
+    5,
+    10
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "language_foreign",
+      "language_own"
+     ],
+     "source_zh": "语言（母语或外语）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "library_use"
+     ],
+     "source_zh": "图书馆"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "any",
+     "count": 3,
+     "options": [],
+     "source_zh": "三个学习的专业",
+     "note": "restriction to academic/study skills is not enforced; agree with your Keeper"
+    },
+    {
+     "kind": "any",
+     "count": 2,
+     "options": [],
+     "source_zh": "任意两项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": [
+    "approximation: restriction to academic/study skills is not enforced; agree with your Keeper"
+   ]
+  },
+  {
+   "key": "stuntman",
+   "name_en": "Stuntman",
+   "name_zh": "替身演员",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 106,
+   "credit_rating": [
+    10,
+    50
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX",
+      "STR"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "climb"
+     ],
+     "source_zh": "攀爬"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "dodge"
+     ],
+     "source_zh": "闪避"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "electrical_repair",
+      "mechanical_repair"
+     ],
+     "source_zh": "电工维修或机械维修"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "axe",
+      "brawl",
+      "chainsaw",
+      "flail",
+      "garrote",
+      "spear",
+      "sword",
+      "whip"
+     ],
+     "source_zh": "格斗"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "first_aid"
+     ],
+     "source_zh": "急救"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "jump"
+     ],
+     "source_zh": "跳跃"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "swim"
+     ],
+     "source_zh": "游泳"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "diving",
+      "drive_auto",
+      "pilot",
+      "ride"
+     ],
+     "source_zh": "下面任选一项：潜水、汽车驾驶、驾驶（任一）、骑乘"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "tribe_member",
+   "name_en": "Tribe Member",
+   "name_zh": "部落成员",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 107,
+   "credit_rating": [
+    0,
+    15
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "DEX",
+      "STR"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "climb"
+     ],
+     "source_zh": "攀爬"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "axe",
+      "brawl",
+      "chainsaw",
+      "flail",
+      "garrote",
+      "spear",
+      "sword",
+      "whip",
+      "throw"
+     ],
+     "source_zh": "格斗或投掷"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "natural_world"
+     ],
+     "source_zh": "自然"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "occult"
+     ],
+     "source_zh": "神秘学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "spot_hidden"
+     ],
+     "source_zh": "侦查"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "swim"
+     ],
+     "source_zh": "游泳"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "survival"
+     ],
+     "source_zh": "生存（任一）"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "mortician",
+   "name_en": "Mortician",
+   "name_zh": "殡葬师",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 108,
+   "credit_rating": [
+    20,
+    40
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "accounting"
+     ],
+     "source_zh": "会计"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "drive_auto"
+     ],
+     "source_zh": "汽车驾驶"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "history"
+     ],
+     "source_zh": "历史"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "occult"
+     ],
+     "source_zh": "神秘学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "biology"
+     ],
+     "source_zh": "科学（生物学，化学）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "chemistry"
+     ],
+     "source_zh": "科学（生物学，化学）"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "trade_union_activist",
+   "name_en": "Trade Union Activist",
+   "name_zh": "工会活动家",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 109,
+   "credit_rating": [
+    5,
+    50
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "accounting"
+     ],
+     "source_zh": "会计"
+    },
+    {
+     "kind": "choose",
+     "count": 2,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "两项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "brawl"
+     ],
+     "source_zh": "格斗（斗殴）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "law"
+     ],
+     "source_zh": "法律"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "operate_heavy_machinery"
+     ],
+     "source_zh": "操作重型机械"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "waiter",
+   "name_en": "Waiter",
+   "name_zh": "服务生",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 110,
+   "credit_rating": [
+    9,
+    20
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "APP",
+      "DEX"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "accounting"
+     ],
+     "source_zh": "会计"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "acting",
+      "calligraphy",
+      "cuisine",
+      "fine_art",
+      "forgery",
+      "literature",
+      "music_theory",
+      "photography"
+     ],
+     "source_zh": "技艺（任一）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "dodge"
+     ],
+     "source_zh": "闪避"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "choose",
+     "count": 2,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "两项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "any",
+     "count": 1,
+     "options": [],
+     "source_zh": "任意一项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "white_collar_workers_clerks_supervisors",
+   "name_en": "White Collar Workers-Clerks/Supervisors",
+   "name_zh": "白领工人-职员、主管",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 111,
+   "credit_rating": [
+    9,
+    20
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "accounting"
+     ],
+     "source_zh": "会计"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "language_foreign",
+      "language_own"
+     ],
+     "source_zh": "语言",
+     "note": "语言: unspecified language, offered as Own or Foreign"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "law"
+     ],
+     "source_zh": "法律"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "library_use",
+      "computer_use"
+     ],
+     "source_zh": "图书馆或计算机"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "listen"
+     ],
+     "source_zh": "聆听"
+    },
+    {
+     "kind": "choose",
+     "count": 1,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "一项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "any",
+     "count": 2,
+     "options": [],
+     "source_zh": "任意两项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": [
+    "approximation: 语言: unspecified language, offered as Own or Foreign"
+   ]
+  },
+  {
+   "key": "white_collar_workers_middle_and_senior_management_personnel",
+   "name_en": "White Collar Workers - Middle and Senior Management Personnel",
+   "name_zh": "白领工人-中高层管理人员",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 112,
+   "credit_rating": [
+    20,
+    80
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "accounting"
+     ],
+     "source_zh": "会计"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "language_foreign"
+     ],
+     "source_zh": "外语"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "law"
+     ],
+     "source_zh": "法律"
+    },
+    {
+     "kind": "choose",
+     "count": 2,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "两项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "any",
+     "count": 2,
+     "options": [],
+     "source_zh": "任意两项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "zealot",
+   "name_en": "Zealot",
+   "name_zh": "狂热者",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 113,
+   "credit_rating": [
+    0,
+    30
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 2
+    },
+    {
+     "stats": [
+      "APP",
+      "POW"
+     ],
+     "mult": 2
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "history"
+     ],
+     "source_zh": "历史"
+    },
+    {
+     "kind": "choose",
+     "count": 2,
+     "options": [
+      "charm",
+      "fast_talk",
+      "intimidate",
+      "persuade"
+     ],
+     "source_zh": "两项社交技能（魅惑、话术、恐吓、说服）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "psychology"
+     ],
+     "source_zh": "心理学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "stealth"
+     ],
+     "source_zh": "潜行"
+    },
+    {
+     "kind": "any",
+     "count": 3,
+     "options": [],
+     "source_zh": "任意三项其他个人或时代特长"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  },
+  {
+   "key": "zookeeper",
+   "name_en": "Zookeeper",
+   "name_zh": "饲养员",
+   "era": null,
+   "rulebook_variant": false,
+   "source_row": 114,
+   "credit_rating": [
+    9,
+    40
+   ],
+   "skill_points": [
+    {
+     "stats": [
+      "EDU"
+     ],
+     "mult": 4
+    }
+   ],
+   "slots": [
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "animal_handling"
+     ],
+     "source_zh": "动物驯养"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "accounting"
+     ],
+     "source_zh": "会计"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "dodge"
+     ],
+     "source_zh": "闪避"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "first_aid"
+     ],
+     "source_zh": "急救"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "natural_world"
+     ],
+     "source_zh": "自然"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "medicine"
+     ],
+     "source_zh": "医学"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "pharmacy"
+     ],
+     "source_zh": "科学（制药，动物学）"
+    },
+    {
+     "kind": "fixed",
+     "count": 1,
+     "options": [
+      "zoology"
+     ],
+     "source_zh": "科学（制药，动物学）"
+    }
+   ],
+   "keeper_note_zh": null,
+   "verified": false,
+   "issues": []
+  }
+ ]
+}
