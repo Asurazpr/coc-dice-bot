@@ -13,7 +13,8 @@ from cocbot.characters.service import (
     NotFound,
     ValidationError,
 )
-from tests.helpers import fresh_db
+from cocbot.ui.sheet_text import build_sheet_text
+from tests.helpers import SeqRandom, fresh_db
 
 ALICE, BOB = "111111111111111111", "222222222222222222"
 GUILD_A, GUILD_B = 900000000000000001, 900000000000000002
@@ -355,6 +356,115 @@ class SelectionScopeRegressionTests(ServiceTestCase):
         self.svc.select(BOB, b.id, GUILD_A)
         self.svc.clear_selection(ALICE, GUILD_A)
         self.assertEqual(self.svc.active(BOB, GUILD_A).id, b.id)
+
+
+class HpMpConsistencyRegressionTests(ServiceTestCase):
+    """Final M1 fix: current HP/MP never exceed the maximum after characteristic changes.
+
+    FULL gives HP max (55+65)/10 = 12 and MP max 45/5 = 9.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.inv = self.svc.create(ALICE, "Ada")
+        self.svc.set_characteristics(ALICE, self.inv.id, FULL)
+
+    def stored(self, investigator_id=None):
+        row = self.conn.execute(
+            "SELECT hp_current, mp_current FROM investigators WHERE investigator_id=?",
+            (investigator_id or self.inv.id,),
+        ).fetchone()
+        return row["hp_current"], row["mp_current"]
+
+    def test_reduction_clamps_and_persists(self):
+        self.svc.set_resources(ALICE, self.inv.id, hp=11, mp=8)
+        inv = self.svc.set_characteristics(ALICE, self.inv.id, {"CON": 25, "POW": 20})  # HP 9, MP 4
+        self.assertEqual((inv.hp, inv.mp), (9, 4))
+        self.assertEqual(self.stored(), (9, 4))
+
+    def test_values_below_new_max_unchanged(self):
+        self.svc.set_resources(ALICE, self.inv.id, hp=5, mp=2)
+        inv = self.svc.set_characteristics(ALICE, self.inv.id, {"CON": 45, "POW": 30})  # HP 11, MP 6
+        self.assertEqual((inv.hp, inv.mp), (5, 2))
+        self.assertEqual(self.stored(), (5, 2))
+
+    def test_increase_does_not_heal(self):
+        self.svc.set_resources(ALICE, self.inv.id, hp=5, mp=2)
+        inv = self.svc.set_characteristics(ALICE, self.inv.id, {"CON": 90, "POW": 80})  # HP 15, MP 16
+        self.assertEqual((inv.hp, inv.mp), (5, 2))
+        self.assertEqual(self.stored(), (5, 2))
+        self.assertEqual((inv.derived().hp_max, inv.derived().mp_max), (15, 16))
+
+    def test_null_follows_maximum_both_ways(self):
+        inv = self.svc.set_characteristics(ALICE, self.inv.id, {"CON": 25, "POW": 20})
+        self.assertEqual((inv.hp, inv.mp), (9, 4))
+        self.assertEqual(self.stored(), (None, None))
+        inv = self.svc.set_characteristics(ALICE, self.inv.id, {"CON": 90, "POW": 80})
+        self.assertEqual((inv.hp, inv.mp), (15, 16))
+        self.assertEqual(self.stored(), (None, None))
+
+    def test_zero_stays_zero(self):
+        inv = self.svc.set_resources(ALICE, self.inv.id, hp=0, mp=0)
+        self.assertEqual((inv.hp, inv.mp), (0, 0))
+        for change in ({"CON": 25, "POW": 20}, {"CON": 90, "POW": 80}):
+            inv = self.svc.set_characteristics(ALICE, self.inv.id, change)
+            self.assertEqual((inv.hp, inv.mp), (0, 0))
+            self.assertEqual(self.stored(), (0, 0))
+        fields = dict((n, v) for n, v, _ in build_sheet_text(inv, {}).fields)
+        self.assertIn("**HP** 0/15", fields["Status"])
+        self.assertIn("**MP** 0/16", fields["Status"])
+
+    def test_draft_reroll_clamps(self):
+        self.svc.set_resources(ALICE, self.inv.id, hp=12, mp=9)
+        # all dice 1: CON 15, SIZ 40, POW 15 -> HP (15+40)/10 = 5, MP 3
+        inv = self.svc.roll_characteristics(ALICE, self.inv.id, SeqRandom([1] * 24))
+        self.assertEqual((inv.characteristics["CON"], inv.characteristics["SIZ"], inv.characteristics["POW"]),
+                         (15, 40, 15))
+        self.assertEqual((inv.hp, inv.mp), (5, 3))
+        self.assertEqual(self.stored(), (5, 3))
+
+    def test_clearing_a_draft_characteristic_keeps_value(self):
+        self.svc.set_resources(ALICE, self.inv.id, hp=7)
+        inv = self.svc.set_characteristics(ALICE, self.inv.id, {"CON": ""})  # max unknown
+        self.assertEqual(inv.hp, 7)
+        inv = self.svc.set_characteristics(ALICE, self.inv.id, {"CON": 10})  # HP (10+65)/10 = 7
+        self.assertEqual(inv.hp, 7)
+        inv = self.svc.set_characteristics(ALICE, self.inv.id, {"CON": 5})   # HP 7 -> (5+65)/10 = 7
+        self.assertEqual(inv.hp, 7)
+
+    def test_out_of_range_stored_value_capped_on_read(self):
+        # e.g. legacy-imported data or a direct database edit
+        self.conn.execute("UPDATE investigators SET hp_current=50, mp_current=50 WHERE investigator_id=?",
+                          (self.inv.id,))
+        self.conn.commit()
+        inv = self.svc.get(ALICE, self.inv.id)
+        self.assertEqual((inv.hp, inv.mp), (12, 9))
+
+
+class HpMpPersistenceRegressionTests(unittest.TestCase):
+    def test_clamped_values_survive_reopen(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "bot.sqlite3")
+            conn = fresh_db(path)
+            svc = InvestigatorService(conn)
+            a = svc.create(ALICE, "Ada")
+            svc.set_characteristics(ALICE, a.id, FULL)
+            svc.set_resources(ALICE, a.id, hp=11, mp=0)
+            svc.set_characteristics(ALICE, a.id, {"CON": 25})          # HP max 9
+            b = svc.create(ALICE, "Bram")
+            svc.set_characteristics(ALICE, b.id, FULL)                 # NULL current values
+            svc.set_characteristics(ALICE, b.id, {"SIZ": 35, "POW": 25})
+            conn.close()
+
+            conn2 = fresh_db(path)
+            svc2 = InvestigatorService(conn2)
+            a2, b2 = svc2.get(ALICE, a.id), svc2.get(ALICE, b.id)
+            self.assertEqual((a2.hp_current, a2.mp_current, a2.hp, a2.mp), (9, 0, 9, 0))
+            self.assertEqual((b2.hp_current, b2.mp_current, b2.hp, b2.mp), (None, None, 9, 5))
+            sheet = dict((n, v) for n, v, _ in build_sheet_text(a2, {}).fields)
+            self.assertIn("**HP** 9/9", sheet["Status"])
+            self.assertIn("**MP** 0/9", sheet["Status"])
+            conn2.close()
 
 
 if __name__ == "__main__":

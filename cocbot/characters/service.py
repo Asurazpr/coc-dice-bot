@@ -23,7 +23,7 @@ from cocbot.characters.models import (
 from cocbot.db import repo_investigators as repo
 from cocbot.db.repo_skill_defs import resolve_skill
 from cocbot.mechanics import generation
-from cocbot.mechanics.derived import CHARACTERISTICS
+from cocbot.mechanics.derived import CHARACTERISTICS, compute_derived
 
 MAX_LIVE_INVESTIGATORS = 25   # Discord select menus hold at most 25 options
 NAME_MAX = 64
@@ -236,6 +236,7 @@ class InvestigatorService:
                 raise ValidationError(f"Unknown characteristic {key!r}.")
         if inv.status == STATUS_READY and any(v is None for v in changes.values()):
             raise ValidationError("A finished investigator cannot have blank characteristics.")
+        changes.update(_clamp_resources_for(inv, changes))
         return self._write(inv, changes)
 
     def roll_characteristics(
@@ -253,6 +254,7 @@ class InvestigatorService:
         changes: Dict[str, object] = {CHAR_COLUMNS[k]: rolled[k] for k in CHARACTERISTICS}
         changes["luck"] = rolled["LUCK"]
         changes["creation_step"] = "skills"
+        changes.update(_clamp_resources_for(inv, changes))
         return self._write(inv, changes)
 
     def set_skill(self, actor_id: object, investigator_id: int, skill: str, value: object) -> Investigator:
@@ -374,6 +376,32 @@ class InvestigatorService:
             self.conn.rollback()
             raise ValidationError(f"Rejected by the database: {e}") from None
         return self.get(inv.owner_user_id, inv.id)
+
+
+def _clamp_resources_for(inv: Investigator, char_changes: Mapping[str, object]) -> Dict[str, object]:
+    """Stored current HP/MP that would exceed the new maximum, lowered to it.
+
+    Returned changes are written in the same UPDATE (one transaction) as the
+    characteristic edit. Rules:
+    * NULL current values mean "at maximum" and are left NULL, so they keep
+      following the derived maximum automatically;
+    * values at or below the new maximum are untouched (raising a maximum
+      never heals or restores MP);
+    * 0 is a real value (never treated as missing) and stays 0.
+    If a maximum becomes unknown (a draft characteristic cleared) nothing is
+    changed; the model still caps on read once it is known again.
+    """
+    merged = dict(inv.characteristics)
+    for key, column in CHAR_COLUMNS.items():
+        if column in char_changes:
+            merged[key] = char_changes[column]  # type: ignore[assignment]
+    d = compute_derived(merged, age=inv.age, cthulhu_mythos=inv.skills.get("cthulhu_mythos", 0))
+    out: Dict[str, object] = {}
+    for column, current, maximum in (("hp_current", inv.hp_current, d.hp_max),
+                                     ("mp_current", inv.mp_current, d.mp_max)):
+        if current is not None and maximum is not None and current > maximum:
+            out[column] = maximum
+    return out
 
 
 def _now(conn: sqlite3.Connection) -> str:

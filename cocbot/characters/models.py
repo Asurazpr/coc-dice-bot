@@ -59,13 +59,20 @@ class Investigator:
             self.characteristics, age=self.age, cthulhu_mythos=self.skills.get("cthulhu_mythos", 0)
         )
 
+    @staticmethod
+    def _current(stored: Optional[int], maximum: Optional[int]) -> Optional[int]:
+        """Stored value capped at the maximum; NULL means "at maximum"; 0 stays 0."""
+        if stored is None:
+            return maximum
+        return min(int(stored), maximum) if maximum is not None else int(stored)
+
     @property
     def hp(self) -> Optional[int]:
-        return self.hp_current if self.hp_current is not None else self.derived().hp_max
+        return self._current(self.hp_current, self.derived().hp_max)
 
     @property
     def mp(self) -> Optional[int]:
-        return self.mp_current if self.mp_current is not None else self.derived().mp_max
+        return self._current(self.mp_current, self.derived().mp_max)
 
     @property
     def san(self) -> Optional[int]:

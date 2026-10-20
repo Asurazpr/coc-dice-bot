@@ -14,6 +14,7 @@ accounts (A and B), and a fresh database (`COC_DB_PATH=data/test.sqlite3`).
 - [ ] **Roll characteristics** on a sheet with values asks for a second click, then fills all nine values (multiples of 5, SIZ/INT/EDU ≥ 40).
 - [ ] **Skill**: "Spot Hidden" 70, then "侦查" blank → skill removed.
 - [ ] **HP·MP·SAN·Luck**: HP above max is rejected; blank HP resets to max.
+- [ ] Set HP below max, then lower CON: HP drops only if it is now above the new max. Raise CON again: HP does not heal. With HP blank (full), HP follows the new max.
 - [ ] **Finish basic sheet** is disabled until all characteristics and Luck are set; afterwards the status reads "Basic sheet complete", the message says full CoC 7e creation is not checked, and Roll/Finish buttons disappear.
 - [ ] `/character create` "Harvey" — second investigator; "ada" as a name is rejected as a duplicate.
 
