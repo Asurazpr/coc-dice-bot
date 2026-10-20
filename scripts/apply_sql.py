@@ -1,40 +1,42 @@
+"""Create or upgrade the bot database.
+
+Usage:
+    python scripts/apply_sql.py            # uses COC_DB_PATH or data/coc_bot.sqlite3
+    python scripts/apply_sql.py --db PATH
+
+Safe to run repeatedly: only pending migrations are applied. The bot also runs
+this automatically at start-up.
+"""
 from __future__ import annotations
 
-import sqlite3
+import argparse
+import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-ROOT = Path(__file__).resolve().parents[1]
-DB_PATH = ROOT / "data" / "coc_bot.sqlite3"
-SQL_DIR = ROOT / "data" / "sql"
+from cocbot.config import settings  # noqa: E402
+from cocbot.db.connection import connect  # noqa: E402
+from cocbot.db.migrate import applied_versions, migrate  # noqa: E402
 
 
 def main() -> None:
-    if not DB_PATH.exists():
-        raise FileNotFoundError(f"DB not found: {DB_PATH}")
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--db", default=str(settings.DB_PATH), help="SQLite database path")
+    args = parser.parse_args()
 
-    sql_files = sorted(
-        p for p in SQL_DIR.iterdir()
-        if p.suffix == ".sql" and p.name[:3].isdigit() and p.name[3] == "_"
-    )
-
-    if not sql_files:
-        raise FileNotFoundError(f"No .sql files found in: {SQL_DIR}")
-
-    conn = sqlite3.connect(str(DB_PATH))
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA foreign_keys = ON;")
-
+    conn = connect(args.db)
     try:
-        for path in sql_files:
-            sql = path.read_text(encoding="utf-8")
-            conn.executescript(sql)
-            conn.commit()
-            print(f"[OK] Applied {path.name}")
+        applied = migrate(conn, log=print)
+        versions = sorted(applied_versions(conn))
     finally:
         conn.close()
 
-    print("[DONE] All migrations applied.")
+    if not applied:
+        print("[DONE] Database already up to date.")
+    else:
+        print(f"[DONE] Applied {len(applied)} migration(s).")
+    print(f"       Database: {args.db}  (schema versions: {versions[0]:03d}-{versions[-1]:03d})")
 
 
 if __name__ == "__main__":
