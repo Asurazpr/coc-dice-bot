@@ -11,14 +11,19 @@ derived stats; trained skills; tracked HP/MP/SAN/Luck; `/check` against the
 active investigator (skills, derived skills, characteristics, Luck, SAN);
 versioned migrations with legacy import; tests and CI.
 
-## M2 — Complete RAW character creation
+## M2 — Complete RAW character creation (in progress: PR for `feature/occupations`)
 
-1. **Occupation catalogue** as a reviewed SQL seed (EN/ZH names, occupation skill list incl. "any two" choices, Credit Rating range, skill-point formula such as EDU×4 or EDU×2+DEX×2). Source the data from the Keeper/Investigator Handbook rather than the Excel sheet; keep Excel import as an optional developer tool.
-2. **Skill-point allocation step**: occupation points and personal-interest points (INT×2), Credit Rating within the occupation range, running totals and validation (no skill above 99 at creation, Cthulhu Mythos not allowed).
-3. **Specializations**: Art/Craft, Science, Language (Other), Pilot, Fighting, Firearms, Survival — using the reserved `specialization` column.
-4. **Age step** (RAW table): STR/CON/DEX/APP deductions with player choice where the rules allow it, EDU improvement checks, Luck re-roll for 15–19.
-5. **Wizard resume** using `creation_step`, with a "Continue creating" button in `/character list`.
-6. **Optional generation methods** behind explicit house-rule flags: quick-fire array, point-buy. Never silently applied.
+Done in the first M2 slice: occupation catalogue (113, EN/ZH, searchable, homebrew), occupation skill
+choices, occupation and personal-interest budgets, Credit Rating range, 99 cap, review and resumable
+creation. Details and open rule questions: `docs/OCCUPATIONS.md`.
+
+Remaining:
+
+1. **Verify the catalogue** against the rulebooks and mark entries `verified`; resolve the flagged items in `docs/OCCUPATIONS.md` (Musician formula, unreviewed English names, approximated specializations).
+2. **Specializations**: Art/Craft (Technical Drawing, Instrument, Farming, …), Language (Other) per language, Pilot (Aircraft/Boat), Survival (environment), using the reserved `specialization` column, so the approximations can be removed.
+3. **Age step** (RAW table): STR/CON/DEX/APP deductions with player choice where the rules allow it, EDU improvement checks, Luck re-roll for 15–19.
+4. **Keeper-shared homebrew** occupations (needs the campaign/Keeper roles of M4).
+5. **Optional rules** behind explicit house-rule flags: creation skill cap (75/80), quick-fire array, point-buy. Never silently applied.
 
 ## M3 — Play at the table
 

@@ -17,3 +17,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: pip install -r requirements-dev.txt
       - run: python -m pytest -q
+      - name: Occupation catalogue matches the spreadsheets
+        if: matrix.python-version == '3.12'
+        run: |
+          pip install "openpyxl>=3.1"
+          python scripts/import_occupations.py --check

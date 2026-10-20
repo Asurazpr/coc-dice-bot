@@ -22,9 +22,13 @@ Built as a personal passion project to support real tabletop play rather than a 
 * **/character create** opens a form; a step-by-step editor (buttons + forms) handles
   characteristics (enter them, or roll with the standard 3D6×5 / (2D6+6)×5 method),
   trained skills, current HP / MP / SAN / Luck, and finishing the basic sheet
-* **"Finish basic sheet"** only means every characteristic and Luck is filled in, so the bot can
-  roll with it. It does **not** yet check full CoC 7e creation (occupation, skill-point
-  allocation, age adjustments); agree those with your Keeper until they are automated
+* **Occupation & skills**: choose from 113 occupations (searchable in English and Chinese) or a
+  custom one, make the occupation's skill choices, then spend occupation points (from the
+  occupation's formula) and personal interest points (INT×2) with both budgets tracked. The bot
+  enforces occupation-only spending, the Credit Rating range and the 99 cap, and saves every step
+  so creation can be resumed later. Age adjustments are not automated yet
+* **"Finish basic sheet"** (no occupation) only means every characteristic and Luck is filled in;
+  the occupation rules are checked only when an occupation is chosen
 * Derived stats calculated automatically: HP, MP, SAN, Damage Bonus, Build, MOV (incl. age), Dodge
 * Each Discord user has a **personal collection** of investigators (draft, basic sheet complete, archived)
 * **Active investigator per user** — one player's choice never affects another's. You can choose one
@@ -208,6 +212,9 @@ and are skipped otherwise. Manual checks: [docs/MANUAL_TESTING.md](docs/MANUAL_T
 /character unselect                 clear this server's choice so your default applies here
 /character skill skill:Spot Hidden value:70   set a trained skill (active investigator)
 /character view public:True         show your sheet to the table
+/character creation                 occupation → choices → skill points → review (resumable)
+/character occupation occupation:医生   choose an occupation (autocomplete, EN/中文)
+/character allocate skill:Law occupation_points:40   spend creation points on one skill
 /character edit | archive | restore | delete
 ```
 

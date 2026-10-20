@@ -16,6 +16,14 @@ from cocbot.mechanics.derived import CHARACTERISTICS
 STATUS_BADGE = {STATUS_DRAFT: "📝 Draft", "ready": "✅ Basic sheet complete", STATUS_ARCHIVED: "🗄️ Archived"}
 
 
+def status_badge(inv: Investigator) -> str:
+    if inv.status == "ready" and inv.creation_validated:
+        return "✅ Created (occupation rules checked)"
+    if inv.status == STATUS_DRAFT and inv.occupation_id:
+        return "📝 Draft · creation in progress"
+    return STATUS_BADGE.get(inv.status, inv.status)
+
+
 def _v(x: Optional[object]) -> str:
     return "—" if x is None else str(x)
 
@@ -50,7 +58,7 @@ def build_sheet_text(
         f"from {inv.birthplace}" if inv.birthplace else None,
         f"lives in {inv.residence}" if inv.residence else None,
     ) if b]
-    desc = [STATUS_BADGE.get(inv.status, inv.status) + ("  ·  ⭐ Active here" if active_here else "")]
+    desc = [status_badge(inv) + ("  ·  ⭐ Active here" if active_here else "")]
     if bio_bits:
         desc.append(" · ".join(bio_bits))
 
@@ -120,7 +128,7 @@ def _list_line(inv: Investigator, active_id: Optional[int]) -> str:
     if inv.occupation:
         o = inv.occupation
         occ = " — " + (o if len(o) <= _OCCUPATION_MAX else o[: _OCCUPATION_MAX - 1] + "…")
-    return f"{star}**{inv.name}**{occ}  `#{inv.id}` · {STATUS_BADGE.get(inv.status, inv.status)}"
+    return f"{star}**{inv.name}**{occ}  `#{inv.id}` · {status_badge(inv)}"
 
 
 def selection_summary(server: Optional[Investigator], default: Optional[Investigator], in_guild: bool) -> str:
