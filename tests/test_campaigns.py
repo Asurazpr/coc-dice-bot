@@ -246,6 +246,16 @@ class StateIsolationTests(Base):
         self.svc.leave(ALICE, self.other.id)
         self.inv.archive(ALICE, self.ada.id)
 
+    def test_deleting_after_leaving_keeps_the_audit_trail(self):
+        self.svc.adjust(KEEPER, self.camp.id, self.ada.id, {"hp": 3}, confirmed=True)
+        self.svc.leave(ALICE, self.camp.id)
+        self.svc.leave(ALICE, self.other.id)
+        self.inv.archive(ALICE, self.ada.id)
+        self.inv.delete(ALICE, self.ada.id)
+        events = self.svc.history(KEEPER, self.camp.id, limit=50)
+        self.assertIn(("resource", "12", "3"), [(e.kind, e.old_value, e.new_value) for e in events])
+        self.assertTrue(all(e.investigator_id is None for e in events))
+
 
 class AdjustmentAndConditionTests(Base):
     def setUp(self):
