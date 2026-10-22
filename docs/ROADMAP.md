@@ -45,4 +45,4 @@ JSON export/import of an investigator; optional import of the existing Excel cha
 
 ## M6 — Operations and localisation
 
-Chinese UI strings (skill names already bilingual), structured logging, database backups, deployment guide, optional PostgreSQL if usage outgrows SQLite.
+Chinese UI strings for the remaining screens (the creation wizard, skill picker and point forms are already localized via `/language`), structured logging, database backups, deployment guide, optional PostgreSQL if usage outgrows SQLite.

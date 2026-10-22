@@ -118,4 +118,24 @@ Hand-entered skill values (closes a validation bypass found in review):
 
 ## 7. Creation flow in Discord
 
-Biography → Characteristics → Occupation → Occupation skill choices → Skill-point allocation → Review & Finish. Every step saves immediately; the editor shows **Continue creation** to resume from `creation_step`. Details and manual checks: `docs/MANUAL_TESTING.md` (Milestone 2 section).
+Biography → Characteristics → Occupation → Occupation skill choices → Skill-point allocation → Review & Finish. Every step saves immediately; **Occupation & skills** in the sheet editor resumes at the right step. Details and manual checks: `docs/MANUAL_TESTING.md` (Milestone 2 sections).
+
+### Point forms are atomic
+
+A points form (up to 5 skills, one budget) is validated as one batch against the **final** totals (`rules.evaluate_batch`) and written in one transaction, or not at all:
+
+* Order does not matter, and lowering one skill while raising another works even when the budget was fully spent.
+* If the batch would exceed a budget, nothing is saved and the reply states the exact excess (e.g. "exceed the budget by 15 (315 of 300; 60 occupation points were left)").
+* Per-skill rules (occupation-only spending, 99 cap, Credit Rating maximum, Cthulhu Mythos, unreconciled hand-entered values) apply to each changed skill in the batch.
+* A budget that is already over its limit (e.g. after EDU was lowered) may be reduced in steps; a batch is refused only if it *increases* spending in a budget that ends over the limit.
+* Two modes, switched with a button: **set totals** (each field is the skill's total from that budget; blank = 0) and **add points** (signed changes such as `+10` / `-5`; blank = no change).
+
+### Skill picker
+
+Discord select menus hold at most 25 options, so all 85 skills are never put into one dropdown. Choices with ≤ 25 options are shown directly; larger sets (e.g. "any two skills", or personal interest) first offer nine categories, each ≤ 25 skills (`cocbot/ui/skill_picker.py`), plus search by English/Chinese name, canonical key or alias in any display language. The same picker serves occupation choices and personal-interest skills.
+
+*Modal select menus* (`discord.ui.Label` with a `Select`) exist since discord.py 2.6. They were not used: options are still capped at 25, a modal cannot change its options after opening (so no category drill-down inside it), and it would raise the minimum discord.py version from 2.4. The picker uses ordinary message components instead.
+
+### Display language
+
+`/language` stores a per-user preference (`user_preferences`, migration 012): English, 简体中文 or bilingual. Without a stored choice, Chinese Discord clients default to Chinese. Localized: the occupation wizard, skill picker, point forms and the creation-related validation errors (`cocbot/i18n.py`). Skill keys and occupation keys stay language-independent; search accepts both languages regardless of the preference. Not yet localized: Milestone 1 screens (sheet, list, basic editor), `/check` and `/roll`.

@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
 
 from cocbot.config import repo_root
+from cocbot.i18n import Msg
 from cocbot.occupations.zh_parser import CATEGORY_OPTIONS
 
 CATALOGUE_PATH = repo_root() / "data" / "occupations" / "occupations.json"
@@ -223,10 +224,10 @@ def parse_formula_choice(text: str) -> Tuple[dict, ...]:
         return ({"stats": ["EDU"], "mult": 4},)
     m = re.fullmatch(r"EDU\*2\+([A-Z/]+)\*2", t) or re.fullmatch(r"([A-Z/]+)", t)
     if not m:
-        raise CatalogueError("Formula must be EDU*4 or EDU*2 + one characteristic ×2 (e.g. EDU*2+DEX*2).")
+        raise CatalogueError(Msg("hb_formula"))
     stats = sorted(set(m.group(1).split("/")))
     if not stats or not set(stats) <= set(STATS) or "EDU" in stats:
-        raise CatalogueError(f"Second formula characteristic must be one of {', '.join(s for s in STATS if s != 'EDU')}.")
+        raise CatalogueError(Msg("hb_formula_stat", stats=", ".join(s for s in STATS if s != "EDU")))
     return ({"stats": ["EDU"], "mult": 2}, {"stats": stats, "mult": 2})
 
 
@@ -235,9 +236,9 @@ def create_homebrew(conn: sqlite3.Connection, owner_user_id: object, name: str,
     """A Keeper-agreed custom occupation: any 8 skills, chosen in the next step."""
     name = " ".join((name or "").split())
     if not name or len(name) > 64:
-        raise CatalogueError("Occupation name must be 1-64 characters.")
+        raise CatalogueError(Msg("hb_name"))
     if not (0 <= credit_min <= credit_max <= 99):
-        raise CatalogueError("Credit Rating range must satisfy 0 ≤ min ≤ max ≤ 99.")
+        raise CatalogueError(Msg("hb_credit"))
     key = f"homebrew_{owner_user_id}_{re.sub(r'[^a-z0-9]+', '_', name.lower()).strip('_') or 'occupation'}"
     n = 1
     base = key

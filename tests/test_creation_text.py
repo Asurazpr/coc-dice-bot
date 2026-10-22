@@ -34,12 +34,15 @@ class CreationTextTests(unittest.TestCase):
         self.conn.close()
 
     def test_every_occupation_detail_fits_embed_fields(self):
-        for occ in catalogue.search(self.conn, ALICE, "", limit=1000):
-            with self.subTest(occ.key):
-                for name, value in occupation_detail(occ, self.names):
-                    self.assertLessEqual(len(name), 256)
-                    self.assertLessEqual(len(value), 1024)
-                    self.assertTrue(value)
+        from cocbot.i18n import skill_names
+        for lang in ("en", "zh", "both"):
+            names = skill_names(self.conn, lang)
+            for occ in catalogue.search(self.conn, ALICE, "", limit=1000):
+                with self.subTest(lang=lang, occ=occ.key):
+                    for name, value in occupation_detail(occ, names, lang):
+                        self.assertLessEqual(len(name), 256)
+                        self.assertLessEqual(len(value), 1024)
+                        self.assertTrue(value)
 
     def test_detail_content(self):
         fields = dict(occupation_detail(catalogue.find(self.conn, ALICE, "accountant"), self.names))

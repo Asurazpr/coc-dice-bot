@@ -40,6 +40,7 @@ class Ctx:
     db_path: str
     owner_id: int
     guild_id: Optional[int]
+    lang: str = "en"          # display language: 'en' | 'zh' | 'both'
 
 
 @contextmanager
@@ -61,8 +62,20 @@ def render_panel(ctx: Ctx, investigator_id: int) -> Tuple[discord.Embed, "Editor
     return embed, EditorView(ctx, inv)
 
 
-async def reply_error(interaction: discord.Interaction, err: Exception) -> None:
-    msg = f"⚠️ {err}" if isinstance(err, CharacterError) else "⚠️ Something went wrong. Please try again."
+def error_text(err: Exception, ctx: Optional[Ctx] = None) -> str:
+    """User-facing text for an error, localized when it carries a Msg and the language is known."""
+    from cocbot.i18n import Msg, localize, localized_names
+    if not isinstance(err, CharacterError):
+        return "⚠️ Something went wrong. Please try again."
+    payload = err.args[0] if err.args else str(err)
+    if ctx is not None and ctx.lang != "en" and isinstance(payload, Msg):
+        with get_conn(ctx.db_path) as conn:
+            return f"⚠️ {localize(payload, ctx.lang, localized_names(conn))}"
+    return f"⚠️ {err}"
+
+
+async def reply_error(interaction: discord.Interaction, err: Exception, ctx: Optional[Ctx] = None) -> None:
+    msg = error_text(err, ctx)
     if not isinstance(err, CharacterError):
         log.exception("Unhandled error in character UI", exc_info=err)
     if interaction.response.is_done():
@@ -102,7 +115,7 @@ class OwnedModal(discord.ui.Modal):
         return interaction.user.id == self.ctx.owner_id
 
     async def on_error(self, interaction: discord.Interaction, error: Exception) -> None:  # type: ignore[override]
-        await reply_error(interaction, error)
+        await reply_error(interaction, error, self.ctx)
 
     async def apply(self, svc: InvestigatorService) -> Investigator:  # pragma: no cover - overridden
         raise NotImplementedError
@@ -112,7 +125,7 @@ class OwnedModal(discord.ui.Modal):
             with service(self.ctx) as svc:
                 inv = await self.apply(svc)
         except CharacterError as e:
-            await reply_error(interaction, e)
+            await reply_error(interaction, e, self.ctx)
             return
         if self.from_panel:
             await refresh_panel(interaction, self.ctx, inv.id)
@@ -218,7 +231,7 @@ class OwnedView(discord.ui.View):
         return True
 
     async def on_error(self, interaction: discord.Interaction, error: Exception, item) -> None:  # type: ignore[override]
-        await reply_error(interaction, error)
+        await reply_error(interaction, error, self.ctx)
 
 
 class EditorView(OwnedView):
@@ -396,7 +409,7 @@ class CollectionView(OwnedView):
         try:
             embed, view = render_panel(self.ctx, investigator_id)
         except CharacterError as e:
-            await reply_error(interaction, e)
+            await reply_error(interaction, e, self.ctx)
             return
         await interaction.response.edit_message(content=None, embed=embed, view=view)
 

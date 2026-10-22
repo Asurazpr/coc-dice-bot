@@ -136,6 +136,26 @@ def register_commands(bot: CocBot) -> None:
                     choices.append(app_commands.Choice(name=label[:100], value=key))
         return choices[:25]
 
+    @tree.command(name="language", description="Display language for creation steps / 选择显示语言")
+    @app_commands.describe(language="English, 简体中文, or both / 英文、简体中文或双语")
+    @app_commands.choices(language=[
+        app_commands.Choice(name="English", value="en"),
+        app_commands.Choice(name="简体中文", value="zh"),
+        app_commands.Choice(name="Bilingual / 双语", value="both"),
+    ])
+    async def language(interaction: discord.Interaction,
+                       language: Optional[app_commands.Choice[str]] = None) -> None:
+        from cocbot.i18n import LANG_NAMES, render
+        from cocbot.preferences import get_language, set_language
+        with get_conn(bot.db_path) as conn:
+            if language is None:
+                lang = get_language(conn, interaction.user.id, getattr(interaction, "locale", None))
+                text = render("lang_current", lang, name=LANG_NAMES[lang])
+            else:
+                lang = set_language(conn, interaction.user.id, language.value)
+                text = render("lang_set", lang, name=LANG_NAMES[lang])
+        await interaction.response.send_message(text, ephemeral=True)
+
     @tree.error
     async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError) -> None:
         # Single error funnel for every command (including the /character group):

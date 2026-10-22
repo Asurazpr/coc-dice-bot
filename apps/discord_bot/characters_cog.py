@@ -13,6 +13,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from apps.discord_bot.views import (
+    error_text,
     BioModal,
     ConfirmDeleteView,
     Ctx,
@@ -26,6 +27,7 @@ from apps.discord_bot.views import (
 from cocbot.characters.service import CharacterError, GLOBAL_SCOPE, guild_scope
 from cocbot.db.connection import get_conn
 from cocbot.db.repo_skill_defs import resolve_skill, search_skills
+from cocbot.i18n import occupation_name, render
 
 INVESTIGATOR_DESC = "Your investigator (name or pick from the list)"
 
@@ -37,7 +39,10 @@ class CharacterCog(commands.GroupCog, group_name="character", group_description=
         super().__init__()
 
     def ctx(self, interaction: discord.Interaction) -> Ctx:
-        return Ctx(db_path=self.db_path, owner_id=interaction.user.id, guild_id=interaction.guild_id)
+        from cocbot.preferences import get_language
+        with get_conn(self.db_path) as conn:
+            lang = get_language(conn, interaction.user.id, getattr(interaction, "locale", None))
+        return Ctx(db_path=self.db_path, owner_id=interaction.user.id, guild_id=interaction.guild_id, lang=lang)
 
     # --- autocomplete --------------------------------------------------------
     async def _choices(self, interaction: discord.Interaction, current: str, archived: Optional[bool]):
@@ -97,7 +102,7 @@ class CharacterCog(commands.GroupCog, group_name="character", group_description=
             with service(self.ctx(interaction)) as svc:
                 embed = sheet_embed(svc, inv, interaction.guild_id)
         except CharacterError as e:
-            await reply_error(interaction, e)
+            await reply_error(interaction, e, self.ctx(interaction))
             return
         await interaction.response.send_message(embed=embed, ephemeral=not public)
 
@@ -108,7 +113,7 @@ class CharacterCog(commands.GroupCog, group_name="character", group_description=
             inv = self._resolve(interaction, investigator)
             embed, view = render_panel(self.ctx(interaction), inv.id)
         except CharacterError as e:
-            await reply_error(interaction, e)
+            await reply_error(interaction, e, self.ctx(interaction))
             return
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
@@ -124,7 +129,7 @@ class CharacterCog(commands.GroupCog, group_name="character", group_description=
                 svc.select(interaction.user.id, inv.id, interaction.guild_id, everywhere=everywhere)
                 here, here_scope = svc.active_with_scope(interaction.user.id, interaction.guild_id)
         except CharacterError as e:
-            await reply_error(interaction, e)
+            await reply_error(interaction, e, self.ctx(interaction))
             return
         scope = GLOBAL_SCOPE if everywhere or interaction.guild_id is None else guild_scope(interaction.guild_id)
         msg = f"⭐ **{inv.name}** is now active {scope_label(scope)}."
@@ -161,7 +166,7 @@ class CharacterCog(commands.GroupCog, group_name="character", group_description=
                 inv = svc.set_skill(interaction.user.id, inv.id, skill, value)
                 sd = resolve_skill(skill, conn=svc.conn)
         except CharacterError as e:
-            await reply_error(interaction, e)
+            await reply_error(interaction, e, self.ctx(interaction))
             return
         await interaction.response.send_message(
             f"📚 **{inv.name}**: {sd.display_name if sd else skill} = **{value}**", ephemeral=True)
@@ -173,7 +178,7 @@ class CharacterCog(commands.GroupCog, group_name="character", group_description=
             with service(self.ctx(interaction)) as svc:
                 inv = svc.archive(interaction.user.id, svc.find(interaction.user.id, investigator).id)
         except CharacterError as e:
-            await reply_error(interaction, e)
+            await reply_error(interaction, e, self.ctx(interaction))
             return
         await interaction.response.send_message(
             f"🗄️ **{inv.name}** archived. Restore with `/character restore`.", ephemeral=True)
@@ -186,7 +191,7 @@ class CharacterCog(commands.GroupCog, group_name="character", group_description=
                 inv = svc.restore(interaction.user.id,
                                   svc.find(interaction.user.id, investigator, include_archived=True).id)
         except CharacterError as e:
-            await reply_error(interaction, e)
+            await reply_error(interaction, e, self.ctx(interaction))
             return
         await interaction.response.send_message(f"♻️ **{inv.name}** restored.", ephemeral=True)
 
@@ -200,7 +205,7 @@ class CharacterCog(commands.GroupCog, group_name="character", group_description=
                 if not inv.is_archived:
                     raise CharacterError("Only archived investigators can be deleted. Archive it first.")
         except CharacterError as e:
-            await reply_error(interaction, e)
+            await reply_error(interaction, e, self.ctx(interaction))
             return
         await interaction.response.send_message(
             f"Permanently delete **{inv.name}** and all their skills? This cannot be undone.",
@@ -210,20 +215,23 @@ class CharacterCog(commands.GroupCog, group_name="character", group_description=
     async def occupation_autocomplete(self, interaction: discord.Interaction, current: str):
         from cocbot.occupations import catalogue
         from cocbot.ui.creation_text import occupation_label
+        from cocbot.preferences import get_language
         with get_conn(self.db_path) as conn:
             found = catalogue.search(conn, interaction.user.id, current, 25)
-        return [app_commands.Choice(name=occupation_label(o)[:100], value=str(o.id)) for o in found]
+            lang = get_language(conn, interaction.user.id, getattr(interaction, "locale", None))
+        return [app_commands.Choice(name=occupation_label(o, lang)[:100], value=str(o.id)) for o in found]
 
     @app_commands.command(name="creation", description="Open the occupation & skill-point creation steps")
     @app_commands.describe(investigator=INVESTIGATOR_DESC + " — defaults to your active one")
     async def creation(self, interaction: discord.Interaction, investigator: Optional[str] = None) -> None:
         from apps.discord_bot.creation_views import open_creation
+        ctx = self.ctx(interaction)
         try:
             inv = self._resolve(interaction, investigator)
         except CharacterError as e:
-            await reply_error(interaction, e)
+            await reply_error(interaction, e, ctx)
             return
-        await open_creation(interaction, self.ctx(interaction), inv.id, edit=False)
+        await open_creation(interaction, ctx, inv.id, edit=False)
 
     @app_commands.command(name="occupation", description="Choose an investigator's occupation (searchable)")
     @app_commands.describe(occupation="Occupation (English or 中文)",
@@ -239,15 +247,18 @@ class CharacterCog(commands.GroupCog, group_name="character", group_description=
             with creation(ctx) as (_, svc):
                 try:
                     inv = svc.set_occupation(ctx.owner_id, inv.id, occupation)
-                    content, step, state = f"Occupation set to **{inv.occupation}**.", None, {}
+                    occ = svc.occupation_of(inv)
+                    content = render("occ_set", ctx.lang, name=occupation_name(occ, ctx.lang))
+                    step, state = None, {}
                 except InvalidState as e:
-                    if "Confirm" not in str(e):
+                    if getattr(e.args[0] if e.args else None, "code", None) != "confirm_occupation_change":
                         raise
                     target = catalogue.find(svc.conn, ctx.owner_id, occupation)
-                    content, step, state = str(e), "occupation", {"pending": target.id}
+                    content = error_text(e, ctx).removeprefix("⚠️ ")
+                    step, state = "occupation", {"pending": target.id}
             embed, view = render_step(ctx, inv.id, step, **state)
         except CharacterError as e:
-            await reply_error(interaction, e)
+            await reply_error(interaction, e, ctx)
             return
         await interaction.response.send_message(content=content, embed=embed, view=view, ephemeral=True)
 
@@ -261,6 +272,7 @@ class CharacterCog(commands.GroupCog, group_name="character", group_description=
                        interest_points: Optional[app_commands.Range[int, 0, 99]] = None,
                        investigator: Optional[str] = None) -> None:
         from apps.discord_bot.creation_views import creation
+        from cocbot.i18n import skill_names
         from cocbot.ui.creation_text import budget_line
         ctx = self.ctx(interaction)
         if occupation_points is None and interest_points is None:
@@ -272,13 +284,15 @@ class CharacterCog(commands.GroupCog, group_name="character", group_description=
                 inv = svc.allocate(ctx.owner_id, inv.id, skill, occupation_points, interest_points)
                 sd = resolve_skill(skill, conn=svc.conn)
                 check = svc.check_for(inv)
+                names = skill_names(svc.conn, ctx.lang)
         except CharacterError as e:
-            await reply_error(interaction, e)
+            await reply_error(interaction, e, ctx)
             return
         value = inv.skills.get(sd.key) if sd else None
+        shown = value if value is not None else render("value_base", ctx.lang)
         await interaction.response.send_message(
-            f"**{inv.name}**: {sd.display_name if sd else skill} = **{value if value is not None else 'base'}**\n"
-            + budget_line(check), ephemeral=True)
+            render("alloc_reply", ctx.lang, inv=inv.name, skill=names.get(sd.key, skill) if sd else skill, value=shown)
+            + "\n" + budget_line(check, ctx.lang), ephemeral=True)
 
     # autocomplete wiring
     creation.autocomplete("investigator")(live_autocomplete)
