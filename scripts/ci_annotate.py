@@ -34,7 +34,7 @@ def main(path: str) -> None:
     skipped = sum(1 for c in cases if c.find("skipped") is not None)
     passed = len(cases) - skipped - len(failures)
     print(f"::notice title=pytest summary::{passed} passed, {len(failures)} failed, {skipped} skipped "
-          f"({len(cases)} results; unittest subTests are counted individually)")
+          f"({len(cases)} tests)")
     for name, detail in failures[:MAX_ANNOTATIONS]:
         tail = detail[-MAX_CHARS:]          # the end of a traceback is the useful part
         print(f"::error title={_escape(name)}::{_escape(tail)}")
