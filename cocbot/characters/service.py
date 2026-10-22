@@ -339,10 +339,21 @@ class InvestigatorService:
         return self._write(inv, {"status": STATUS_READY, "creation_step": None})
 
     # --- lifecycle ---------------------------------------------------------------
+    def _ensure_not_in_campaign(self, inv: Investigator) -> None:
+        """Investigators playing in a campaign cannot be archived or deleted until they leave."""
+        rows = self.conn.execute(
+            "SELECT c.name FROM campaign_investigators ci JOIN campaigns c ON c.campaign_id = ci.campaign_id "
+            "WHERE ci.investigator_id=? AND ci.status='active' AND c.status='active' ORDER BY c.name",
+            (inv.id,)).fetchall()
+        if rows:
+            from cocbot.i18n import Msg
+            raise InvalidState(Msg("in_campaign", name=inv.name, campaigns=", ".join(r[0] for r in rows)))
+
     def archive(self, actor_id: object, investigator_id: int) -> Investigator:
         inv = self.get(actor_id, investigator_id)
         if inv.is_archived:
             return inv
+        self._ensure_not_in_campaign(inv)
         # trigger trg_investigators_archive_clears_active removes active slots
         return self._write(
             inv,
@@ -367,6 +378,7 @@ class InvestigatorService:
         inv = self.get(actor_id, investigator_id)
         if not inv.is_archived:
             raise InvalidState("Archive the investigator first; only archived investigators can be deleted.")
+        self._ensure_not_in_campaign(inv)
         repo.delete(self.conn, inv.id)
         self.conn.commit()
 
