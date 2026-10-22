@@ -17,8 +17,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: pip install -r requirements-dev.txt
       - run: python -m pytest -q --junitxml=pytest-report.xml
-      - name: Report failing tests as annotations
-        if: failure()
+      - name: Report test results as annotations
+        if: always()
         run: python scripts/ci_annotate.py pytest-report.xml
       - name: Occupation catalogue matches the spreadsheets
         if: matrix.python-version == '3.12'

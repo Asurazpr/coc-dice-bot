@@ -1,4 +1,6 @@
-"""Turn failing tests in a pytest JUnit XML report into GitHub Actions error annotations.
+"""Summarize a pytest JUnit XML report as GitHub Actions annotations.
+
+Emits one notice with the pass/fail/skip counts and an error annotation per failing test.
 
 Used by CI so test failures are visible in the Checks summary (and via the
 check-runs API) without opening the job log.
@@ -28,7 +30,11 @@ def main(path: str) -> None:
                 name = f"{case.get('classname', '')}.{case.get('name', '')}"
                 detail = (node.get("message") or "") + "\n" + (node.text or "")
                 failures.append((name, detail.strip()))
-    print(f"{len(failures)} failing test(s)")
+    total = sum(int(s.get("tests", 0)) for s in root.iter("testsuite"))
+    skipped = sum(int(s.get("skipped", 0)) for s in root.iter("testsuite"))
+    passed = total - skipped - len(failures)
+    print(f"::notice title=pytest summary::{passed} passed, {len(failures)} failed, {skipped} skipped "
+          f"({total} tests)")
     for name, detail in failures[:MAX_ANNOTATIONS]:
         tail = detail[-MAX_CHARS:]          # the end of a traceback is the useful part
         print(f"::error title={_escape(name)}::{_escape(tail)}")
