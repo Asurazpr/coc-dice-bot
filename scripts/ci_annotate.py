@@ -30,11 +30,11 @@ def main(path: str) -> None:
                 name = f"{case.get('classname', '')}.{case.get('name', '')}"
                 detail = (node.get("message") or "") + "\n" + (node.text or "")
                 failures.append((name, detail.strip()))
-    total = sum(int(s.get("tests", 0)) for s in root.iter("testsuite"))
-    skipped = sum(int(s.get("skipped", 0)) for s in root.iter("testsuite"))
-    passed = total - skipped - len(failures)
+    cases = list(root.iter("testcase"))
+    skipped = sum(1 for c in cases if c.find("skipped") is not None)
+    passed = len(cases) - skipped - len(failures)
     print(f"::notice title=pytest summary::{passed} passed, {len(failures)} failed, {skipped} skipped "
-          f"({total} tests)")
+          f"({len(cases)} results; unittest subTests are counted individually)")
     for name, detail in failures[:MAX_ANNOTATIONS]:
         tail = detail[-MAX_CHARS:]          # the end of a traceback is the useful part
         print(f"::error title={_escape(name)}::{_escape(tail)}")
