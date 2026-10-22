@@ -7,19 +7,22 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from apps.discord_bot.campaign_cog import CampaignCog, KeeperCog
 from apps.discord_bot.characters_cog import CharacterCog
 from apps.discord_bot.views import reply_error
 from cocbot.characters.check_target import (
     STAT_LABELS,
     CheckTarget,
     CheckTargetError,
-    resolve_check_target,
 )
+from cocbot.campaigns.checks import CheckPlan, plan_check, record_private_roll
+from cocbot.campaigns.service import CampaignService
 from cocbot.characters.service import InvestigatorService
 from cocbot.config import settings
 from cocbot.db.connection import get_conn
 from cocbot.db.bootstrap import bootstrap
 from cocbot.db.repo_skill_defs import search_skills, skill_display_names
+from cocbot.mechanics.checks import RAW_RULES
 from cocbot.mechanics.dice import MAX_BONUS_PENALTY_DICE, d100_check_details, parse_and_roll
 from cocbot.ui.check_embed_old import CheckEmbedInput, build_check_embed_old
 
@@ -39,6 +42,8 @@ class CocBot(commands.Bot):
         log.info("Database ready at %s (%d migration(s) applied)", self.db_path, len(applied))
 
         await self.add_cog(CharacterCog(self, self.db_path))
+        await self.add_cog(CampaignCog(self, self.db_path))
+        await self.add_cog(KeeperCog(self, self.db_path))
         register_commands(self)
 
         if settings.DISCORD_GUILD_ID:
@@ -55,7 +60,8 @@ class CocBot(commands.Bot):
 
 
 def build_check_input(
-    target: CheckTarget, user_display_name: str, roll: int, bonus_penalty: int, bp_candidates
+    target: CheckTarget, user_display_name: str, roll: int, bonus_penalty: int, bp_candidates,
+    plan: Optional[CheckPlan] = None,
 ) -> CheckEmbedInput:
     label = target.label if not target.detail else f"{target.label} ({target.detail})"
     actor = user_display_name
@@ -70,6 +76,8 @@ def build_check_input(
         bp_mode="bonus" if bonus_penalty > 0 else "penalty" if bonus_penalty < 0 else None,
         bp_candidates=bp_candidates,
         base_value=target.base_value if target.detail == "trained" else None,
+        rules=plan.rules.to_check_rules() if plan is not None else RAW_RULES,
+        context_note=plan.note if plan is not None else None,
     )
 
 
@@ -101,15 +109,25 @@ def register_commands(bot: CocBot) -> None:
     ) -> None:
         try:
             with get_conn(bot.db_path) as conn:
-                target = resolve_check_target(conn, interaction.user.id, interaction.guild_id, target_or_skill)
+                plan = plan_check(conn, interaction.user.id, interaction.guild_id,
+                                  getattr(interaction, "channel_id", None), target_or_skill)
         except CheckTargetError as e:
             await interaction.response.send_message(f"❌ {e}", ephemeral=True)
             return
 
-        result, bp_candidates = d100_check_details(target=target.value, bp=bonus_penalty)
+        target = plan.target
+        result, bp_candidates = d100_check_details(target=target.value, bp=bonus_penalty,
+                                                   rules=plan.rules.to_check_rules())
         embed = build_check_embed_old(
-            build_check_input(target, interaction.user.display_name, result.roll, bonus_penalty, bp_candidates)
+            build_check_input(target, interaction.user.display_name, result.roll, bonus_penalty, bp_candidates,
+                              plan)
         )
+        if plan.private:
+            with get_conn(bot.db_path) as conn:
+                record_private_roll(conn, plan, f"{target.label} {target.value}: {result.roll:02d} "
+                                                f"({result.level.name.lower()})")
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
         await interaction.response.send_message(embed=embed)
 
     @check.autocomplete("target_or_skill")
@@ -118,7 +136,9 @@ def register_commands(bot: CocBot) -> None:
             return [app_commands.Choice(name=f"Target {current.strip()}", value=current.strip())]
         choices: List[app_commands.Choice[str]] = []
         with get_conn(bot.db_path) as conn:
-            inv = InvestigatorService(conn).active(interaction.user.id, interaction.guild_id)
+            ctx = CampaignService(conn).context(interaction.user.id, getattr(interaction, "channel_id", None))
+            inv = ctx.investigator if ctx is not None else \
+                InvestigatorService(conn).active(interaction.user.id, interaction.guild_id)
             cur = current.strip().lower()
             if inv is not None:
                 names = skill_display_names(conn, inv.skills.keys())

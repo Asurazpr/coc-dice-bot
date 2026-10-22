@@ -42,7 +42,8 @@ class CharacterCog(commands.GroupCog, group_name="character", group_description=
         from cocbot.preferences import get_language
         with get_conn(self.db_path) as conn:
             lang = get_language(conn, interaction.user.id, getattr(interaction, "locale", None))
-        return Ctx(db_path=self.db_path, owner_id=interaction.user.id, guild_id=interaction.guild_id, lang=lang)
+        return Ctx(db_path=self.db_path, owner_id=interaction.user.id, guild_id=interaction.guild_id, lang=lang,
+                   channel_id=getattr(interaction, "channel_id", None))
 
     # --- autocomplete --------------------------------------------------------
     async def _choices(self, interaction: discord.Interaction, current: str, archived: Optional[bool]):
@@ -99,8 +100,9 @@ class CharacterCog(commands.GroupCog, group_name="character", group_description=
                    public: bool = False) -> None:
         try:
             inv = self._resolve(interaction, investigator, include_archived=True)
-            with service(self.ctx(interaction)) as svc:
-                embed = sheet_embed(svc, inv, interaction.guild_id)
+            ctx = self.ctx(interaction)
+            with service(ctx) as svc:
+                embed = sheet_embed(svc, inv, interaction.guild_id, ctx.channel_id, ctx.lang)
         except CharacterError as e:
             await reply_error(interaction, e, self.ctx(interaction))
             return

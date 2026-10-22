@@ -384,6 +384,53 @@ class RulesTests(Base):
         self.assertEqual(success_level(100, 30, house), SuccessLevel.FUMBLE)
 
 
+class CampaignCheckTests(Base):
+    def setUp(self):
+        super().setUp()
+        self.seat(ALICE, self.ada)
+        self.inv.select(ALICE, self.ada.id, GUILD)
+
+    def test_plan_outside_and_inside_campaign(self):
+        from cocbot.campaigns.checks import plan_check
+        self.svc.adjust(KEEPER, self.camp.id, self.ada.id, {"luck": 20}, confirmed=True)
+        outside = plan_check(self.conn, ALICE, GUILD, CH_OTHER, "luck")
+        self.assertEqual((outside.target.value, outside.campaign, outside.note, outside.private), (50, None, None, False))
+        inside = plan_check(self.conn, ALICE, GUILD, CH_A, "luck")
+        self.assertEqual((inside.target.value, inside.campaign.id, inside.rules_version), (20, self.camp.id, 1))
+        self.assertEqual(inside.note, "Masks · rules v1")
+        self.assertEqual(plan_check(self.conn, ALICE, GUILD, CH_A, "45").target.value, 45)
+
+    def test_rules_apply_to_everyone_rolling_in_the_channel(self):
+        from cocbot.campaigns.checks import plan_check, record_private_roll
+        self.svc.set_rules(KEEPER, self.camp.id, critical_max=4, roll_visibility="private")
+        keeper = plan_check(self.conn, KEEPER, GUILD, CH_A, "60")
+        self.assertEqual((keeper.rules.critical_max, keeper.private, keeper.context), (4, True, None))
+        self.assertIn("critical 01-04", keeper.note)
+        player = plan_check(self.conn, ALICE, GUILD, CH_A, "spot hidden")
+        record_private_roll(self.conn, player, "Spot Hidden 25: 03 (critical)")
+        record_private_roll(self.conn, keeper, "not logged: Keepers are not participants")
+        rolls = [e for e in self.svc.history(KEEPER, self.camp.id) if e.kind == "roll"]
+        self.assertEqual([(e.new_value, e.actor_user_id) for e in rolls], [("Spot Hidden 25: 03 (critical)", ALICE)])
+
+    def test_stale_confirmation_is_refused(self):
+        self.svc.adjust(KEEPER, self.camp.id, self.ada.id, {"hp": 8}, confirmed=True)
+        with self.assertRaises(InvalidState):
+            self.svc.adjust(KEEPER, self.camp.id, self.ada.id, {"hp": 5}, confirmed=True, expected={"hp": 12})
+        self.assertEqual(self.svc.entry(KEEPER, self.camp.id, self.ada.id).investigator.hp, 8)
+
+    def test_parse_adjust(self):
+        from cocbot.ui.keeper_text import parse_adjust, parse_user_id
+        cur = {"hp": 12, "mp": 9, "san": 45, "luck": None}
+        self.assertEqual(parse_adjust({"hp": "-3", "mp": "+1", "san": " 40 ", "luck": ""}, cur),
+                         {"hp": 9, "mp": 10, "san": 40})
+        for bad in ({"hp": "abc"}, {"hp": "--2"}, {"hp": "1234"}, {"luck": "+5"}):
+            with self.subTest(bad=bad), self.assertRaises(ValidationError):
+                parse_adjust(bad, cur)
+        self.assertEqual(parse_user_id("<@!123>"), "123")
+        with self.assertRaises(ValidationError):
+            parse_user_id("@someone")
+
+
 class PersistenceTests(unittest.TestCase):
     def test_everything_survives_restart(self):
         with tempfile.TemporaryDirectory() as d:

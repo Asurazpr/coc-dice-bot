@@ -84,11 +84,25 @@ Every change creates a new version with author and time. Checks in a campaign ch
 ## 7. Discord interface
 
 * `/campaign create`, `/campaign info`, `/campaign join`, `/campaign leave`. Joining in a channel linked to the campaign uses that campaign.
-* `/keeper panel`, `/keeper invite`, `/keeper approve`, `/keeper remove`, `/keeper assistant`, `/keeper channel`, `/keeper rules`.
+* `/keeper panel`, `/keeper invite`, `/keeper remove`, `/keeper assistant`, `/keeper channel`, `/keeper rules`.
+  Join requests are approved or denied from the panel (**Review a join request…**); `/keeper invite` on a user with a pending request also approves it, so no separate `/keeper approve` command is needed.
 * The panel is ephemeral and shows:
   * the roster: HP/MP/SAN/Luck and conditions per investigator, plus pending requests;
   * an investigator detail view with **Adjust** (form showing current values, accepts `7`, `+2` or `-3`, optional reason), **Add/Remove condition**, **History** (with Revert), **Refresh** and **Back**.
 * All new text uses the existing `/language` preference (English / 简体中文 / bilingual).
+* **Stale panels:** a confirmation stores the values the Keeper saw; if another Keeper changed them in the meantime, Confirm saves nothing and says so (`changed_while_confirming`).
+
+### Implementation map
+
+| Concern | Module |
+|---|---|
+| Schema | `data/sql/013_campaigns.sql` |
+| Permissions, state, audit, rules | `cocbot/campaigns/service.py` (`CampaignService`) |
+| Rule profile ↔ engine | `cocbot/campaigns/rules.py` (`CampaignRules.to_check_rules()`) |
+| Campaign-aware `/check` | `cocbot/campaigns/checks.py` (`plan_check`) |
+| Text (no Discord) | `cocbot/ui/keeper_text.py` |
+| Commands | `apps/discord_bot/campaign_cog.py` (`/campaign`, `/keeper`) |
+| Console views | `apps/discord_bot/keeper_views.py` |
 
 ## 8. Out of scope (later milestones)
 

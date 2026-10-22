@@ -465,6 +465,7 @@ class CampaignService:
         return campaign_view(inv, p)
 
     def conditions(self, campaign_id: int, investigator_id: int) -> Tuple[Condition, ...]:
+        """Internal read: callers have already authorized (Keeper ``entry`` or the owner's own ``context``)."""
         rows = self.conn.execute(
             "SELECT condition_id, campaign_id, investigator_id, label, added_by, added_at FROM campaign_conditions "
             "WHERE campaign_id=? AND investigator_id=? AND removed_at IS NULL ORDER BY condition_id",
@@ -511,9 +512,21 @@ class CampaignService:
         return changes
 
     def adjust(self, actor_id: object, campaign_id: int, investigator_id: int, values: Dict[str, int],
-               reason: Optional[str] = None, confirmed: bool = False) -> List[ResourceChange]:
-        """Set campaign values (absolute). Decreases and reaching 0 require ``confirmed``."""
+               reason: Optional[str] = None, confirmed: bool = False,
+               expected: Optional[Dict[str, Optional[int]]] = None) -> List[ResourceChange]:
+        """Set campaign values (absolute). Decreases and reaching 0 require ``confirmed``.
+
+        ``expected`` holds the values the Keeper saw when previewing; if any has
+        changed since (another Keeper, a revert), nothing is saved.
+        """
         reason = self._clean_reason(reason)
+        if expected:
+            inv = self.entry(actor_id, campaign_id, investigator_id).investigator
+            for field, seen in expected.items():
+                current = resource_value(inv, field)
+                if current != seen:
+                    raise InvalidState(Msg("changed_while_confirming", field=field.upper(), current=current,
+                                           expected=seen))
         changes = self.preview_adjust(actor_id, campaign_id, investigator_id, values)
         if any(c.consequential for c in changes) and not confirmed:
             raise InvalidState(Msg("confirm_needed"))
@@ -641,6 +654,10 @@ class CampaignService:
         if r is None:  # pragma: no cover - created with every campaign
             return 0, RAW_PROFILE
         return int(r[0]), from_json(r[1])
+
+    def channel_rules(self, campaign_id: int) -> Tuple[int, CampaignRules]:
+        """Rules applied to every roll made in the campaign's channels (no member data exposed)."""
+        return self._rules(campaign_id)
 
     def set_rules(self, actor_id: object, campaign_id: int, **changes: object) -> Tuple[int, CampaignRules]:
         self._require(campaign_id, actor_id, (ROLE_KEEPER,))

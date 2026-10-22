@@ -95,3 +95,47 @@ Use a fresh draft with characteristics entered (account A).
 - [ ] In 简体中文: the creation steps, buttons, picker, point forms, and validation errors (e.g. occupation points on a non-occupation skill) are Chinese; skill and occupation names are Chinese.
 - [ ] In Bilingual: titles and messages show both languages; short labels that would not fit fall back to English.
 - [ ] Another user's language is unaffected.
+
+## Milestone 3A — campaigns and Keeper Console
+
+Use three accounts: **K** (Keeper), **P** (player with a finished investigator), **A** (assistant), plus **X** (unrelated member). Two text channels: **#table** and **#lounge**.
+
+### Setup and membership
+- [ ] K: `/campaign create name:Masks` in #table → private confirmation; `/campaign info` there shows K as Keeper and "rules v1".
+- [ ] K: `/campaign create name:Second` in #table → refused (channel already linked). With `link_channel:False` it succeeds.
+- [ ] K: `/keeper invite user:@P`; P: `/campaign join investigator:<theirs>` in #table → "joined"; autocomplete only lists P's own finished investigators.
+- [ ] X: `/campaign join` in #table without an invite → "Request sent"; K's panel shows "Join requests: 1"; review → **Deny** asks for confirmation; denying removes the request.
+- [ ] P: try to join with a draft investigator → refused; try to join twice → refused.
+
+### Keeper Console
+- [ ] K: `/keeper panel` → private roster with P's investigator and HP/MP/SAN/Luck `x/max`.
+- [ ] Pick the investigator → detail with resources, conditions (none), recent changes.
+- [ ] **Adjust**: HP `+0`/blank keeps; Luck `+5` applies immediately ("Saved"); HP `-3` with a reason shows a confirmation with `old → new`; **Cancel** leaves HP unchanged; **Confirm** saves.
+- [ ] Set HP `0` → the confirmation warns "reaches 0". Values over the maximum, negative results or text are refused with nothing saved.
+- [ ] **Add condition** `Shaken` → shown in roster and detail; duplicate (case-insensitive) is refused; **Remove condition…** asks for confirmation.
+- [ ] **History** shows actor, time, old → new and reason; **Revert a change…** + Confirm restores the old value. Change HP again, then try to revert the older change → refused with an explanation, nothing overwritten. A change can be reverted only once.
+- [ ] X runs `/keeper panel` in #table → refused; X never sees the roster or anyone's campaign values.
+- [ ] P runs `/keeper panel` → refused.
+- [ ] Open two panels (K and A), change HP in one, then Confirm a decrease in the other → "changed while you were confirming", nothing saved.
+
+### Assistant Keeper
+- [ ] K: `/keeper assistant user:@A enabled:True`; A can open the panel, adjust and revert, but `/keeper rules critical_max:3`, `/keeper channel` and `/keeper assistant` are refused for A.
+- [ ] While A has a panel open, K revokes A → A's next click is refused.
+
+### Single source of truth
+- [ ] After K sets P's HP to 5 in Masks: P's `/character view` in #table shows HP 5 and a "Campaign: Masks" note; in #lounge it shows P's personal HP.
+- [ ] In #table, P's sheet editor shows **HP·MP·SAN·Luck** disabled (Keeper-managed); in #lounge it is enabled and editing personal values does not change the campaign values.
+- [ ] P's `/check luck` in #table uses the campaign Luck and the footer names "Masks · rules vN"; in #lounge it uses the personal Luck and has no campaign footer.
+- [ ] Join the same investigator to a second campaign in another channel: changes in one campaign never appear in the other.
+- [ ] P cannot archive or delete the investigator while it is in a campaign; after `/campaign leave` (with confirmation) they can.
+
+### Rules
+- [ ] K: `/keeper rules` (no options) shows the current rules; `critical_max:5` → "v2"; a roll of 01–05 in #table is a Critical; outside campaign channels 02–05 are not.
+- [ ] `fumble:Only 100` → a 97 on a skill under 50 is a Failure in #table and a Fumble elsewhere.
+- [ ] `roll_visibility:Private` → P's `/check` in #table is visible only to P, and appears as "private roll" in K's campaign history. Public again restores normal posts.
+- [ ] Setting the same rule twice does not create a new version.
+
+### Language and persistence
+- [ ] With `/language` 简体中文, the console, confirmations and errors are Chinese; Bilingual shows both.
+- [ ] Restart the bot: campaigns, members, assistants, campaign values, conditions, history and rule versions are unchanged.
+- [ ] Existing personal `/check`, `/character` and creation flows outside campaign channels behave as before.

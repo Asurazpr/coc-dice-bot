@@ -10,6 +10,10 @@ player's ID and the guild, decide the target number:
                                     as Dodge = DEX/2 use the investigator).
    With no active investigator, non-derived skills fall back to the base
    value, as before; derived skills need an investigator.
+
+In a campaign channel the caller passes the campaign view of the player's
+investigator (``investigator=``) so the campaign's current HP/SAN/Luck are
+used instead of the personal collection's.
 """
 from __future__ import annotations
 
@@ -49,6 +53,9 @@ def stat_key_for(text: str) -> Optional[str]:
     return _STAT_ALIASES.get(text.strip().lower())
 
 
+_ACTIVE = object()   # sentinel: use the player's active personal investigator
+
+
 class CheckTargetError(Exception):
     """User-facing explanation of why the check cannot be rolled."""
 
@@ -68,6 +75,7 @@ def resolve_check_target(
     user_id: object,
     guild_id: Optional[object],
     raw: str,
+    investigator: object = _ACTIVE,
 ) -> CheckTarget:
     text = (raw or "").strip()
     if not text:
@@ -79,8 +87,10 @@ def resolve_check_target(
             raise CheckTargetError(f"Target must be between {NUMERIC_MIN} and {NUMERIC_MAX}.")
         return CheckTarget(value=n, label=f"Target {n}", detail="", kind="numeric")
 
-    service = InvestigatorService(conn)
-    inv = service.active(user_id, guild_id)
+    if investigator is _ACTIVE:
+        inv = InvestigatorService(conn).active(user_id, guild_id)
+    else:
+        inv = investigator  # type: ignore[assignment]
     lang = guess_lang(text)
 
     stat = stat_key_for(text)

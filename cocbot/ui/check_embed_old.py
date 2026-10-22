@@ -5,14 +5,14 @@ from typing import Optional, Sequence
 
 import discord
 
-from cocbot.mechanics.checks import SuccessLevel, success_level
+from cocbot.mechanics.checks import RAW_RULES, CheckRules, SuccessLevel, success_level
 
 
 # --- CoC result labeling helpers ---
 
-def _success_band(roll: int, target: int) -> str:
+def _success_band(roll: int, target: int, rules: CheckRules = RAW_RULES) -> str:
     """Display label for a roll. Delegates to the single rules implementation."""
-    return _BAND_LABELS[success_level(roll, target)]
+    return _BAND_LABELS[success_level(roll, target, rules)]
 
 
 _BAND_LABELS = {
@@ -78,9 +78,13 @@ class CheckEmbedInput:
     base_value: Optional[int] = None     # pre-mod skill
     mod_total: Optional[int] = None      # total modifier applied to base to get skill_value
 
+    # Campaign rules (critical range / fumble mode) and a footer note naming them
+    rules: CheckRules = RAW_RULES
+    context_note: Optional[str] = None   # e.g. "Masks · rules v2 (critical 01-05)"
+
 
 def build_check_embed_old(inp: CheckEmbedInput) -> discord.Embed:
-    band = _success_band(inp.rolled, inp.skill_value)
+    band = _success_band(inp.rolled, inp.skill_value, inp.rules)
     emoji = _emoji_for_band(band)
     color = _color_for_band(band)
 
@@ -135,5 +139,8 @@ def build_check_embed_old(inp: CheckEmbedInput) -> discord.Embed:
         desc_lines.append(f"**Notes:** {inp.notes}")
 
     e = discord.Embed(title=title, description="\n".join(desc_lines), color=color)
-    e.set_footer(text=f"Check by {inp.actor_name}")
+    footer = f"Check by {inp.actor_name}"
+    if inp.context_note:
+        footer += f" · {inp.context_note}"
+    e.set_footer(text=footer)
     return e

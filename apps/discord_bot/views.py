@@ -41,6 +41,7 @@ class Ctx:
     owner_id: int
     guild_id: Optional[int]
     lang: str = "en"          # display language: 'en' | 'zh' | 'both'
+    channel_id: Optional[int] = None   # campaign channels show campaign values
 
 
 @contextmanager
@@ -49,17 +50,36 @@ def service(ctx: Ctx) -> Iterator[InvestigatorService]:
         yield InvestigatorService(conn)
 
 
-def sheet_embed(svc: InvestigatorService, inv: Investigator, guild_id: Optional[int]) -> discord.Embed:
-    names = skill_display_names(svc.conn, inv.skills.keys())
+def campaign_context_for(svc: InvestigatorService, inv: Investigator, channel_id: Optional[int]):
+    """The campaign context when ``inv`` is its owner's investigator in this channel's campaign."""
+    from cocbot.campaigns.service import CampaignService
+    cctx = CampaignService(svc.conn).context(inv.owner_user_id, channel_id)
+    return cctx if cctx is not None and cctx.investigator.id == inv.id else None
+
+
+def sheet_embed(svc: InvestigatorService, inv: Investigator, guild_id: Optional[int],
+                channel_id: Optional[int] = None, lang: str = "en") -> discord.Embed:
+    """Personal sheet, or — in a campaign channel the investigator plays in — the campaign view."""
+    from cocbot.campaigns.service import CampaignService
+    from cocbot.ui.keeper_text import campaign_sheet_note
+    cctx = campaign_context_for(svc, inv, channel_id)
+    shown = cctx.investigator if cctx is not None else inv
+    names = skill_display_names(svc.conn, shown.skills.keys())
     active = svc.active(inv.owner_user_id, guild_id)
-    return build_sheet_embed(inv, names, active_here=bool(active and active.id == inv.id))
+    embed = build_sheet_embed(shown, names, active_here=bool(active and active.id == inv.id))
+    if cctx is not None:
+        conditions = CampaignService(svc.conn).conditions(cctx.campaign.id, inv.id)
+        title, text = campaign_sheet_note(cctx.campaign.name, [c.label for c in conditions], lang)
+        embed.add_field(name=title, value=text, inline=False)
+    return embed
 
 
 def render_panel(ctx: Ctx, investigator_id: int) -> Tuple[discord.Embed, "EditorView"]:
     with service(ctx) as svc:
         inv = svc.get(ctx.owner_id, investigator_id)
-        embed = sheet_embed(svc, inv, ctx.guild_id)
-    return embed, EditorView(ctx, inv)
+        embed = sheet_embed(svc, inv, ctx.guild_id, ctx.channel_id, ctx.lang)
+        in_campaign = campaign_context_for(svc, inv, ctx.channel_id) is not None
+    return embed, EditorView(ctx, inv, in_campaign=in_campaign)
 
 
 def error_text(err: Exception, ctx: Optional[Ctx] = None) -> str:
@@ -237,9 +257,14 @@ class OwnedView(discord.ui.View):
 class EditorView(OwnedView):
     """The investigator sheet editor: one button per step of the sheet."""
 
-    def __init__(self, ctx: Ctx, inv: Investigator, confirm: Optional[str] = None):
+    def __init__(self, ctx: Ctx, inv: Investigator, confirm: Optional[str] = None, in_campaign: bool = False):
         super().__init__(ctx)
         self.inv = inv
+        self.in_campaign = in_campaign
+        if in_campaign:
+            # Campaign HP/MP/SAN/Luck belong to the Keeper; personal values are edited outside the campaign.
+            self.resources_button.disabled = True
+            self.resources_button.label = "HP·MP·SAN·Luck (Keeper-managed here)"
         self.confirm = confirm  # "roll" | "archive" when awaiting a second click
         draft = inv.status == STATUS_DRAFT
         if inv.is_archived:
@@ -286,7 +311,7 @@ class EditorView(OwnedView):
             embed, _ = render_panel(self.ctx, inv.id)
             await interaction.response.edit_message(
                 content="This replaces every characteristic and Luck. Click again to confirm.",
-                embed=embed, view=EditorView(self.ctx, inv, confirm="roll"))
+                embed=embed, view=EditorView(self.ctx, inv, confirm="roll", in_campaign=self.in_campaign))
             return
         with service(self.ctx) as svc:
             inv = svc.roll_characteristics(self.ctx.owner_id, inv.id)
@@ -338,7 +363,8 @@ class EditorView(OwnedView):
             await interaction.response.edit_message(
                 content="Archiving hides this investigator and clears it as active. "
                         "You can restore it later with `/character restore`. Click again to confirm.",
-                embed=embed, view=EditorView(self.ctx, self._fresh(), confirm="archive"))
+                embed=embed, view=EditorView(self.ctx, self._fresh(), confirm="archive",
+                                              in_campaign=self.in_campaign))
             return
         with service(self.ctx) as svc:
             inv = svc.archive(self.ctx.owner_id, self.inv.id)
