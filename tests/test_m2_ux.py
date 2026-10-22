@@ -305,6 +305,21 @@ class LocalizationTests(unittest.TestCase):
                 self.assertEqual(len(pair), 2)
                 self.assertTrue(pair[0] and pair[1])
 
+    def test_every_entry_renders_in_both_languages_with_matching_placeholders(self):
+        import string
+        for code, (en, zh) in CATALOG.items():
+            with self.subTest(code=code):
+                fields_en = {f for _, f, _, _ in string.Formatter().parse(en) if f}
+                fields_zh = {f for _, f, _, _ in string.Formatter().parse(zh) if f}
+                self.assertEqual(fields_en, fields_zh)
+                params = {f: "X" for f in fields_en}
+                for lang in ("en", "zh", "both"):
+                    self.assertTrue(render(code, lang, **params))
+
+    def test_creation_views_module_constants_are_templates(self):
+        # creation_views imports discord, so check the template it exposes via the catalog
+        self.assertIn("{name}", CATALOG["creation_finished"][0])
+
     def test_msg_is_english_string_and_localizes(self):
         m = Msg("over_max", {"listen": "Listen"}, skill="listen", total=105, max=99)
         self.assertEqual(m, "Listen would be 105; the maximum is 99.")

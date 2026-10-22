@@ -26,7 +26,7 @@ from apps.discord_bot.views import (
 from cocbot.characters.models import STATUS_DRAFT, Investigator
 from cocbot.characters.service import CharacterError, InvalidState, InvestigatorService, UnspentPoints
 from cocbot.db.connection import get_conn
-from cocbot.i18n import Msg, label, localized_names, occupation_name, render, skill_names
+from cocbot.i18n import CATALOG, Msg, label, localized_names, occupation_name, render, skill_names
 from cocbot.occupations import catalogue
 from cocbot.occupations.rules import MODE_ADD, MODE_SET, CTHULHU_MYTHOS, alternative_stats, pick_positions, suggested_stat
 from cocbot.occupations.service import BatchRejected, CreationService, load_picks, load_points, skill_bases
@@ -49,7 +49,9 @@ OPTIONS_PER_PAGE = 25          # Discord select-menu limit
 STEPS = ("occupation", "choices", "allocation", "review")
 STEP_NAV = {"occupation": "nav_occupation", "choices": "nav_choices", "allocation": "nav_allocation",
             "review": "nav_review"}
-CREATION_FINISHED_MESSAGE = render("creation_finished", "en")   # English; use creation_finished_text(lang)
+# Raw English template ("{name}" placeholder), kept for callers that .format() it;
+# prefer creation_finished_text(name, lang).
+CREATION_FINISHED_MESSAGE = CATALOG["creation_finished"][0]
 
 
 def creation_finished_text(name: str, lang: str = "en") -> str:
