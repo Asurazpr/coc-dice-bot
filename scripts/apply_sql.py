@@ -17,7 +17,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from cocbot.config import settings  # noqa: E402
 from cocbot.db.connection import connect  # noqa: E402
-from cocbot.db.migrate import applied_versions, migrate  # noqa: E402
+from cocbot.db.bootstrap import bootstrap  # noqa: E402
+from cocbot.db.migrate import applied_versions  # noqa: E402
 
 
 def main() -> None:
@@ -27,7 +28,7 @@ def main() -> None:
 
     conn = connect(args.db)
     try:
-        applied = migrate(conn, log=print)
+        applied = bootstrap(conn, log=print)
         versions = sorted(applied_versions(conn))
     finally:
         conn.close()

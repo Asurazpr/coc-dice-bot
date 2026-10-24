@@ -17,7 +17,9 @@ cocbot/
     repo_investigators.py   SQL for investigators (no permission logic)
     repo_skill_defs.py      skill lookup (EN/ZH, aliases, keys)
     legacy_import.py        non-destructive import of pre-006 data
-  ui/                       embed builders; sheet_text.py is Discord-free
+  occupations/              catalogue (JSON-synced + homebrew), rules.py (pure), service.py,
+                            zh_parser.py (development-time import from the Excel sheet)
+  ui/                       embed builders; sheet_text.py and creation_text.py are Discord-free
 data/sql/NNN_*.sql|py       migrations (001–005 original, 006–007 new)
 tests/                      stdlib unittest, runnable with pytest
 ```

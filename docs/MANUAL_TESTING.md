@@ -38,3 +38,37 @@ accounts (A and B), and a fresh database (`COC_DB_PATH=data/test.sqlite3`).
 - [ ] `/character view public:True` posts the sheet visibly to the channel.
 - [ ] Archive a draft whose characteristics are all filled in but which was never finished; restore it: it is still a Draft.
 - [ ] With 11+ investigators (archived count too), `/character list show_archived:True` shows page buttons; Next/Previous work and nothing is cut off.
+
+## Milestone 2 — occupations and skill points
+
+Use a fresh draft with characteristics entered (account A).
+
+### Occupation
+- [ ] Editor shows **🧭 Occupation & skills**; on a draft without characteristics it explains they come first.
+- [ ] The Occupation step lists 25 occupations per page; ◀ ▶ page through all 113; each option shows Credit Rating and formula.
+- [ ] **Search** finds by English (`doctor`) and Chinese (`医生`) names.
+- [ ] Choosing **Accountant** shows Credit Rating 30–70, EDU×4, its skills, and the "not yet verified" note.
+- [ ] `/character occupation` autocompletes in English and Chinese and opens the next step.
+- [ ] **Custom occupation**: name "Ghost Hunter", range `10-40`, formula `EDU*2+POW*2` → 8 free choices. A bad range (`40-10`) or formula (`EDU*3`) is rejected with a clear message. Account B cannot find A's custom occupation.
+
+### Choices
+- [ ] Each choice shows only allowed skills (e.g. Soldier: Climb or Swim); skills already used elsewhere are not offered; "any skill" choices page through all skills.
+- [ ] After the last choice the Points step opens automatically.
+
+### Points
+- [ ] Budgets show "used / total / left" for occupation (formula) and personal interest (INT×2) separately.
+- [ ] **Occupation points** opens a form for the 5 skills on the page; page 2 holds the rest and Credit Rating.
+- [ ] Occupation points on a non-occupation skill (via **Other skill** is interest only; `/character allocate skill:Climb occupation_points:10`) are refused.
+- [ ] A skill above 99, Cthulhu Mythos, overspending either budget, or Credit Rating above the range are refused with a clear reason; valid entries in the same form are still saved.
+- [ ] `/check accounting` uses base + points immediately.
+- [ ] **Private Investigator** (EDU×2 + DEX or STR ×2): the Points step offers a characteristic choice with the higher one marked *suggested*; picking the other changes the budget, and the choice is still there after reopening.
+
+### Review and resume
+- [ ] Review lists blocking problems (missing choices, Credit Rating out of range, overspending) and notes (unspent points, unverified data, age adjustments not automated). **Finish creation** stays disabled until there are no problems.
+- [ ] With unspent points the button reads **Finish (N points unspent)…**; the first click asks for confirmation, the second finishes.
+- [ ] During occupation creation, `/character skill` is refused and the editor's **Skill** button is disabled; **Review & finish** opens the Review step.
+- [ ] On a draft with hand-entered skills from before choosing an occupation (e.g. Cthulhu Mythos 30, Listen 60): Review blocks finishing and lists them; **Discard** Cthulhu Mythos (convert is refused), **Convert** Listen (points are spent, value kept); then finishing works.
+- [ ] Close the panel mid-way, run `/character edit` later (or restart the bot): **Occupation & skills** resumes at the right step with everything kept.
+- [ ] Picking a different occupation after spending points asks for confirmation; interest points survive the change.
+- [ ] After finishing: badge "Created (occupation rules checked)", creation steps disappear, `/character skill` edits work again.
+- [ ] An M1 investigator (no occupation) still finishes with **Finish basic sheet** and its message says the occupation rules were not checked.

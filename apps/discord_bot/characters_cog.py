@@ -206,7 +206,86 @@ class CharacterCog(commands.GroupCog, group_name="character", group_description=
             f"Permanently delete **{inv.name}** and all their skills? This cannot be undone.",
             view=ConfirmDeleteView(ctx, inv), ephemeral=True)
 
+    # --- occupation-based creation (Milestone 2) ------------------------------
+    async def occupation_autocomplete(self, interaction: discord.Interaction, current: str):
+        from cocbot.occupations import catalogue
+        from cocbot.ui.creation_text import occupation_label
+        with get_conn(self.db_path) as conn:
+            found = catalogue.search(conn, interaction.user.id, current, 25)
+        return [app_commands.Choice(name=occupation_label(o)[:100], value=str(o.id)) for o in found]
+
+    @app_commands.command(name="creation", description="Open the occupation & skill-point creation steps")
+    @app_commands.describe(investigator=INVESTIGATOR_DESC + " — defaults to your active one")
+    async def creation(self, interaction: discord.Interaction, investigator: Optional[str] = None) -> None:
+        from apps.discord_bot.creation_views import open_creation
+        try:
+            inv = self._resolve(interaction, investigator)
+        except CharacterError as e:
+            await reply_error(interaction, e)
+            return
+        await open_creation(interaction, self.ctx(interaction), inv.id, edit=False)
+
+    @app_commands.command(name="occupation", description="Choose an investigator's occupation (searchable)")
+    @app_commands.describe(occupation="Occupation (English or 中文)",
+                           investigator=INVESTIGATOR_DESC + " — defaults to your active one")
+    async def occupation(self, interaction: discord.Interaction, occupation: str,
+                         investigator: Optional[str] = None) -> None:
+        from apps.discord_bot.creation_views import creation, render_step
+        from cocbot.characters.service import InvalidState
+        from cocbot.occupations import catalogue
+        ctx = self.ctx(interaction)
+        try:
+            inv = self._resolve(interaction, investigator)
+            with creation(ctx) as (_, svc):
+                try:
+                    inv = svc.set_occupation(ctx.owner_id, inv.id, occupation)
+                    content, step, state = f"Occupation set to **{inv.occupation}**.", None, {}
+                except InvalidState as e:
+                    if "Confirm" not in str(e):
+                        raise
+                    target = catalogue.find(svc.conn, ctx.owner_id, occupation)
+                    content, step, state = str(e), "occupation", {"pending": target.id}
+            embed, view = render_step(ctx, inv.id, step, **state)
+        except CharacterError as e:
+            await reply_error(interaction, e)
+            return
+        await interaction.response.send_message(content=content, embed=embed, view=view, ephemeral=True)
+
+    @app_commands.command(name="allocate", description="Spend creation skill points on one skill")
+    @app_commands.describe(skill="Skill (English or 中文)",
+                           occupation_points="Occupation points on this skill (omit to keep, 0 to clear)",
+                           interest_points="Personal interest points on this skill (omit to keep, 0 to clear)",
+                           investigator=INVESTIGATOR_DESC + " — defaults to your active one")
+    async def allocate(self, interaction: discord.Interaction, skill: str,
+                       occupation_points: Optional[app_commands.Range[int, 0, 99]] = None,
+                       interest_points: Optional[app_commands.Range[int, 0, 99]] = None,
+                       investigator: Optional[str] = None) -> None:
+        from apps.discord_bot.creation_views import creation
+        from cocbot.ui.creation_text import budget_line
+        ctx = self.ctx(interaction)
+        if occupation_points is None and interest_points is None:
+            await interaction.response.send_message("Give occupation_points and/or interest_points.", ephemeral=True)
+            return
+        try:
+            inv = self._resolve(interaction, investigator)
+            with creation(ctx) as (_, svc):
+                inv = svc.allocate(ctx.owner_id, inv.id, skill, occupation_points, interest_points)
+                sd = resolve_skill(skill, conn=svc.conn)
+                check = svc.check_for(inv)
+        except CharacterError as e:
+            await reply_error(interaction, e)
+            return
+        value = inv.skills.get(sd.key) if sd else None
+        await interaction.response.send_message(
+            f"**{inv.name}**: {sd.display_name if sd else skill} = **{value if value is not None else 'base'}**\n"
+            + budget_line(check), ephemeral=True)
+
     # autocomplete wiring
+    creation.autocomplete("investigator")(live_autocomplete)
+    occupation.autocomplete("investigator")(live_autocomplete)
+    occupation.autocomplete("occupation")(occupation_autocomplete)
+    allocate.autocomplete("investigator")(live_autocomplete)
+    allocate.autocomplete("skill")(skill_autocomplete)
     view.autocomplete("investigator")(live_autocomplete)
     edit.autocomplete("investigator")(live_autocomplete)
     select.autocomplete("investigator")(live_autocomplete)

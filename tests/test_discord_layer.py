@@ -73,13 +73,13 @@ class DiscordLayerTests(unittest.TestCase):
     def setUp(self):
         from apps.discord_bot.main import CocBot, register_commands
         from apps.discord_bot.characters_cog import CharacterCog
+        from cocbot.db.bootstrap import bootstrap
         from cocbot.db.connection import get_conn
-        from cocbot.db.migrate import migrate
 
         self.tmp = tempfile.TemporaryDirectory()
         self.db = os.path.join(self.tmp.name, "bot.sqlite3")
         with get_conn(self.db) as conn:
-            migrate(conn)
+            bootstrap(conn)
         self.loop = asyncio.new_event_loop()
         self.bot = CocBot(db_path=self.db)
         self.cog = CharacterCog(self.bot, self.db)
@@ -240,6 +240,202 @@ class DiscordLayerTests(unittest.TestCase):
         self.assertIn("now uses **Bram**", it.response.calls[0][1][0])
         _, _, kwargs = self.check(ALICE, "listen")
         self.assertIn("Bram", kwargs["embed"].footer.text)
+
+    # --- Milestone 2: occupation creation through the Discord UI ------------------
+
+    def _draft_with_characteristics(self, user=ALICE, name="Ada"):
+        from cocbot.characters.service import InvestigatorService
+        from cocbot.db.connection import get_conn
+        panel = self.create(user, name)
+        with get_conn(self.db) as conn:
+            InvestigatorService(conn).set_characteristics(user, panel.inv.id, {
+                "STR": 60, "CON": 55, "SIZ": 65, "DEX": 70, "APP": 50, "INT": 80, "POW": 45, "EDU": 75, "LUCK": 50})
+        return panel.inv.id
+
+    def _occupation_id(self, key):
+        from cocbot.db.connection import get_conn
+        with get_conn(self.db) as conn:
+            return conn.execute("SELECT occupation_id FROM occupations WHERE key=?", (key,)).fetchone()[0]
+
+    def test_creation_requires_characteristics(self):
+        panel = self.create(ALICE, "Ada")
+        it = fake_interaction(ALICE)
+        self.arun(panel.creation_button.callback(it))
+        kind, args, kwargs = it.response.calls[0]
+        self.assertEqual(kind, "send_message")
+        self.assertIn("characteristics", args[0])
+        self.assertTrue(kwargs["ephemeral"])
+
+    def test_full_occupation_creation_flow(self):
+        from apps.discord_bot.creation_views import (
+            AllocationStepView, ChoicesStepView, OccupationStepView, PointsModal, ReviewStepView, render_step,
+        )
+        from apps.discord_bot.views import Ctx, EditorView, render_panel
+
+        inv_id = self._draft_with_characteristics()
+        ctx = Ctx(self.db, ALICE, GUILD)
+        panel = self.build(lambda: render_panel(ctx, inv_id)[1])
+        it = fake_interaction(ALICE)
+        self.arun(panel.creation_button.callback(it))
+        kind, _, kw = it.response.calls[0]
+        self.assertEqual(kind, "edit_message")
+        self.assertIsInstance(kw["view"], OccupationStepView)
+        self.assertIn("Occupation", kw["embed"].title)
+        self.assertLessEqual(len(kw["embed"]), 6000)
+
+        # occupation -> choices
+        it = fake_interaction(ALICE)
+        self.arun(kw["view"].choose(it, self._occupation_id("accountant"), force=False))
+        kw = it.response.calls[0][2]
+        self.assertIsInstance(kw["view"], ChoicesStepView)
+        self.assertIn("Accountant", kw["content"])
+
+        # two "any" picks -> allocation
+        it = fake_interaction(ALICE)
+        self.arun(kw["view"].apply_pick(it, "psychology"))
+        kw = it.response.calls[0][2]
+        it = fake_interaction(ALICE)
+        self.arun(kw["view"].apply_pick(it, "charm"))
+        kw = it.response.calls[0][2]
+        alloc = kw["view"]
+        self.assertIsInstance(alloc, AllocationStepView)
+        self.assertEqual(alloc.keys, ["accounting", "law", "library_use", "listen", "persuade"])
+
+        # occupation points through the page modal
+        modal = self.build(lambda: PointsModal(alloc, "occupation"))
+        set_input(modal.inputs["accounting"][0], "60")
+        set_input(modal.inputs["law"][0], "200")     # invalid -> reported, others still saved
+        for k in ("library_use", "listen", "persuade"):
+            set_input(modal.inputs[k][0], "")
+        it = fake_interaction(ALICE)
+        self.arun(modal.on_submit(it))
+        kw = it.response.calls[0][2]
+        self.assertIn("Saved: Accounting", kw["content"])
+        self.assertIn("Not saved", kw["content"])
+
+        # Credit Rating via the slash command, then review and finish
+        it = fake_interaction(ALICE)
+        self.arun(self.sub("allocate").callback(self.cog, it, "credit_rating", 40, None, str(inv_id)))
+        self.assertIn("Credit Rating = **40**", it.response.calls[0][1][0])
+        embed, review = self.build(lambda: render_step(ctx, inv_id, "review"))
+        self.assertIsInstance(review, ReviewStepView)
+        self.assertIn("Meets the occupation", embed.description)
+        # unspent points: first click asks for confirmation, second click finishes
+        self.assertIn("unspent", review.finish_btn.label)
+        it = fake_interaction(ALICE)
+        self.arun(review._finish(it))
+        kw = it.response.calls[0][2]
+        self.assertIn("Click again", kw["content"])
+        self.assertTrue(kw["view"].confirm)
+        it = fake_interaction(ALICE)
+        self.arun(kw["view"]._finish(it))
+        kind, _, kw = it.response.calls[0]
+        self.assertIn("is created", kw["content"])
+        self.assertIsInstance(kw["view"], EditorView)
+        self.assertIn("Created (occupation rules checked)", kw["embed"].description)
+
+        # /check uses the allocated value (5 base + 60)
+        _, _, kw = self.check(ALICE, "accounting")
+        self.assertIn("`65`", kw["embed"].description)
+
+    def test_occupation_command_autocomplete_and_confirmation(self):
+        inv_id = self._draft_with_characteristics()
+        it = fake_interaction(ALICE)
+        choices = self.arun(self.cog.occupation_autocomplete(it, "会计"))
+        self.assertTrue(any("Accountant" in c.name for c in choices))
+        self.assertLessEqual(len(choices), 25)
+
+        it = fake_interaction(ALICE)
+        self.arun(self.sub("occupation").callback(self.cog, it, "accountant", str(inv_id)))
+        self.assertIn("Occupation set to **Accountant**", it.response.calls[0][2]["content"])
+        it = fake_interaction(ALICE)
+        self.arun(self.sub("allocate").callback(self.cog, it, "law", 30, None, str(inv_id)))
+        # changing now needs confirmation and shows the pending change
+        it = fake_interaction(ALICE)
+        self.arun(self.sub("occupation").callback(self.cog, it, "antiquarian", str(inv_id)))
+        kw = it.response.calls[0][2]
+        self.assertIn("Confirm", kw["content"])
+        self.assertTrue(any(f.name == "Confirm change" for f in kw["embed"].fields))
+        # Bob cannot use Alice's investigator
+        it = fake_interaction(BOB)
+        self.arun(self.sub("occupation").callback(self.cog, it, "antiquarian", str(inv_id)))
+        self.assertIn("not found", it.response.calls[0][1][0].lower())
+
+    def _accountant_ready_but_for(self, inv_id):
+        from apps.discord_bot.creation_views import creation
+        from apps.discord_bot.views import Ctx
+        with creation(Ctx(self.db, ALICE, GUILD)) as (_, svc):
+            svc.set_occupation(ALICE, inv_id, "accountant")
+            svc.set_pick(ALICE, inv_id, 6, 0, "psychology")
+            svc.set_pick(ALICE, inv_id, 6, 1, "charm")
+            svc.allocate(ALICE, inv_id, "credit_rating", occupation_points=40)
+
+    def test_skill_command_cannot_bypass_creation_rules(self):
+        inv_id = self._draft_with_characteristics()
+        self._accountant_ready_but_for(inv_id)
+        for skill, value in (("cthulhu_mythos", 30), ("occult", 150), ("listen", 60)):
+            it = fake_interaction(ALICE)
+            self.arun(self.sub("skill").callback(self.cog, it, skill, value, str(inv_id)))
+            kind, args, kw = it.response.calls[0]
+            self.assertIn("skill points", args[0])
+            self.assertTrue(kw["ephemeral"])
+        # the editor routes Finish to Review and disables manual skill entry
+        from apps.discord_bot.views import Ctx, render_panel
+        panel = self.build(lambda: render_panel(Ctx(self.db, ALICE, GUILD), inv_id)[1])
+        self.assertTrue(panel.skill_button.disabled)
+        self.assertEqual(panel.finish_button.label, "Review & finish")
+
+    def test_hand_entered_values_must_be_reconciled_in_review(self):
+        from apps.discord_bot.creation_views import ReviewStepView, render_step
+        from apps.discord_bot.views import Ctx
+        inv_id = self._draft_with_characteristics()
+        # M1-style entries made before choosing an occupation
+        for skill, value in (("cthulhu_mythos", 30), ("listen", 60)):
+            it = fake_interaction(ALICE)
+            self.arun(self.sub("skill").callback(self.cog, it, skill, value, str(inv_id)))
+        self._accountant_ready_but_for(inv_id)
+        ctx = Ctx(self.db, ALICE, GUILD)
+        embed, review = self.build(lambda: render_step(ctx, inv_id, "review"))
+        self.assertIsInstance(review, ReviewStepView)
+        self.assertTrue(review.finish_btn.disabled)
+        self.assertTrue(any(f.name == "Hand-entered values to reconcile" for f in embed.fields))
+        self.assertIn("Cthulhu Mythos is 30", embed.description)
+        values = [o.value for o in review.reconcile_select.options]
+        self.assertIn("discard:cthulhu_mythos", values)
+        self.assertIn("convert:listen", values)
+
+        it = fake_interaction(ALICE)
+        self.arun(review.apply_reconcile(it, "convert:cthulhu_mythos"))          # refused
+        self.assertIn("discard", it.response.calls[0][1][0])
+        it = fake_interaction(ALICE)
+        self.arun(review.apply_reconcile(it, "discard:cthulhu_mythos"))
+        review2 = it.response.calls[0][2]["view"]
+        it = fake_interaction(ALICE)
+        self.arun(review2.apply_reconcile(it, "convert:listen"))
+        kw = it.response.calls[0][2]
+        self.assertFalse(kw["view"].finish_btn.disabled)
+        self.assertFalse(any(f.name == "Hand-entered values to reconcile" for f in kw["embed"].fields))
+        # /check now uses the converted value
+        _, _, ck = self.check(ALICE, "listen")
+        self.assertIn("`60`", ck["embed"].description)
+
+    def test_formula_choice_select(self):
+        from apps.discord_bot.creation_views import AllocationStepView, render_step
+        from apps.discord_bot.views import Ctx
+        inv_id = self._draft_with_characteristics()
+        it = fake_interaction(ALICE)
+        self.arun(self.sub("occupation").callback(self.cog, it, "private_investigator", str(inv_id)))
+        ctx = Ctx(self.db, ALICE, GUILD)
+        embed, view = self.build(lambda: render_step(ctx, inv_id, "allocation"))
+        self.assertIsInstance(view, AllocationStepView)
+        labels = {o.value: o.label for o in view.stat_select.options}
+        self.assertEqual(labels["DEX"], "DEX×2 = 140 (suggested)")
+        self.assertEqual(labels["STR"], "STR×2 = 120")
+        it = fake_interaction(ALICE)
+        self.arun(view.choose_stat(it, "STR"))
+        kw = it.response.calls[0][2]
+        self.assertIn("STR", kw["content"])
+        self.assertIn("270", kw["embed"].description)      # EDU 75×2 + STR 60×2
 
 
 if __name__ == "__main__":

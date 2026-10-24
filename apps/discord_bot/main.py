@@ -18,7 +18,7 @@ from cocbot.characters.check_target import (
 from cocbot.characters.service import InvestigatorService
 from cocbot.config import settings
 from cocbot.db.connection import get_conn
-from cocbot.db.migrate import migrate
+from cocbot.db.bootstrap import bootstrap
 from cocbot.db.repo_skill_defs import search_skills, skill_display_names
 from cocbot.mechanics.dice import MAX_BONUS_PENALTY_DICE, d100_check_details, parse_and_roll
 from cocbot.ui.check_embed_old import CheckEmbedInput, build_check_embed_old
@@ -35,7 +35,7 @@ class CocBot(commands.Bot):
     async def setup_hook(self) -> None:
         # Schema is always brought up to date before any command can run.
         with get_conn(self.db_path) as conn:
-            applied = migrate(conn, log=log.info)
+            applied = bootstrap(conn, log=log.info)
         log.info("Database ready at %s (%d migration(s) applied)", self.db_path, len(applied))
 
         await self.add_cog(CharacterCog(self, self.db_path))

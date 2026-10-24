@@ -26,11 +26,12 @@ log = logging.getLogger(__name__)
 
 PANEL_TIMEOUT = 15 * 60  # ephemeral interaction tokens live 15 minutes
 
-# "Finish" only certifies the basic sheet; full CoC 7e creation is not automated yet.
+# "Finish basic sheet" (no occupation chosen) only certifies the characteristics.
 FINISHED_MESSAGE = (
     "✅ **{name}**'s basic sheet is complete: all characteristics and Luck are filled in, "
-    "so the bot can use it for checks. This does **not** check full CoC 7e creation "
-    "(occupation, skill-point allocation, age adjustments); confirm those with your Keeper."
+    "so the bot can use it for checks. No occupation was chosen, so occupation and skill-point "
+    "rules were **not** checked (use **Occupation & skills** on a draft for that). "
+    "Age adjustments are not automated; confirm them with your Keeper."
 )
 
 
@@ -151,9 +152,9 @@ class BioModal(OwnedModal):
         return svc.update_bio(self.ctx.owner_id, self.investigator_id, name=self.name_input.value, **bio)
 
     def created_message(self, inv: Investigator) -> Optional[str]:
-        return (f"✅ Created **{inv.name}** as a draft. Next: enter characteristics (or roll them), "
-                f"add skills, then press **Finish basic sheet**. Occupation and skill-point rules "
-                f"are not automated yet, so agree those with your Keeper.")
+        return (f"✅ Created **{inv.name}** as a draft. Next: enter or roll characteristics, then "
+                f"**Occupation & skills** to choose an occupation and spend skill points. "
+                f"Everything saves as you go, so you can stop and continue later.")
 
 
 class CharacteristicsModal(OwnedModal):
@@ -235,6 +236,12 @@ class EditorView(OwnedView):
         if not draft:
             self.remove_item(self.roll_button)
             self.remove_item(self.finish_button)
+            self.remove_item(self.creation_button)
+        elif inv.occupation_id:
+            # Occupation-based creation: finishing happens on the Review step (with its
+            # reconcile and unspent-points confirmations); skills come from points only.
+            self.finish_button.label = "Review & finish"
+            self.skill_button.disabled = True
         if confirm == "roll":
             self.roll_button.label = "Confirm: overwrite with new rolls"
             self.roll_button.style = discord.ButtonStyle.danger
@@ -290,11 +297,26 @@ class EditorView(OwnedView):
                  else "as your default everywhere (servers with their own choice keep it)")
         await refresh_panel(interaction, self.ctx, inv.id, content=f"⭐ **{inv.name}** is now active {where}.")
 
+    @discord.ui.button(label="Occupation & skills", style=discord.ButtonStyle.primary, emoji="🧭", row=2)
+    async def creation_button(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        from apps.discord_bot.creation_views import open_creation
+        await open_creation(interaction, self.ctx, self.inv.id)
+
     @discord.ui.button(label="Finish basic sheet", style=discord.ButtonStyle.success, emoji="✅", row=2)
     async def finish_button(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        if self.inv.occupation_id:
+            from apps.discord_bot.creation_views import open_creation
+            await open_creation(interaction, self.ctx, self.inv.id, "review")
+            return
         with service(self.ctx) as svc:
             inv = svc.finalize(self.ctx.owner_id, self.inv.id)
-        await refresh_panel(interaction, self.ctx, inv.id, content=FINISHED_MESSAGE.format(name=inv.name))
+        if inv.creation_validated:
+            from apps.discord_bot.creation_views import CREATION_FINISHED_MESSAGE
+            message = CREATION_FINISHED_MESSAGE.format(name=inv.name)
+        else:
+            message = FINISHED_MESSAGE.format(name=inv.name)
+        await refresh_panel(interaction, self.ctx, inv.id, content=message)
+
 
     @discord.ui.button(label="Archive", style=discord.ButtonStyle.secondary, emoji="🗄️", row=2)
     async def archive_button(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
