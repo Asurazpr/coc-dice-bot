@@ -184,7 +184,9 @@ class RollService:
         values = (str(user_id), inv.id if inv else None, inv.name if inv else None,
                   plan.campaign.id if plan.campaign else None,
                   None if channel_id is None else str(channel_id), None if guild_id is None else str(guild_id),
-                  scope, target.kind, target.key, target.label, int(target.value), target.base_value, difficulty,
+                  scope, target.kind, target.key,
+                  target.label if not target.detail else f"{target.label} ({target.detail})", int(target.value),
+                  target.base_value if target.detail == "trained" else None, difficulty,
                   int(bonus_penalty), dice_json, dice.chosen, level.name, plan.rules.to_json(),
                   plan.rules_version, "private" if plan.private else "public", dice.chosen, level.name)
         try:

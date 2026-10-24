@@ -38,6 +38,18 @@ Built as a personal passion project to support real tabletop play rather than a 
   characteristics, Luck and SAN. Numeric checks still work with no character at all
 * No spreadsheets: Excel files in `data/seed/` are optional developer resources only
 
+### Roll records and Luck
+
+* Every `/check` is stored with its dice, target, required difficulty, rule profile and visibility;
+  the footer shows its number (`Roll #12`). The original roll is never rerolled or overwritten
+* `/check … difficulty:Hard|Extreme` shows the rolled level and whether the requirement was met
+* **Spend Luck** (optional rule, Keeper Rulebook p. 99): after a failed check, the roller can lower
+  the roll 1 point per Luck point after a private confirmation. Not for Luck or SAN rolls, fumbles,
+  numbers without an investigator, or pushed rolls; a Luck-bought result is at most an Extreme success.
+  Outside campaigns it spends personal Luck; in a campaign it spends campaign Luck and only if the
+  Keeper enabled it (`/keeper rules luck_spending:True`)
+* `/rolls` (private) lists your recent checks; `/rolls roll:12` shows one with its dice and changes
+
 ### Campaigns and the Keeper Console
 
 * **/campaign create** makes a campaign and links the channel; a server can host several campaigns
@@ -250,6 +262,12 @@ and are skipped otherwise. Manual checks: [docs/MANUAL_TESTING.md](docs/MANUAL_T
 /keeper assistant user:@Bob enabled:True
 /keeper rules critical_max:5 roll_visibility:Private
 /campaign info | /campaign leave | /keeper remove | /keeper channel link:True
+```
+
+```
+/check spot hidden difficulty:Hard     → shows "Required: Hard — met / not met"
+/rolls                                 → your recent checks (private)
+/rolls roll:12                         → one roll: dice, rules, Luck spent
 ```
 
 ```

@@ -77,7 +77,19 @@ Triggers make `natural`, `natural_level`, `target`, `difficulty`, dice, subject,
 
 Eligibility (`luck_eligibility`): investigator-linked skill or characteristic check; not Luck, SAN or pushed; natural result not a fumble and not already meeting the requirement; Luck spending allowed by the rule profile; one spend per roll; enough Luck for at least the cheapest level.
 
-**Where Luck is spending allowed?** Campaign rule `luck_spending` (new, default **off**, primary Keeper sets it with `/keeper rules`). Outside campaigns there is no Keeper, so it is on and spends the player's personal Luck — the player's own sheet, their own decision.
+**Where is Luck spending allowed?** Campaign rule `luck_spending` (new, default **off**, primary Keeper sets it with `/keeper rules luck_spending:True`). Outside campaigns there is no Keeper, so it is on and spends the player's personal Luck — the player's own sheet, their own decision. In a campaign channel only participants spend Luck (their campaign Luck); anyone else rolling there (a Keeper, a non-member) gets no Luck option, so a campaign table never touches someone's personal sheet.
+
+### Implementation map
+
+| Concern | Module |
+|---|---|
+| Schema | `data/sql/014_rolls.sql` |
+| Difficulty, eligibility, costs (pure) | `cocbot/rolls/rules.py` |
+| Records, reads, atomic spend | `cocbot/rolls/service.py` (`RollService`) |
+| Campaign Luck deduction + audit | `CampaignService.spend_luck_in_tx` |
+| Text (no Discord) | `cocbot/ui/roll_text.py` |
+| `/check`, `/rolls` | `apps/discord_bot/main.py` |
+| Luck button and confirmation, `/rolls` embeds | `apps/discord_bot/roll_views.py` |
 
 ## 6. Privacy and history
 

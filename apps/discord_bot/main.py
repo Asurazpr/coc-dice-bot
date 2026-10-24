@@ -15,18 +15,24 @@ from cocbot.characters.check_target import (
     CheckTarget,
     CheckTargetError,
 )
-from cocbot.campaigns.checks import CheckPlan, plan_check, record_private_roll
+from cocbot.campaigns.checks import CheckPlan, plan_check
+from cocbot.rolls.service import RollService
+from apps.discord_bot.roll_views import LuckButtonView, detail_embed, recent_embed, roll_embed
 from cocbot.campaigns.service import CampaignService
-from cocbot.characters.service import InvestigatorService
+from cocbot.characters.service import CharacterError, InvestigatorService
 from cocbot.config import settings
 from cocbot.db.connection import get_conn
 from cocbot.db.bootstrap import bootstrap
 from cocbot.db.repo_skill_defs import search_skills, skill_display_names
 from cocbot.mechanics.checks import RAW_RULES
-from cocbot.mechanics.dice import MAX_BONUS_PENALTY_DICE, d100_check_details, parse_and_roll
-from cocbot.ui.check_embed_old import CheckEmbedInput, build_check_embed_old
+from cocbot.mechanics.dice import MAX_BONUS_PENALTY_DICE, parse_and_roll
+from cocbot.ui.check_embed_old import CheckEmbedInput
 
 log = logging.getLogger("cocbot")
+
+DIFFICULTY_CHOICES = [app_commands.Choice(name="Regular / 常规", value="regular"),
+                      app_commands.Choice(name="Hard / 困难", value="hard"),
+                      app_commands.Choice(name="Extreme / 极难", value="extreme")]
 
 
 class CocBot(commands.Bot):
@@ -101,34 +107,54 @@ def register_commands(bot: CocBot) -> None:
     @app_commands.describe(
         target_or_skill="Number (1-100), skill (listen / 聆听) or characteristic (STR, Luck, SAN)",
         bonus_penalty="Bonus (+) or penalty (-) dice",
+        difficulty="Required difficulty (default Regular)",
     )
+    @app_commands.choices(difficulty=DIFFICULTY_CHOICES)
     async def check(
         interaction: discord.Interaction,
         target_or_skill: str,
         bonus_penalty: app_commands.Range[int, -MAX_BONUS_PENALTY_DICE, MAX_BONUS_PENALTY_DICE] = 0,
+        difficulty: Optional[app_commands.Choice[str]] = None,
     ) -> None:
+        from cocbot.preferences import get_language
         try:
             with get_conn(bot.db_path) as conn:
                 plan = plan_check(conn, interaction.user.id, interaction.guild_id,
                                   getattr(interaction, "channel_id", None), target_or_skill)
+                roll = RollService(conn).roll_check(
+                    plan, interaction.user.id, guild_id=interaction.guild_id,
+                    channel_id=getattr(interaction, "channel_id", None), bonus_penalty=bonus_penalty,
+                    difficulty=difficulty.value if difficulty else "regular")
+                lang = get_language(conn, interaction.user.id, getattr(interaction, "locale", None))
+                status = RollService(conn).luck_status(interaction.user.id, roll.id)
         except CheckTargetError as e:
             await interaction.response.send_message(f"❌ {e}", ephemeral=True)
             return
-
-        target = plan.target
-        result, bp_candidates = d100_check_details(target=target.value, bp=bonus_penalty,
-                                                   rules=plan.rules.to_check_rules())
-        embed = build_check_embed_old(
-            build_check_input(target, interaction.user.display_name, result.roll, bonus_penalty, bp_candidates,
-                              plan)
-        )
-        if plan.private:
-            with get_conn(bot.db_path) as conn:
-                record_private_roll(conn, plan, f"{target.label} {target.value}: {result.roll:02d} "
-                                                f"({result.level.name.lower()})")
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+        except CharacterError as e:
+            await reply_error(interaction, e)
             return
-        await interaction.response.send_message(embed=embed)
+
+        embed = roll_embed(bot.db_path, roll, interaction.user.display_name, lang)
+        kwargs = {"embed": embed}
+        if status.eligible:
+            kwargs["view"] = LuckButtonView(bot.db_path, roll, interaction.user.display_name, lang)
+        if roll.private:
+            kwargs["ephemeral"] = True
+        await interaction.response.send_message(**kwargs)
+
+    @tree.command(name="rolls", description="Your recent checks (private) / 你最近的检定")
+    @app_commands.describe(roll="Show one roll in detail (its number, e.g. 12)")
+    async def rolls(interaction: discord.Interaction, roll: Optional[app_commands.Range[int, 1]] = None) -> None:
+        from cocbot.preferences import get_language
+        with get_conn(bot.db_path) as conn:
+            lang = get_language(conn, interaction.user.id, getattr(interaction, "locale", None))
+        try:
+            embed = (recent_embed(bot.db_path, interaction.user.id, lang) if roll is None
+                     else detail_embed(bot.db_path, interaction.user.id, roll, lang))
+        except CharacterError as e:
+            await reply_error(interaction, e)
+            return
+        await interaction.response.send_message(embed=embed, ephemeral=True)
 
     @check.autocomplete("target_or_skill")
     async def check_autocomplete(interaction: discord.Interaction, current: str) -> List[app_commands.Choice[str]]:

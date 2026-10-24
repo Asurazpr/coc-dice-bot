@@ -75,3 +75,7 @@ Implemented in M3A; the full design is in `CAMPAIGNS.md`. In short:
 * `CampaignService` is the only permission check: every method takes the acting user and re-reads their role. Non-members get the same "not found" as for a missing campaign.
 * Campaign values are substituted into the `Investigator` (`campaign_view`), so `/check`, the player's sheet and the Keeper Console read the same numbers; maxima always come from the permanent characteristics.
 * Investigators active in a campaign cannot be archived or deleted.
+
+## Rolls (migration 014)
+
+Implemented in M3B1; design in `ROLLS.md`. `rolls` stores one immutable record per check (dice, target, required difficulty, rule profile and version, visibility, context); later state (Luck spent, effective result) changes only with a `state_version` bump, enforced by triggers. `roll_events` is append-only with a unique interaction ID per change. `RollService.spend_luck` updates the roll, deducts Luck (campaign Luck via `CampaignService.spend_luck_in_tx`, personal Luck via a guarded update) and writes the events in one `BEGIN IMMEDIATE` transaction. A pushed attempt will be its own `rolls` row with `attempt='pushed'` and `parent_roll_id`.

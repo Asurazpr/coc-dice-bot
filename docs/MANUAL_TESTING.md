@@ -139,3 +139,36 @@ Use three accounts: **K** (Keeper), **P** (player with a finished investigator),
 - [ ] With `/language` 简体中文, the console, confirmations and errors are Chinese; Bilingual shows both.
 - [ ] Restart the bot: campaigns, members, assistants, campaign values, conditions, history and rule versions are unchanged.
 - [ ] Existing personal `/check`, `/character` and creation flows outside campaign channels behave as before.
+
+## Milestone 3B1 — roll records and Luck spending
+
+### Single account, no Keeper (any channel not linked to a campaign)
+Needs one finished investigator with Luck ≥ 40 selected in the server (e.g. STR 60).
+
+- [ ] `/check STR` → result as before, footer ends with `Roll #N`; no "Required" line for a Regular check.
+- [ ] `/check STR difficulty:Hard` and `difficulty:Extreme` → the title shows the rolled level, a line shows "Required: Hard — ✅ met / ❌ not met". A Critical meets Extreme; a Fumble meets nothing.
+- [ ] Roll until a check misses (or use a low skill): a **🍀 Spend Luck…** button appears. Click → private prompt listing each reachable level with its cost and Luck after.
+- [ ] **Cancel** → nothing spent; `/character view` shows the same Luck.
+- [ ] Pick a level → private "Spent N Luck"; the public result now shows `natural → effective`, the new level, "the original roll is kept"; the button is gone. `/character view` shows Luck reduced by exactly N.
+- [ ] Press the old prompt's button again → refused ("already spent" / "changed"); Luck unchanged.
+- [ ] Roll again, then press **Spend Luck…** on the *previous* result → refused ("latest roll").
+- [ ] `/check luck`, `/check SAN`, `/check 45`, and a roll of 100 (or 96–99 on a skill under 50) → no Luck button.
+- [ ] Lower Luck to 1 in the sheet editor, fail a check → no button (not enough Luck).
+- [ ] Wait 30 minutes after a failed check, then press its button → refused ("too old").
+- [ ] `/rolls` → private list with your rolls (number, time, subject, difficulty, natural → effective, 🍀, ✅/❌). `/rolls roll:N` → dice (bonus/penalty candidates), context, rules version, changes, Luck status.
+- [ ] `/check STR bonus_penalty:2` then `/rolls roll:N` → all three candidates and the units die are listed.
+- [ ] `/language 简体中文` → difficulty line, Luck prompt, confirmation and `/rolls` are Chinese.
+- [ ] Restart the bot → `/rolls` still lists earlier rolls with the same results and Luck changes.
+
+### Multiplayer (later; needs a Keeper K, players P and Q, observer X)
+- [ ] K: `/keeper rules luck_spending:True` → rules v(N+1) and the summary says "Luck spending on"; an assistant Keeper cannot change it.
+- [ ] Before K enables it, P's failed check in the campaign channel shows no Luck button.
+- [ ] After enabling: P spends Luck → the campaign Luck drops (K's panel shows it at once), P's personal sheet outside the campaign is unchanged, and K's campaign history shows "spent Luck old → new" by P with the roll. That entry has no Revert option.
+- [ ] Q or X presses P's **Spend Luck…** button → "Only the player who rolled…"; nothing changes.
+- [ ] P opens the prompt; K then sets P's Luck lower with **Adjust**; P confirms → refused if Luck changed between reading and writing, or the options recalculated from the current Luck when reopened.
+- [ ] K turns `luck_spending` off while P has a prompt open → P's confirm is refused.
+- [ ] P leaves the campaign with a prompt open → confirm refused.
+- [ ] Same investigator in two campaigns: spending in one leaves the other's Luck unchanged.
+- [ ] With `roll_visibility:Private`: P's result, prompt and updated result are only visible to P; K sees one "private roll" history entry (with the roll number) plus the Luck spend; Q and X see nothing.
+- [ ] Two clients (P on phone and desktop) press Confirm at the same moment → Luck deducted once.
+- [ ] K (not a participant) rolls in the campaign channel with a personal investigator → no Luck option.

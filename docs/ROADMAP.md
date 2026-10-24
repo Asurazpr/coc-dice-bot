@@ -26,14 +26,18 @@ Remaining:
 4. **Keeper-shared homebrew** occupations (needs the campaign/Keeper roles of M4).
 5. **Optional rules** behind explicit house-rule flags: creation skill cap (75/80), quick-fire array, point-buy. Never silently applied.
 
+## M3B1 — Persistent rolls and Luck spending (draft PR for `feature/roll-interactions`)
+
+Stored check records, required difficulty, optional Luck spending (campaign rule, default off; personal outside campaigns), `/rolls`. Prepared: pushed attempts as linked rows. See `ROLLS.md`; Luck rule rows not marked "verified quote" there need checking against a licensed Keeper Rulebook.
+
 ## M3 — Play at the table
 
-1. Pushed rolls (one per check, recorded) and Luck spending after a roll, decrementing current Luck.
+1. Pushed rolls (one per check, recorded, linked to the failed original — schema ready since M3B1); Keeper approval and consequences.
 2. Sanity rolls with loss expressions (`/san 1/1D6`), current SAN updates, temporary/indefinite insanity flags.
 3. Damage and healing: current HP, Major Wound, dying/unconscious states.
 4. Improvement marks on successful skill checks; development-phase improvement rolls.
 5. Opposed and combined rolls.
-6. Roll history per investigator.
+6. Improvement marks from stored rolls (successes without Luck).
 
 ## M3A — Campaigns and Keeper Console (draft PR for `feature/keeper-console`)
 
