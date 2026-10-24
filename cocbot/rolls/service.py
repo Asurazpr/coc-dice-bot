@@ -34,6 +34,7 @@ from cocbot.rolls.rules import (
     REGULAR,
     LuckOption,
     RollFacts,
+    improvement_check_earned,
     level_from_name,
     luck_adjusted_level,
     luck_eligibility,
@@ -98,12 +99,8 @@ class Roll:
 
     @property
     def improvement_eligible(self) -> bool:
-        """Only a success the dice gave earns an improvement check; one bought with Luck does not.
-
-        Upgrading an existing success (Regular → Hard) keeps the natural success,
-        so it stays eligible (docs/ROLLS.md §2).
-        """
-        return self.attempt == "original" and self.natural_met
+        """Skill rolls whose *natural* result met the required difficulty (see ``improvement_check_earned``)."""
+        return improvement_check_earned(self.subject_kind, self.attempt, self.natural_level, self.difficulty)
 
     def facts(self) -> RollFacts:
         return RollFacts(self.subject_kind, self.subject_key, self.investigator_id is not None, self.attempt,

@@ -86,6 +86,14 @@ def detail_fields(roll: Roll, events: Sequence[RollEvent], status: Optional[Luck
                + f" · {e.created_at[11:19]}" for e in events] or [render("rolls_none", lang)]
     fields = [(render("rolls_dice", lang), dice_text), (render("rolls_context", lang), " · ".join(context)),
               (render("rolls_changes", lang), "\n".join(changes))]
+    if roll.subject_kind == "skill":
+        if roll.improvement_eligible:
+            imp = render("rolls_improvement_yes", lang)
+        elif roll.met and roll.luck_spent:
+            imp = render("rolls_improvement_no_luck", lang)
+        else:
+            imp = render("rolls_improvement_no", lang)
+        fields.append(("📈", render("rolls_improvement", lang, status=imp)))
     if status is not None:
         state = render("rolls_luck_available", lang) if status.eligible else render(status.reason, lang)
         fields.append(("🍀", render("rolls_luck_status", lang, status=state)))

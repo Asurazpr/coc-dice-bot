@@ -22,6 +22,7 @@ Luck spending is an **optional rule** in the 7th-edition Keeper Rulebook (p. 99,
 | Luck may not be spent on Luck rolls, damage rolls or Sanity rolls | Keeper Rulebook p. 99, quoted on Chaosium's official forum (BRP Central, "A question re spending Luck") |
 | A player may only spend Luck on their own dice rolls | same |
 | Luck can upgrade an existing success: Regular → Hard, Hard → Extreme | Chaosium, *The Lightless Beacon*, p. 7 (identified by the project owner; I could not open the scenario from this environment) |
+| A natural success that Luck upgrades still earns its skill improvement check | Chaosium staff ruling (Nick Brooke, Community Ambassador, Chaosium Inc.) on BRP Central, "Pass skill, but use luck to improve… check box or not?": "They'd have got the check for a normal success. So yes." |
 
 ### Unresolved rulebook interpretations (check against a licensed Keeper Rulebook before release)
 
@@ -33,14 +34,30 @@ Luck spending is an **optional rule** in the 7th-edition Keeper Rulebook (p. 99,
 | A pushed roll cannot be changed with Luck | Roll20 "Using Luck"; secondary summaries | no primary core text read |
 | Criticals and fumbles cannot be altered by Luck (natural fumbles, including 96–99 below skill 50) | secondary summaries; Roll20 says a natural 100 cannot be avoided on non-combat skills | no primary core text read |
 | Luck lowered into the critical range is at most an Extreme success | Roll20 "Using Luck" (Pulp text) | Pulp source only — conservative reading |
-| No improvement check for a success *bought* with Luck; upgrading a natural success keeps the check | Roll20 "Using Luck"; secondary summaries | upgrade case is our reading |
+| No improvement check when Luck turns a failure into a success | Keeper Rulebook p. 99 as quoted in the same BRP Central thread by a forum member: "no skill improvement check is earned if Luck points were used to alter the dice roll" | quote not checked against the book; read literally it would also deny the upgrade case, which the staff ruling above allows — we follow the staff ruling |
+| Only skills earn improvement checks; characteristic, Luck, SAN and numeric rolls never do | the improvement rules apply to skills (the investigator sheet has check boxes only beside skills) | not a quoted source; Cthulhu Mythos and Credit Rating exceptions are not modelled yet |
+| Pushed attempts are not judged for improvement | pushed rolls are not implemented | open |
 | One Luck spend per roll, only on the latest roll, within 30 minutes | project choice ("spent right after the roll") | not a rulebook figure |
 
-Every restriction lives in `cocbot/rolls/rules.py` (`upgrade_targets`, `luck_options`, `luck_eligibility`) with a test, so a correction is a small change.
+Every restriction lives in `cocbot/rolls/rules.py` (`upgrade_targets`, `luck_options`, `luck_eligibility`, `improvement_check_earned`) with a test, so a correction is a small change.
+
+### Improvement checks
+
+`Roll.improvement_eligible` is decided by the **natural** result: a skill roll earns a check when the dice alone met the required difficulty. So:
+
+| Roll | Improvement check |
+|---|---|
+| Skill, natural success at the required level | ✔ |
+| Same, then upgraded with Luck (Regular → Hard) | ✔ (staff ruling) |
+| Skill, natural failure turned into a success with Luck | ✘ (KRB p. 99) |
+| Skill, natural Regular success when Hard was required, raised to Hard with Luck | ✘ (the required level was bought) |
+| Characteristic, Luck, SAN or numeric roll | ✘ (only skills improve through checks) |
+
+`/rolls roll:N` shows the result for skill rolls ("Improvement check: earned / not earned"). Ticking the sheet and the development phase are not implemented yet.
 
 ### Target values
 
-Stored targets range from 0 to 999: skills and Luck can be 0, and improved skills can exceed 100. The special results are unchanged by the target: 01 is always a Critical (or 01–N under a campaign's critical range), 100 is always a Fumble, and 96–99 are Fumbles when the target is below 50 under the RAW fumble rule. A target of 0 has no reachable success level, so Luck is never offered for it.
+Stored targets range from 0 to 999 (migration 014; databases that applied its first 1–100 version are rebuilt by migration 015, see §4): skills and Luck can be 0, and improved skills can exceed 100. The special results are unchanged by the target: 01 is always a Critical (or 01–N under a campaign's critical range), 100 is always a Fumble, and 96–99 are Fumbles when the target is below 50 under the RAW fumble rule. A target of 0 has no reachable success level, so Luck is never offered for it.
 
 Out of scope here: Luck to halve Sanity loss, Luck in combat (fumble/malfunction ignore), Luck recovery, Luck rolls themselves.
 
@@ -74,6 +91,8 @@ Out of scope here: Luck to halve Sanity loss, Luck in combat (fumble/malfunction
 | `created_at`, `updated_at` | timestamps |
 
 Triggers make `natural`, `natural_level`, `target`, `difficulty`, dice, subject, rules, visibility, context, `attempt`, `parent_roll_id` and `created_at` immutable, forbid deleting rows, and require a `pushed` row to reference an `original` one.
+
+**Upgrade path:** the first version of 014 limited `target` to 1–100. Migration `015_rolls_target_range.py` detects that constraint and rebuilds `rolls` with SQLite's documented table-rebuild procedure (foreign keys off, copy every row, drop, rename, recreate indexes and triggers, `foreign_key_check`) in one transaction. IDs, the AUTOINCREMENT counter, `roll_events` and pushed-attempt links are preserved; on any error nothing changes. It does nothing on fresh databases or when run again.
 
 `roll_events` — append-only state changes of a roll (now: `luck_spent`), with actor, before/after effective result and Luck, and `request_id UNIQUE` (the Discord interaction ID), so a replayed interaction cannot apply twice.
 

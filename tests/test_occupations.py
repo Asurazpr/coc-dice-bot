@@ -340,7 +340,8 @@ class PersistenceAndUpgradeTests(unittest.TestCase):
             applied = bootstrap(conn)
             self.assertEqual(applied, ["009_fix_skill_base_values.sql", "010_occupations.sql",
                                        "011_skill_point_stat_choice.sql", "012_user_preferences.sql",
-                                       "013_campaigns.sql", "014_rolls.sql"])
+                                       "013_campaigns.sql", "014_rolls.sql",
+                                       "015_rolls_target_range.py"])
             inv = InvestigatorService(conn).get("1001", iid)
             self.assertEqual((inv.name, inv.status, inv.occupation_id, inv.skills), ("Old Ada", "ready", None,
                                                                                       {"listen": 55}))

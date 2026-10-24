@@ -256,17 +256,39 @@ class EligibilityTests(Base):
         self.assertEqual([o.difficulty for o in status.options], ["extreme"])
 
     def test_upgrade_spend_keeps_natural_success_and_improvement(self):
-        roll = self.check(ALICE, "STR", 45)
+        self.inv.set_skill(ALICE, self.ada.id, "Spot Hidden", 60)
+        roll = self.check(ALICE, "Spot Hidden", 45)
+        self.assertTrue(roll.improvement_eligible)
         r = self.rolls.spend_luck(ALICE, roll.id, "hard", request_id="u-1").roll
         self.assertEqual((r.natural, r.natural_level, r.effective, r.effective_level, r.luck_spent),
                          (45, SuccessLevel.SUCCESS, 30, SuccessLevel.HARD, 15))
-        self.assertTrue(r.improvement_eligible)              # the success came from the dice
+        self.assertTrue(r.improvement_eligible)              # natural success, upgraded: check kept
         self.assertEqual(self.personal_luck(), 35)
         with self.assertRaises(InvalidState):                 # still one spend per roll
             self.rolls.spend_luck(ALICE, roll.id, "extreme", request_id="u-2")
-        bought = self.check(ALICE, "STR", 62)
+        bought = self.check(ALICE, "Spot Hidden", 62)
+        self.assertFalse(bought.improvement_eligible)
         r = self.rolls.spend_luck(ALICE, bought.id, "regular").roll
-        self.assertFalse(r.improvement_eligible)              # the success was bought with Luck
+        self.assertTrue(r.met)
+        self.assertFalse(r.improvement_eligible)              # failure turned into a success with Luck
+
+    def test_improvement_checks_follow_the_natural_result_at_the_required_difficulty(self):
+        self.inv.set_skill(ALICE, self.ada.id, "Spot Hidden", 60)
+        hard_needed = self.check(ALICE, "Spot Hidden", 45, difficulty="hard")     # Regular success, Hard needed
+        self.assertFalse(hard_needed.improvement_eligible)
+        r = self.rolls.spend_luck(ALICE, hard_needed.id, "hard").roll
+        self.assertTrue(r.met)
+        self.assertFalse(r.improvement_eligible)              # the required level was bought with Luck
+        self.assertTrue(self.check(ALICE, "Spot Hidden", 1).improvement_eligible)          # Critical
+        self.assertFalse(self.check(ALICE, "Spot Hidden", 70).improvement_eligible)        # failure
+        self.assertFalse(self.check(ALICE, "Spot Hidden", 100).improvement_eligible)       # fumble
+
+    def test_only_skills_earn_improvement_checks(self):
+        for text in ("STR", "DEX", "luck", "SAN"):
+            with self.subTest(text=text):
+                self.assertFalse(self.check(ALICE, text, 5).improvement_eligible)
+        self.assertFalse(self.check(ALICE, "45", 5).improvement_eligible)
+        self.assertTrue(self.check(ALICE, "Spot Hidden", 5).improvement_eligible)          # base value 25
 
     def test_low_skill_fumble_range(self):
         # Target below 50: 96-99 are fumbles too (RAW) and cannot be bought off

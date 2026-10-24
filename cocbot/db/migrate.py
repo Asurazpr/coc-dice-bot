@@ -14,7 +14,10 @@ table) are handled transparently: migrations 001-005 are idempotent
 (``IF NOT EXISTS`` / ``INSERT OR IGNORE`` / ``ON CONFLICT``), so replaying
 them is safe and they are then recorded.
 
-Migrations never drop or rewrite existing user tables.
+Migrations never drop user data. One exception to "never rebuild a table":
+``015_rolls_target_range.py`` rebuilds ``rolls`` (copying every row) on
+databases that applied the first version of 014, because SQLite cannot alter
+a CHECK constraint in place; it manages its own transaction to do so.
 """
 from __future__ import annotations
 

@@ -214,6 +214,15 @@ class RollDiscordTests(unittest.TestCase):
         self.assertIn("luck_spend", kinds)
         self.assertEqual(kinds.count("roll"), 1)
 
+    def test_rolls_detail_shows_improvement_check(self):
+        from cocbot.characters.service import InvestigatorService
+        with self.conn() as c:
+            InvestigatorService(c).set_skill(ALICE, self.ada_id, "Spot Hidden", 60)
+        self.check(ALICE, "Spot Hidden", 40)
+        _, _, kw = self.rolls_cmd(ALICE, 1)
+        imp = next(f.value for f in kw["embed"].fields if f.name == "📈")
+        self.assertIn("Improvement check: earned", imp)
+
     def test_rolls_command_is_private_and_owner_only(self):
         self.check(ALICE, "STR", 62, difficulty="hard")
         kind, _, kw = self.rolls_cmd(ALICE)
@@ -224,6 +233,7 @@ class RollDiscordTests(unittest.TestCase):
         names = [f.name for f in kw["embed"].fields]
         self.assertIn("Dice", names)
         self.assertIn("can be spent", kw["embed"].fields[-1].value)
+        self.assertNotIn("📈", names)                          # STR is a characteristic: no improvement checks
         kind, args, kw = self.rolls_cmd(BOB, 1)
         self.assertIn("No such roll", args[0])
         kind, _, kw = self.rolls_cmd(BOB)
