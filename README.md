@@ -42,6 +42,21 @@ Built as a personal passion project to support real tabletop play rather than a 
   characteristics, Luck and SAN. Numeric checks still work with no character at all
 * No spreadsheets: Excel files in `data/seed/` are optional developer resources only
 
+### Importing an Excel character sheet
+
+* **/character import file:** accepts a filled-in CoC 7e Chinese character sheet (`人物卡 v1.35` layout,
+  `.xlsx`). The bot reads it in memory (no macros, formulas or links are run; the file is not kept) and
+  shows a **private preview**: recognised data, recomputed derived values, skills, anything it could
+  not map (kept as notes, never silently dropped), and warnings
+* Three separate statuses: **read** (warnings/errors), **complete** (all characteristics — otherwise
+  saved as a draft) and **creation rules not verified** (imports are never marked rules-validated)
+* Confirm to save it to your collection; use it with `/character select`, `/check` and `/campaign join`
+  like any investigator. Importing a sheet you already have offers **Update** with a list of
+  differences instead of a duplicate; campaign HP/MP/SAN/Luck, conditions and history are not changed
+* Keepers see the applicant's or participant's **Full sheet** (characteristics, skills, occupation,
+  import warnings) from `/keeper panel`, without access to the player's other investigators
+* Other templates are refused with a clear message; new layouts are added as adapters (`docs/EXCEL_IMPORT.md`)
+
 ### Roll records and Luck
 
 * Every `/check` is stored with its dice, target, required difficulty, rule profile and visibility;
@@ -258,6 +273,11 @@ and are skipped otherwise. Manual checks: [docs/MANUAL_TESTING.md](docs/MANUAL_T
 /check dodge              → DEX/2 of your investigator
 /check STR | luck | SAN
 /check 60 bonus_penalty:1 → plain target, no character needed
+```
+
+```
+/character import file:<your 人物卡.xlsx>        private preview → Create investigator
+/character import file:<sheet> update:Ada       preview the differences → Confirm update
 ```
 
 ```

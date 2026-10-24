@@ -30,6 +30,10 @@ Remaining:
 
 Stored check records, required difficulty, optional Luck spending (campaign rule, default off; personal outside campaigns), `/rolls`. Prepared: pushed attempts as linked rows. See `ROLLS.md`; Luck rule rows not marked "verified quote" there need checking against a licensed Keeper Rulebook.
 
+## M3C — Excel character import (draft PR for `feature/excel-character-import`)
+
+`/character import` for the CoC 7e Chinese sheet v1.35: safe in-memory parsing, private preview, create or update with a diff, unverified import status, Keeper **Full sheet** in the console. See `EXCEL_IMPORT.md`. Next: more templates (as adapters), exporting a sheet back to Excel.
+
 ## M3 — Play at the table
 
 1. Pushed rolls (one per check, recorded, linked to the failed original — schema ready since M3B1); Keeper approval and consequences.
@@ -51,7 +55,7 @@ NPC sheets, handouts, session notes, spectators.
 
 ## M5 — Portability
 
-JSON export/import of an investigator; optional import of the existing Excel character sheet (opt-in, never required); printable sheet; read-only dashboard behind Discord OAuth (replacing the current scaffold).
+JSON export/import of an investigator; Excel export (import is done in M3C); printable sheet; read-only dashboard behind Discord OAuth (replacing the current scaffold).
 
 ## M6 — Operations and localisation
 

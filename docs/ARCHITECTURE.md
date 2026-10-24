@@ -79,3 +79,7 @@ Implemented in M3A; the full design is in `CAMPAIGNS.md`. In short:
 ## Rolls (migration 014)
 
 Implemented in M3B1; design in `ROLLS.md`. `rolls` stores one immutable record per check (dice, target, required difficulty, rule profile and version, visibility, context); later state (Luck spent, effective result) changes only with a `state_version` bump, enforced by triggers. `roll_events` is append-only with a unique interaction ID per change. `RollService.spend_luck` updates the roll, deducts Luck (campaign Luck via `CampaignService.spend_luck_in_tx`, personal Luck via a guarded update) and writes the events in one `BEGIN IMMEDIATE` transaction. A pushed attempt will be its own `rolls` row with `attempt='pushed'` and `parent_roll_id`.
+
+## Spreadsheet import (migration 016)
+
+Implemented in M3C; design in `EXCEL_IMPORT.md`. `cocbot/imports` reads an uploaded `.xlsx` in memory after ZIP-level limits, detects the template with an adapter (exact label checks), maps it to the existing `Investigator` model and records each import in `investigator_imports` (append-only, owner-bound, unmapped data kept as JSON notes). Imports go through `ImportService` in one transaction and never set `creation_validated`. Re-import replaces only the permanent sheet; campaign state is untouched and a `sheet_import` campaign event tells the Keepers. Keepers read imported sheets through `CampaignService.inspect` (participants and pending requests only).

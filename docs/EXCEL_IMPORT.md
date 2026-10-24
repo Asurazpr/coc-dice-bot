@@ -1,6 +1,6 @@
 # Excel character import (M3C) — audit and mapping
 
-Status: design for `feature/excel-character-import`. Written before the implementation.
+Status: implemented on `feature/excel-character-import` (draft PR). The design below was written before the implementation; §10 records where the implementation refined it.
 
 ## 1. What already exists
 
@@ -116,3 +116,28 @@ The import status is recorded per import (`investigator_imports`) and shown to t
 ## 9. Out of scope
 
 Exporting to Excel, other templates, importing weapons/possessions as structured data, the 属性掷骰 helper sheet, age-adjustment checks, a web dashboard.
+
+## 10. Implementation notes
+
+| Concern | Module |
+|---|---|
+| ZIP checks, in-memory load (formulas + cached values) | `cocbot/imports/workbook.py` |
+| Parsed data model, adapter protocol | `cocbot/imports/model.py` |
+| Template registry / detection | `cocbot/imports/adapters/__init__.py` |
+| v1.35 cell map | `cocbot/imports/adapters/coc7_zh_v135.py` |
+| Preview, create, re-import, records | `cocbot/imports/service.py` (`ImportService`) |
+| Keeper access | `CampaignService.inspect`, `ImportService.latest_for_keeper` |
+| Text (no Discord) | `cocbot/ui/import_text.py` |
+| `/character import`, preview/update views | `apps/discord_bot/import_views.py`, `characters_cog.py` |
+| Keeper **Full sheet** | `apps/discord_bot/keeper_views.py` (`render_full_sheet`) |
+| Synthetic test workbooks | `tests/xlsx_factory.py` |
+
+Refinements:
+
+* **Stale previews** are detected with a fingerprint of everything an import can change (name, bio, characteristics, Luck, resources, skills, wizard state), not the `updated_at` timestamp, which can repeat within a millisecond.
+* **Skill values** above the bot's skill limit (200) are not stored; they are warned and kept in the import notes.
+* **Characteristics and Luck** use the bot's 0–99 limits (the same as the sheet editor).
+* **Rows left at the template default** (an unused specialization row, a derived base whose characteristic is missing) are skipped instead of producing noise.
+* **"Create new" with a name already used** offers `Name (2)` instead of refusing, so a player can keep both.
+* **The player's sheet** (`/character view`, the editor) shows the latest import status; Keepers see it under **Full sheet**.
+* Dependencies: `openpyxl` (and `defusedxml`, which openpyxl uses for hardened XML parsing when installed) are now runtime requirements.

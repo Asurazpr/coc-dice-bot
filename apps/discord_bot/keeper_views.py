@@ -205,13 +205,18 @@ def render_request(ctx: Ctx, campaign_id: int, user_id: str) -> Tuple[discord.Em
     inv = pending[user_id]
     text = (t(ctx, "kp_request_line", user=mention(user_id), name=inv.name) if inv
             else t(ctx, "kp_request_gone", user=mention(user_id)))
-    return discord.Embed(description=text, color=ROSTER_COLOR), RequestView(ctx, campaign_id, user_id)
+    return discord.Embed(description=text, color=ROSTER_COLOR), RequestView(ctx, campaign_id, user_id,
+                                                                            inv.id if inv else None)
 
 
 class RequestView(OwnedView):
-    def __init__(self, ctx: Ctx, campaign_id: int, user_id: str):
+    def __init__(self, ctx: Ctx, campaign_id: int, user_id: str, investigator_id: Optional[int] = None):
         super().__init__(ctx)
-        self.campaign_id, self.user_id = campaign_id, user_id
+        self.campaign_id, self.user_id, self.investigator_id = campaign_id, user_id, investigator_id
+        if investigator_id is not None:
+            self.sheet_button = btn(ctx, "kp_btn_full_sheet", emoji="📄")
+            self.sheet_button.callback = self._sheet  # type: ignore[assignment]
+            self.add_item(self.sheet_button)
         for code, style, cb in (("kp_btn_approve", discord.ButtonStyle.success, self._approve),
                                 ("kp_btn_deny", discord.ButtonStyle.danger, self._deny),
                                 ("kp_btn_back", discord.ButtonStyle.secondary, self._back)):
@@ -221,6 +226,11 @@ class RequestView(OwnedView):
 
     def _roster(self):
         return render_roster(self.ctx, self.campaign_id)
+
+    async def _sheet(self, interaction: discord.Interaction) -> None:
+        await show(interaction, self.ctx, lambda: render_full_sheet(
+            self.ctx, self.campaign_id, self.investigator_id,
+            back=lambda: render_request(self.ctx, self.campaign_id, self.user_id)))
 
     async def _approve(self, interaction: discord.Interaction) -> None:
         try:
@@ -257,6 +267,9 @@ class DetailView(OwnedView):
         add.callback = self._add_condition  # type: ignore[assignment]
         self.add_item(adjust)
         self.add_item(add)
+        self.sheet_button = btn(ctx, "kp_btn_full_sheet", emoji="📄", row=0)
+        self.sheet_button.callback = self._sheet  # type: ignore[assignment]
+        self.add_item(self.sheet_button)
         if entry.conditions:
             self.remove_select = discord.ui.Select(
                 placeholder=label("kp_btn_remove_condition", ctx.lang, 150), row=1,
@@ -299,6 +312,10 @@ class DetailView(OwnedView):
 
     async def _history(self, interaction: discord.Interaction) -> None:
         await show(interaction, self.ctx, lambda: render_history(self.ctx, self.campaign_id, self.investigator_id))
+
+    async def _sheet(self, interaction: discord.Interaction) -> None:
+        await show(interaction, self.ctx, lambda: render_full_sheet(self.ctx, self.campaign_id, self.investigator_id,
+                                                                    back=self._detail))
 
     async def _refresh(self, interaction: discord.Interaction) -> None:
         await show(interaction, self.ctx, self._detail)
@@ -390,6 +407,49 @@ class ConditionModal(KeeperModal):
             return
         await show(interaction, self.ctx, lambda: render_detail(self.ctx, self.campaign_id, self.investigator_id),
                    content=t(self.ctx, "kp_applied"))
+
+
+# --- full investigator sheet (Keeper inspection) ---------------------------------------------
+
+def render_full_sheet(ctx: Ctx, campaign_id: int, investigator_id: int, back) -> Tuple[discord.Embed, "SheetView"]:
+    """Characteristics, skills, occupation and import status of a participant or pending applicant.
+
+    ``CampaignService.inspect`` decides access (Keeper roles; investigator in this campaign or its
+    pending request). The Keeper gets a read-only view; ownership never changes.
+    """
+    from cocbot.db.repo_skill_defs import skill_display_names
+    from cocbot.imports.service import ImportService
+    from cocbot.ui.import_text import record_lines
+    from cocbot.ui.sheet_embed import build_sheet_embed
+    with get_conn(ctx.db_path) as conn:
+        inv, kind = CampaignService(conn).inspect(ctx.owner_id, campaign_id, investigator_id)
+        record = ImportService(conn).latest_for_keeper(ctx.owner_id, campaign_id, investigator_id)
+        names = skill_display_names(conn, inv.skills.keys())
+    embed = build_sheet_embed(inv, names)
+    embed.title = render("kp_sheet_title", ctx.lang, name=inv.name,
+                         kind=render(f"kp_sheet_{kind}", ctx.lang))[:256]
+    embed.add_field(name="👤", value=render("kp_detail_player", ctx.lang, user=mention(inv.owner_user_id)),
+                    inline=False)
+    if record is not None:
+        provenance = "\n".join(record_lines(record, ctx.lang))
+    elif inv.creation_validated:
+        provenance = render("kp_sheet_validated", ctx.lang)
+    else:
+        provenance = render("kp_sheet_created_in_discord", ctx.lang)
+    embed.add_field(name=render("kp_sheet_import", ctx.lang)[:256], value=provenance[:1024], inline=False)
+    return embed, SheetView(ctx, back)
+
+
+class SheetView(OwnedView):
+    def __init__(self, ctx: Ctx, back):
+        super().__init__(ctx)
+        self.back = back
+        self.back_button = btn(ctx, "kp_btn_back", emoji="⬅️")
+        self.back_button.callback = self._back  # type: ignore[assignment]
+        self.add_item(self.back_button)
+
+    async def _back(self, interaction: discord.Interaction) -> None:
+        await show(interaction, self.ctx, self.back)
 
 
 # --- history and reverts ---------------------------------------------------------------------
