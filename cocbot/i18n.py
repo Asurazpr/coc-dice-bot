@@ -339,6 +339,8 @@ CATALOG: Dict[str, tuple] = {
     "luck_already_spent": ("Luck was already spent on this roll.", "此检定已消耗过幸运。"),
     "luck_not_on_fumble": ("A fumble cannot be changed with Luck.", "大失败不能用幸运改变。"),
     "luck_already_met": ("This roll already meets the required difficulty.", "此检定已达到所需难度。"),
+    "luck_no_upgrade": ("This roll is already an Extreme success or better; Luck cannot improve it.",
+                        "此检定已是极难成功或更好，幸运无法再提升。"),
     "luck_not_latest": ("You have rolled again with this investigator since; Luck can only be spent on the latest roll.",
                         "此后你已用该调查员再次检定；只能在最近一次检定上消耗幸运。"),
     "luck_expired": ("Luck must be spent right after the roll; this one is too old.",

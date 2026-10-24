@@ -153,6 +153,8 @@ Needs one finished investigator with Luck ≥ 40 selected in the server (e.g. ST
 - [ ] Press the old prompt's button again → refused ("already spent" / "changed"); Luck unchanged.
 - [ ] Roll again, then press **Spend Luck…** on the *previous* result → refused ("latest roll").
 - [ ] `/check luck`, `/check SAN`, `/check 45`, and a roll of 100 (or 96–99 on a skill under 50) → no Luck button.
+- [ ] A Regular success (e.g. 45 vs STR 60) shows **Spend Luck…** offering Hard (15) and Extreme (33), not Regular; a Hard success offers only Extreme; an Extreme success or a Critical shows no button. Upgrading keeps "the original roll is kept" and shows the new level.
+- [ ] Set a skill to 0 (e.g. Cthulhu Mythos) and to 150 with `/character skill`, then `/check` each: both post normally; 01 is still a Critical, 100 still a Fumble; the 0 skill never offers Luck.
 - [ ] Lower Luck to 1 in the sheet editor, fail a check → no button (not enough Luck).
 - [ ] Wait 30 minutes after a failed check, then press its button → refused ("too old").
 - [ ] `/rolls` → private list with your rolls (number, time, subject, difficulty, natural → effective, 🍀, ✅/❌). `/rolls roll:N` → dice (bonus/penalty candidates), context, rules version, changes, Luck status.

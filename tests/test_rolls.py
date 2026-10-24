@@ -188,6 +188,34 @@ class RecordTests(Base):
             conn2.close()
 
 
+class TargetBoundaryTests(Base):
+    """Targets of 0 and above 100 are valid character values and must record without crashing."""
+
+    def test_zero_target(self):
+        self.inv.set_skill(ALICE, self.ada.id, "Cthulhu Mythos", 0)
+        crit = self.check(ALICE, "Cthulhu Mythos", 1)
+        self.assertEqual((crit.target, crit.natural_level), (0, SuccessLevel.CRITICAL))      # 01 stays a Critical
+        fail = self.check(ALICE, "Cthulhu Mythos", 50)
+        self.assertEqual(fail.natural_level, SuccessLevel.FAIL)
+        self.assertEqual(self.check(ALICE, "Cthulhu Mythos", 97).natural_level, SuccessLevel.FUMBLE)
+        latest_fail = self.check(ALICE, "Cthulhu Mythos", 50)
+        self.assertEqual(self.rolls.luck_status(ALICE, latest_fail.id).reason, "luck_unreachable")   # no level ≥ 1
+        self.inv.set_resources(ALICE, self.ada.id, luck=0)
+        zero_luck = self.check(ALICE, "luck", 40)
+        self.assertEqual((zero_luck.target, zero_luck.natural_level), (0, SuccessLevel.FAIL))
+
+    def test_target_above_100(self):
+        self.inv.set_skill(ALICE, self.ada.id, "Spot Hidden", 150)
+        r = self.check(ALICE, "Spot Hidden", 99)
+        self.assertEqual((r.target, r.natural_level), (150, SuccessLevel.SUCCESS))
+        self.assertEqual(self.check(ALICE, "Spot Hidden", 100).natural_level, SuccessLevel.FUMBLE)   # 100 stays
+        self.assertEqual(self.check(ALICE, "Spot Hidden", 30).natural_level, SuccessLevel.EXTREME)
+        up = self.check(ALICE, "Spot Hidden", 80)                         # Regular: Hard at 75 costs 5
+        self.assertEqual([(o.difficulty, o.cost) for o in self.rolls.luck_status(ALICE, up.id).options],
+                         [("hard", 5), ("extreme", 50)])
+        self.assertEqual(self.rolls.spend_luck(ALICE, up.id, "hard").roll.effective, 75)
+
+
 class EligibilityTests(Base):
     def reason(self, roll):
         return self.rolls.luck_status(ALICE, roll.id).reason
@@ -207,11 +235,38 @@ class EligibilityTests(Base):
 
     def test_ineligible_checks(self):
         cases = [("luck", 70, "luck_not_on_luck"), ("SAN", 70, "luck_not_on_san"),
-                 ("STR", 100, "luck_not_on_fumble"), ("STR", 30, "luck_already_met")]
+                 ("STR", 100, "luck_not_on_fumble"), ("STR", 12, "luck_no_upgrade"),
+                 ("STR", 1, "luck_no_upgrade")]
         for text, natural, reason in cases:
             with self.subTest(text=text, natural=natural):
                 self.assertEqual(self.reason(self.check(ALICE, text, natural)), reason)
         self.assertEqual(self.rolls.luck_status(BOB, self.check(BOB, "45", 70).id).reason, "luck_needs_investigator")
+
+    def test_successes_can_be_upgraded(self):
+        # Regular success (45 vs 60): Hard costs 15, Extreme 33 — no "Regular" option, it is already met
+        status = self.rolls.luck_status(ALICE, self.check(ALICE, "STR", 45).id)
+        self.assertIsNone(status.reason)
+        self.assertEqual([(o.difficulty, o.cost, o.level) for o in status.options],
+                         [("hard", 15, SuccessLevel.HARD), ("extreme", 33, SuccessLevel.EXTREME)])
+        # Hard success (25 vs 60): only Extreme
+        status = self.rolls.luck_status(ALICE, self.check(ALICE, "STR", 25).id)
+        self.assertEqual([(o.difficulty, o.cost) for o in status.options], [("extreme", 13)])
+        # Required Extreme, rolled Regular: only Extreme counts
+        status = self.rolls.luck_status(ALICE, self.check(ALICE, "STR", 45, difficulty="extreme").id)
+        self.assertEqual([o.difficulty for o in status.options], ["extreme"])
+
+    def test_upgrade_spend_keeps_natural_success_and_improvement(self):
+        roll = self.check(ALICE, "STR", 45)
+        r = self.rolls.spend_luck(ALICE, roll.id, "hard", request_id="u-1").roll
+        self.assertEqual((r.natural, r.natural_level, r.effective, r.effective_level, r.luck_spent),
+                         (45, SuccessLevel.SUCCESS, 30, SuccessLevel.HARD, 15))
+        self.assertTrue(r.improvement_eligible)              # the success came from the dice
+        self.assertEqual(self.personal_luck(), 35)
+        with self.assertRaises(InvalidState):                 # still one spend per roll
+            self.rolls.spend_luck(ALICE, roll.id, "extreme", request_id="u-2")
+        bought = self.check(ALICE, "STR", 62)
+        r = self.rolls.spend_luck(ALICE, bought.id, "regular").roll
+        self.assertFalse(r.improvement_eligible)              # the success was bought with Luck
 
     def test_low_skill_fumble_range(self):
         # Target below 50: 96-99 are fumbles too (RAW) and cannot be bought off

@@ -109,9 +109,9 @@ class RollDiscordTests(unittest.TestCase):
         self.assertIn("view", kw)                       # 13 Luck lowers 25 to 12: Extreme reachable
 
     def test_regular_checks_look_as_before(self):
-        kw = self.check(ALICE, "STR", 30)
+        kw = self.check(ALICE, "STR", 10)
         self.assertNotIn("Required", kw["embed"].description)
-        self.assertNotIn("view", kw)                    # success: nothing to buy
+        self.assertNotIn("view", kw)                    # Extreme success: nothing left to buy
         self.assertNotIn("ephemeral", kw)
 
     def test_spend_luck_on_public_roll(self):

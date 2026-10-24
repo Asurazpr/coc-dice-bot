@@ -67,12 +67,21 @@ class RollFacts:
     luck_scope: str
 
 
+def upgrade_targets(facts: RollFacts) -> List[str]:
+    """Difficulties Luck could buy: at least the required one and better than the natural result.
+
+    A failed roll can be raised to the required level (or beyond); an existing
+    success can be upgraded, e.g. Regular → Hard or Hard → Extreme (docs/ROLLS.md §2).
+    """
+    natural_rank = _LEVEL_RANK[facts.natural_level]
+    return [d for d in DIFFICULTIES
+            if _DIFFICULTY_RANK[d] >= _DIFFICULTY_RANK[facts.difficulty] and _DIFFICULTY_RANK[d] > natural_rank]
+
+
 def luck_options(facts: RollFacts, luck_available: int) -> List[LuckOption]:
-    """Every level at or above the required difficulty that the available Luck can pay for."""
+    """Every reachable upgrade (see ``upgrade_targets``) that the available Luck can pay for."""
     out: List[LuckOption] = []
-    for diff in DIFFICULTIES:
-        if _DIFFICULTY_RANK[diff] < _DIFFICULTY_RANK[facts.difficulty]:
-            continue
+    for diff in upgrade_targets(facts):
         th = threshold(facts.target, diff)
         if th < 1:
             continue
@@ -101,15 +110,16 @@ def luck_eligibility(facts: RollFacts, *, current_luck: Optional[int], spending_
         return "luck_already_spent", []
     if facts.natural_level == SuccessLevel.FUMBLE:
         return "luck_not_on_fumble", []
-    if meets(facts.natural_level, facts.difficulty):
-        return "luck_already_met", []
+    targets = upgrade_targets(facts)
+    if not targets:
+        return "luck_no_upgrade", []       # already Extreme or Critical
     if not is_latest:
         return "luck_not_latest", []
     if age_seconds > LUCK_WINDOW_SECONDS:
         return "luck_expired", []
     if current_luck is None:
         return "luck_unavailable", []
-    if all(threshold(facts.target, d) < 1 for d in DIFFICULTIES if _DIFFICULTY_RANK[d] >= _DIFFICULTY_RANK[facts.difficulty]):
+    if all(threshold(facts.target, d) < 1 for d in targets):
         return "luck_unreachable", []
     options = luck_options(facts, current_luck)
     if not options:

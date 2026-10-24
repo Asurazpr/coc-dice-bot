@@ -98,8 +98,12 @@ class Roll:
 
     @property
     def improvement_eligible(self) -> bool:
-        """Successes bought with Luck earn no improvement check (docs/ROLLS.md §2)."""
-        return self.attempt == "original" and self.luck_spent == 0 and self.natural_met
+        """Only a success the dice gave earns an improvement check; one bought with Luck does not.
+
+        Upgrading an existing success (Regular → Hard) keeps the natural success,
+        so it stays eligible (docs/ROLLS.md §2).
+        """
+        return self.attempt == "original" and self.natural_met
 
     def facts(self) -> RollFacts:
         return RollFacts(self.subject_kind, self.subject_key, self.investigator_id is not None, self.attempt,

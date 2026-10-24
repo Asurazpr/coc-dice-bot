@@ -43,11 +43,13 @@ Built as a personal passion project to support real tabletop play rather than a 
 * Every `/check` is stored with its dice, target, required difficulty, rule profile and visibility;
   the footer shows its number (`Roll #12`). The original roll is never rerolled or overwritten
 * `/check … difficulty:Hard|Extreme` shows the rolled level and whether the requirement was met
-* **Spend Luck** (optional rule, Keeper Rulebook p. 99): after a failed check, the roller can lower
-  the roll 1 point per Luck point after a private confirmation. Not for Luck or SAN rolls, fumbles,
-  numbers without an investigator, or pushed rolls; a Luck-bought result is at most an Extreme success.
-  Outside campaigns it spends personal Luck; in a campaign it spends campaign Luck and only if the
-  Keeper enabled it (`/keeper rules luck_spending:True`)
+* **Spend Luck** (optional rule, Keeper Rulebook p. 99): after a check, the roller can lower the roll
+  1 point per Luck point after a private confirmation — to turn a failure into the required level, or
+  to upgrade a success (Regular → Hard → Extreme). Not for Luck or SAN rolls, fumbles, numbers without
+  an investigator, or pushed rolls; a Luck-bought result is at most an Extreme success. Outside
+  campaigns it spends personal Luck; in a campaign it spends campaign Luck and only if the Keeper
+  enabled it (`/keeper rules luck_spending:True`)
+* Targets of 0 and above 100 (untrained Mythos, Luck 0, improved skills) are recorded normally
 * `/rolls` (private) lists your recent checks; `/rolls roll:12` shows one with its dice and changes
 
 ### Campaigns and the Keeper Console

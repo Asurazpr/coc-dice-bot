@@ -13,19 +13,34 @@ Gaps: no roll identity, no record of dice/target/rules, no required difficulty, 
 
 ## 2. Rules basis and how far it is verified
 
-Luck spending is an **optional rule** in the 7th-edition Keeper Rulebook (p. 99, "Spending Luck"). I could not read the rulebook or Chaosium's free Quick-Start PDF from this environment (the PDF link fails here). What I could verify:
+Luck spending is an **optional rule** in the 7th-edition Keeper Rulebook (p. 99, "Spending Luck"). The rows below separate what a Chaosium publication confirms from what is still our interpretation. I have not read the Keeper Rulebook itself.
 
-| Rule as implemented | Source | Status |
+### Publisher-confirmed
+
+| Rule as implemented | Source |
+|---|---|
+| Luck may not be spent on Luck rolls, damage rolls or Sanity rolls | Keeper Rulebook p. 99, quoted on Chaosium's official forum (BRP Central, "A question re spending Luck") |
+| A player may only spend Luck on their own dice rolls | same |
+| Luck can upgrade an existing success: Regular → Hard, Hard → Extreme | Chaosium, *The Lightless Beacon*, p. 7 (identified by the project owner; I could not open the scenario from this environment) |
+
+### Unresolved rulebook interpretations (check against a licensed Keeper Rulebook before release)
+
+| Rule as implemented | Basis | Why it is still open |
 |---|---|---|
-| Luck may not be spent on Luck rolls, damage rolls or Sanity rolls | Keeper Rulebook p. 99, quoted on Chaosium's official forum (BRP Central, "A question re spending Luck") | **verified quote** |
-| A player may only spend Luck on their own dice rolls | same | **verified quote** |
-| 1 Luck point lowers the roll by 1 | Roll20 compendium "Using Luck" (Pulp-flavoured text; core and Pulp agree here), secondary summaries | corroborated, not primary |
-| A pushed roll cannot be changed with Luck | Roll20 "Using Luck"; secondary summaries citing KRB p. 99 | corroborated, not primary |
-| Criticals, fumbles (and firearm malfunctions) cannot be altered by Luck | secondary summaries citing KRB p. 99; Roll20 says a natural 100 cannot be avoided on non-combat skills | corroborated, not primary |
-| Luck lowered to 01 (or into a house-rule critical range) is at most an Extreme success | Roll20 "Using Luck" (Pulp text) | **Pulp source only** — applied as the conservative reading |
-| No skill improvement check for a success bought with Luck | Roll20 "Using Luck"; secondary summaries citing KRB p. 99 | corroborated, not primary |
+| 1 Luck point lowers the roll by 1 | Roll20 "Using Luck" (Pulp text), secondary summaries citing KRB p. 99 | no primary core-rules text read |
+| A success can be upgraded by more than one step (Regular → Extreme) in one spend | follows from the 1:1 cost; *The Lightless Beacon* describes one-step upgrades | multi-step not explicitly confirmed |
+| A failure can be bought up to any level at or above the required one | same 1:1 reasoning | not explicitly confirmed |
+| A pushed roll cannot be changed with Luck | Roll20 "Using Luck"; secondary summaries | no primary core text read |
+| Criticals and fumbles cannot be altered by Luck (natural fumbles, including 96–99 below skill 50) | secondary summaries; Roll20 says a natural 100 cannot be avoided on non-combat skills | no primary core text read |
+| Luck lowered into the critical range is at most an Extreme success | Roll20 "Using Luck" (Pulp text) | Pulp source only — conservative reading |
+| No improvement check for a success *bought* with Luck; upgrading a natural success keeps the check | Roll20 "Using Luck"; secondary summaries | upgrade case is our reading |
+| One Luck spend per roll, only on the latest roll, within 30 minutes | project choice ("spent right after the roll") | not a rulebook figure |
 
-**Needs checking against a licensed copy of the Keeper Rulebook before release:** every row not marked "verified quote". The code keeps each restriction in one function (`cocbot/rolls/rules.py: luck_eligibility`) so a correction is a one-line change with a test.
+Every restriction lives in `cocbot/rolls/rules.py` (`upgrade_targets`, `luck_options`, `luck_eligibility`) with a test, so a correction is a small change.
+
+### Target values
+
+Stored targets range from 0 to 999: skills and Luck can be 0, and improved skills can exceed 100. The special results are unchanged by the target: 01 is always a Critical (or 01–N under a campaign's critical range), 100 is always a Fumble, and 96–99 are Fumbles when the target is below 50 under the RAW fumble rule. A target of 0 has no reachable success level, so Luck is never offered for it.
 
 Out of scope here: Luck to halve Sanity loss, Luck in combat (fumble/malfunction ignore), Luck recovery, Luck rolls themselves.
 
@@ -64,7 +79,7 @@ Triggers make `natural`, `natural_level`, `target`, `difficulty`, dice, subject,
 
 ## 5. Luck spending flow
 
-1. After `/check`, if the roll is eligible and the required difficulty was missed, the result carries a **🍀 Spend Luck…** button.
+1. After `/check`, if the roll is eligible (a failure that Luck can raise, or a Regular/Hard success that Luck can upgrade), the result carries a **🍀 Spend Luck…** button.
 2. Clicking it (owner only) shows a private confirmation with each reachable level: "Spend 17 Luck: 62 → 45, Hard success · Luck 50 → 33". Only levels the current Luck can pay for are offered.
 3. **Confirm** runs one `BEGIN IMMEDIATE` transaction that:
    * re-checks eligibility against the stored roll and the *current* state (ownership, investigator still active/participating, campaign rule still on, latest roll of that investigator, within 30 minutes);
@@ -75,7 +90,7 @@ Triggers make `natural`, `natural_level`, `target`, `difficulty`, dice, subject,
    Any mismatch rolls back everything: no Luck lost, roll unchanged.
 4. The original message is updated to show `62 → 45 (🍀 −17)` and the new level; the natural roll stays visible.
 
-Eligibility (`luck_eligibility`): investigator-linked skill or characteristic check; not Luck, SAN or pushed; natural result not a fumble and not already meeting the requirement; Luck spending allowed by the rule profile; one spend per roll; enough Luck for at least the cheapest level.
+Eligibility (`luck_eligibility`): investigator-linked skill or characteristic check; not Luck, SAN or pushed; natural result not a fumble and not already Extreme or Critical; Luck spending allowed by the rule profile; one spend per roll; enough Luck for at least the cheapest level. The offered levels are those at or above the required difficulty **and** better than the natural result, so a failure can be bought up to the requirement and an existing success can be upgraded.
 
 **Where is Luck spending allowed?** Campaign rule `luck_spending` (new, default **off**, primary Keeper sets it with `/keeper rules luck_spending:True`). Outside campaigns there is no Keeper, so it is on and spends the player's personal Luck — the player's own sheet, their own decision. In a campaign channel only participants spend Luck (their campaign Luck); anyone else rolling there (a Keeper, a non-member) gets no Luck option, so a campaign table never touches someone's personal sheet.
 

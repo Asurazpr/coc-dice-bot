@@ -16,7 +16,8 @@ CREATE TABLE IF NOT EXISTS rolls (
   subject_kind    TEXT NOT NULL CHECK (subject_kind IN ('skill', 'characteristic', 'numeric')),
   subject_key     TEXT,
   subject_label   TEXT NOT NULL,
-  target          INTEGER NOT NULL CHECK (target BETWEEN 1 AND 100),
+  -- 0 (untrained Cthulhu Mythos, Luck 0) and above 100 (improved skills) are valid targets
+  target          INTEGER NOT NULL CHECK (target BETWEEN 0 AND 999),
   base_value      INTEGER,
   difficulty      TEXT NOT NULL DEFAULT 'regular' CHECK (difficulty IN ('regular', 'hard', 'extreme')),
   bonus_penalty   INTEGER NOT NULL DEFAULT 0,
