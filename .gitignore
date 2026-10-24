@@ -24,3 +24,4 @@ data/*.db
 *.log
 *.sqlite3
 .pytest_cache/
+pytest-report.xml

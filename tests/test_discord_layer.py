@@ -301,17 +301,30 @@ class DiscordLayerTests(unittest.TestCase):
         self.assertIsInstance(alloc, AllocationStepView)
         self.assertEqual(alloc.keys, ["accounting", "law", "library_use", "listen", "persuade"])
 
-        # occupation points through the page modal
+        # occupation points through the page modal: one bad field -> the whole form is refused
         modal = self.build(lambda: PointsModal(alloc, "occupation"))
+        self.assertIn("300 left", modal.title)
         set_input(modal.inputs["accounting"][0], "60")
-        set_input(modal.inputs["law"][0], "200")     # invalid -> reported, others still saved
+        set_input(modal.inputs["law"][0], "200")
         for k in ("library_use", "listen", "persuade"):
             set_input(modal.inputs[k][0], "")
         it = fake_interaction(ALICE)
         self.arun(modal.on_submit(it))
         kw = it.response.calls[0][2]
-        self.assertIn("Saved: Accounting", kw["content"])
-        self.assertIn("Not saved", kw["content"])
+        self.assertIn("Nothing was saved", kw["content"])
+        self.assertIn("Law would be 205", kw["content"])
+        # corrected form: saved as one batch, with changes and remaining points listed
+        modal = self.build(lambda: PointsModal(kw["view"], "occupation"))
+        set_input(modal.inputs["accounting"][0], "60")
+        set_input(modal.inputs["law"][0], "20")
+        for k in ("library_use", "listen", "persuade"):
+            set_input(modal.inputs[k][0], "")
+        it = fake_interaction(ALICE)
+        self.arun(modal.on_submit(it))
+        content = it.response.calls[0][2]["content"]
+        self.assertIn("Saved.", content)
+        self.assertIn("Accounting: Occupation 0 → 60 (+60)", content)
+        self.assertIn("Left: occupation 220", content)
 
         # Credit Rating via the slash command, then review and finish
         it = fake_interaction(ALICE)
@@ -436,6 +449,174 @@ class DiscordLayerTests(unittest.TestCase):
         kw = it.response.calls[0][2]
         self.assertIn("STR", kw["content"])
         self.assertIn("270", kw["embed"].description)      # EDU 75×2 + STR 60×2
+
+    # --- M2 UX polish ---------------------------------------------------------------------------
+
+    def _alloc_view(self, inv_id, ctx=None, **state):
+        from apps.discord_bot.creation_views import render_step
+        from apps.discord_bot.views import Ctx
+        return self.build(lambda: render_step(ctx or Ctx(self.db, ALICE, GUILD), inv_id, "allocation", **state))
+
+    def _submit(self, modal, values):
+        for key, (ti, _) in modal.inputs.items():
+            set_input(ti, values.get(key, ""))
+        it = fake_interaction(ALICE)
+        self.arun(modal.on_submit(it))
+        return it.response.calls[0][2]
+
+    def test_points_form_refund_in_one_submission(self):
+        from apps.discord_bot.creation_views import PointsModal
+        inv_id = self._draft_with_characteristics()
+        self._accountant_ready_but_for(inv_id)          # Credit Rating 40 occupation points
+        # spend the rest: 300 - 40 = 260 on page 1
+        _, view = self._alloc_view(inv_id)
+        kw = self._submit(self.build(lambda: PointsModal(view, "occupation")),
+                          {"accounting": "70", "law": "70", "library_use": "70", "listen": "50", "persuade": ""})
+        self.assertIn("Left: occupation 0", kw["content"])
+        # fully spent: move 30 from Accounting to Persuade in one form
+        modal = self.build(lambda: PointsModal(kw["view"], "occupation"))
+        self.assertEqual(modal.inputs["accounting"][0].default, "70")       # current allocation shown
+        self.assertIn("now 70", modal.inputs["accounting"][0].label)
+        self.assertIn("0 left", modal.title)
+        kw = self._submit(modal, {"accounting": "40", "law": "70", "library_use": "70", "listen": "50",
+                                  "persuade": "30"})
+        self.assertIn("Saved.", kw["content"])
+        self.assertIn("Accounting: Occupation 70 → 40 (-30)", kw["content"])
+        self.assertIn("Persuade: Occupation 0 → 30 (+30)", kw["content"])
+        self.assertIn("Left: occupation 0", kw["content"])
+
+    def test_points_form_add_mode_and_overflow(self):
+        from apps.discord_bot.creation_views import PointsModal
+        inv_id = self._draft_with_characteristics()
+        self._accountant_ready_but_for(inv_id)
+        _, view = self._alloc_view(inv_id)
+        it = fake_interaction(ALICE)
+        self.arun(view._toggle_mode(it))
+        view = it.response.calls[0][2]["view"]
+        self.assertEqual(view.mode, "add")
+        modal = self.build(lambda: PointsModal(view, "occupation"))
+        self.assertIn("Add occupation points", modal.title)
+        self.assertIsNone(modal.inputs["accounting"][0].default)
+        kw = self._submit(modal, {"accounting": "+99", "law": "+99", "library_use": "+79", "listen": "+79"})
+        self.assertIn("Nothing was saved", kw["content"])
+        self.assertIn("exceed the budget by 96", kw["content"])         # 40 + 356 - 300
+        kw = self._submit(self.build(lambda: PointsModal(kw["view"], "occupation")), {"accounting": "abc"})
+        self.assertIn("is not a whole number", kw["content"])
+        kw = self._submit(self.build(lambda: PointsModal(kw["view"], "occupation")), {"accounting": "+25"})
+        self.assertIn("Accounting: Occupation 0 → 25 (+25)", kw["content"])
+
+    def test_choice_picker_categories_search_and_navigation(self):
+        from apps.discord_bot.creation_views import ChoicesStepView, SkillSearchModal, render_step
+        from apps.discord_bot.views import Ctx
+        inv_id = self._draft_with_characteristics()
+        it = fake_interaction(ALICE)
+        self.arun(self.sub("occupation").callback(self.cog, it, "accountant", str(inv_id)))
+        view = it.response.calls[0][2]["view"]
+        self.assertIsInstance(view, ChoicesStepView)
+        # "any 2 skills": too many for one menu -> category select first, no skill menu yet
+        self.assertTrue(hasattr(view, "category_select"))
+        self.assertFalse(hasattr(view, "skill_select"))
+        self.assertLessEqual(len(view.category_select.options), 25)
+        # pick a category
+        it = fake_interaction(ALICE)
+        self.arun(view.picker_navigate(it, category="social", query="", page=0))
+        kw = it.response.calls[0][2]
+        view = kw["view"]
+        keys = [o.value for o in view.skill_select.options]
+        self.assertIn("charm", keys)
+        self.assertNotIn("credit_rating", keys)                  # never selectable as a choice
+        self.assertIn("Category: **Social**", kw["embed"].description)
+        self.assertIn("0/2 choices made · 2 remaining", kw["embed"].description)
+        # choose -> advances to the next choice
+        it = fake_interaction(ALICE)
+        self.arun(view.picker_selected(it, "charm"))
+        kw = it.response.calls[0][2]
+        self.assertEqual(kw["view"].pos, 1)
+        self.assertIn("1/2 choices made · 1 remaining", kw["embed"].description)
+        # search (Chinese) for the second choice; already chosen skills are not offered
+        modal = self.build(lambda: SkillSearchModal(kw["view"]))
+        set_input(modal.query_input, "魅惑")
+        it = fake_interaction(ALICE)
+        self.arun(modal.on_submit(it))
+        kw = it.response.calls[0][2]
+        self.assertFalse(hasattr(kw["view"], "skill_select"))   # Charm already taken by choice 1
+        self.assertIn("No available skill matches", kw["embed"].description)
+        modal = self.build(lambda: SkillSearchModal(kw["view"]))
+        set_input(modal.query_input, "psych")
+        it = fake_interaction(ALICE)
+        self.arun(modal.on_submit(it))
+        kw = it.response.calls[0][2]
+        self.assertEqual([o.value for o in kw["view"].skill_select.options][:1], ["psychology"])
+        it = fake_interaction(ALICE)
+        self.arun(kw["view"].picker_selected(it, "psychology"))
+        self.assertIn("All occupation skills chosen", it.response.calls[0][2]["content"])
+        # go back to choice 1 and change it
+        _, view = self.build(lambda: render_step(Ctx(self.db, ALICE, GUILD), inv_id, "choices", pos=0))
+        self.assertEqual(view.pos, 0)
+        it = fake_interaction(ALICE)
+        self.arun(view.picker_navigate(it, category="physical", query="", page=0))
+        it2 = fake_interaction(ALICE)
+        self.arun(it.response.calls[0][2]["view"].picker_selected(it2, "dodge"))
+        from cocbot.db.connection import get_conn
+        from cocbot.occupations.service import load_picks
+        with get_conn(self.db) as conn:
+            self.assertEqual(load_picks(conn, inv_id), {(6, 0): "dodge", (6, 1): "psychology"})
+
+    def test_interest_picker_opens_points_modal(self):
+        from apps.discord_bot.creation_views import InterestPickerView, InterestPointsModal
+        inv_id = self._draft_with_characteristics()
+        self._accountant_ready_but_for(inv_id)
+        _, view = self._alloc_view(inv_id)
+        it = fake_interaction(ALICE)
+        self.arun(view._other(it))
+        picker = it.response.calls[0][2]["view"]
+        self.assertIsInstance(picker, InterestPickerView)
+        it = fake_interaction(ALICE)
+        self.arun(picker.picker_navigate(it, category="physical", query="", page=0))
+        picker = it.response.calls[0][2]["view"]
+        self.assertIn("climb", [o.value for o in picker.skill_select.options])
+        it = fake_interaction(ALICE)
+        self.arun(picker.picker_selected(it, "climb"))
+        kind, (modal,), _ = it.response.calls[0]
+        self.assertEqual(kind, "send_modal")
+        self.assertIsInstance(modal, InterestPointsModal)
+        self.assertIn("160 left", modal.points_input.label)
+        set_input(modal.points_input, "30")
+        it = fake_interaction(ALICE)
+        self.arun(modal.on_submit(it))
+        content = it.response.calls[0][2]["content"]
+        self.assertIn("Climb: Personal interest 0 → 30 (+30)", content)
+        self.assertIn("personal interest 130", content)
+
+    def test_language_command_and_chinese_wizard(self):
+        from apps.discord_bot.views import Ctx
+        inv_id = self._draft_with_characteristics()
+        cmd = self.bot.tree.get_command("language")
+        it = fake_interaction(ALICE)
+        self.arun(cmd.callback(it, None))
+        self.assertIn("English", it.response.calls[0][1][0])
+        it = fake_interaction(ALICE)
+        self.arun(cmd.callback(it, SimpleNamespace(value="zh")))
+        self.assertIn("简体中文", it.response.calls[0][1][0])
+        # the cog now builds a Chinese context for Alice, but not for Bob
+        self.assertEqual(self.cog.ctx(fake_interaction(ALICE)).lang, "zh")
+        self.assertEqual(self.cog.ctx(fake_interaction(BOB)).lang, "en")
+        it = fake_interaction(ALICE)
+        self.arun(self.sub("occupation").callback(self.cog, it, "会计师", str(inv_id)))
+        kw = it.response.calls[0][2]
+        self.assertIn("职业已设为 **会计师**", kw["content"])
+        self.assertIn("本职技能选择", kw["embed"].title)
+        self.assertIn("选择类别", kw["view"].category_select.placeholder)
+        # Chinese errors
+        it = fake_interaction(ALICE)
+        self.arun(self.sub("allocate").callback(self.cog, it, "climb", 10, None, str(inv_id)))
+        self.assertIn("职业点数只能分配给本职技能和信誉", it.response.calls[0][1][0])
+        # bilingual
+        it = fake_interaction(ALICE)
+        self.arun(cmd.callback(it, SimpleNamespace(value="both")))
+        embed, _ = self._alloc_view(inv_id, Ctx(self.db, ALICE, GUILD, "both"))
+        self.assertIn("Skill points", embed.title)
+        self.assertIn("技能点数", embed.title)
 
 
 if __name__ == "__main__":

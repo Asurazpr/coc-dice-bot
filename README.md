@@ -215,6 +215,7 @@ and are skipped otherwise. Manual checks: [docs/MANUAL_TESTING.md](docs/MANUAL_T
 /character creation                 occupation → choices → skill points → review (resumable)
 /character occupation occupation:医生   choose an occupation (autocomplete, EN/中文)
 /character allocate skill:Law occupation_points:40   spend creation points on one skill
+/language language:简体中文          display language for the creation steps (English / 简体中文 / both)
 /character edit | archive | restore | delete
 ```
 

@@ -21,12 +21,17 @@ from cocbot.characters.service import (
 )
 from cocbot.db import repo_investigators as repo
 from cocbot.db.repo_skill_defs import resolve_skill, skill_display_names
+from cocbot.i18n import Msg
 from cocbot.mechanics.derived import eval_derived_formula
 from cocbot.occupations import catalogue
 from cocbot.occupations.catalogue import CatalogueError, Occupation
 from cocbot.occupations.rules import (
     CTHULHU_MYTHOS,
+    MODE_ADD,
+    MODE_SET,
+    BatchResult,
     CreationCheck,
+    evaluate_batch,
     allocation_error,
     alternative_stats,
     check_creation,
@@ -40,6 +45,16 @@ from cocbot.occupations.rules import (
 
 STEPS = ("characteristics", "occupation", "choices", "allocation", "review")
 POINTS_MAX = 99
+
+
+class BatchRejected(ValidationError):
+    """A whole allocation batch was refused; nothing was saved. ``result`` explains why."""
+
+    def __init__(self, result: BatchResult) -> None:
+        self.result = result
+        # Single error: keep the Msg itself so it can be localized; several: English summary
+        # (the Discord layer renders ``result.errors`` individually).
+        super().__init__(result.errors[0] if len(result.errors) == 1 else "\n".join(result.errors))
 
 
 def skill_bases(conn: sqlite3.Connection, inv: Investigator) -> Dict[str, Optional[int]]:
@@ -120,7 +135,7 @@ class CreationService:
     def _draft(self, actor_id: object, investigator_id: int) -> Investigator:
         inv = self.investigators.get(actor_id, investigator_id, include_archived=False)
         if inv.status != STATUS_DRAFT:
-            raise InvalidState("Creation steps are only available while the investigator is a draft.")
+            raise InvalidState(Msg("not_draft"))
         return inv
 
     def occupation_of(self, inv: Investigator) -> Optional[Occupation]:
@@ -129,7 +144,7 @@ class CreationService:
     def _require_occupation(self, inv: Investigator) -> Occupation:
         occ = self.occupation_of(inv)
         if occ is None:
-            raise InvalidState("Choose an occupation first.")
+            raise InvalidState(Msg("choose_occupation_first"))
         return occ
 
     def _commit_and_reload(self, actor_id: object, inv: Investigator, step: Optional[str] = None) -> Investigator:
@@ -151,12 +166,11 @@ class CreationService:
         inv = self._draft(actor_id, investigator_id)
         occ = catalogue.find(self.conn, actor_id, str(occupation_ref))
         if occ is None:
-            raise NotFound(f"No occupation matching {occupation_ref!r}.")
+            raise NotFound(Msg("no_occupation_match", ref=repr(str(occupation_ref))))
         if inv.occupation_id == occ.id:
             return inv
         if inv.occupation_id and self.has_occupation_progress(inv) and not force:
-            raise InvalidState("Changing occupation clears your occupation skill choices and occupation points "
-                               "(personal interest points are kept). Confirm to continue.")
+            raise InvalidState(Msg("confirm_occupation_change"))
         try:
             self.conn.execute("DELETE FROM investigator_occupation_picks WHERE investigator_id=?", (inv.id,))
             self.conn.execute("UPDATE investigator_skill_points SET occupation_points=0 WHERE investigator_id=?",
@@ -179,11 +193,11 @@ class CreationService:
         except ValueError:
             lo = hi = None
         if lo is None:
-            raise ValidationError("Credit Rating range must look like 10-40.")
+            raise ValidationError(Msg("credit_range_format"))
         try:
             occ = catalogue.create_homebrew(self.conn, actor_id, name, lo, hi, catalogue.parse_formula_choice(formula))
         except CatalogueError as e:
-            raise ValidationError(str(e)) from None
+            raise ValidationError(e.args[0] if e.args else str(e)) from None
         return self.set_occupation(actor_id, investigator_id, occ.id, force=True)
 
     # --- choices ---------------------------------------------------------------
@@ -193,7 +207,7 @@ class CreationService:
         occ = self._require_occupation(inv)
         sd = resolve_skill(skill, conn=self.conn)
         if sd is None:
-            raise ValidationError(f"Unknown skill {skill!r}.")
+            raise ValidationError(Msg("unknown_skill", text=repr(str(skill))))
         picks = load_picks(self.conn, inv.id)
         err = validate_pick(occ, picks, slot_index, pick_index, sd.key, all_skill_keys(self.conn))
         if err:
@@ -237,49 +251,80 @@ class CreationService:
                  occupation_points: object = None, interest_points: object = None) -> Investigator:
         """Set the points on one skill. None leaves that budget unchanged; blank means 0."""
         inv = self._draft(actor_id, investigator_id)
-        occ = self._require_occupation(inv)
+        self._require_occupation(inv)
         sd = resolve_skill(skill, conn=self.conn)
         if sd is None:
-            raise ValidationError(f"Unknown skill {skill!r}.")
+            raise ValidationError(Msg("unknown_skill", text=repr(str(skill))))
+        new_o = None if occupation_points is None else (parse_int(occupation_points, "Occupation points", 0,
+                                                                    POINTS_MAX) or 0)
+        new_i = None if interest_points is None else (parse_int(interest_points, "Interest points", 0,
+                                                                POINTS_MAX) or 0)
+        names = skill_display_names(self.conn, [sd.key])
+        if skill_bases(self.conn, inv).get(sd.key) is None:
+            raise InvalidState(Msg("base_unknown", names, skill=sd.key))
+        manual = self.unreconciled(inv)
+        if sd.key in manual:
+            raise InvalidState(Msg("reconcile_first", names, skill=sd.key, value=manual[sd.key]))
+        inv, _ = self.allocate_batch(actor_id, investigator_id, {sd.key: (new_o, new_i)}, MODE_SET)
+        return inv
+
+    def preview_batch(self, inv: Investigator, proposals: Dict[str, Tuple[Optional[int], Optional[int]]],
+                      mode: str = MODE_SET) -> BatchResult:
+        """Evaluate an allocation batch without saving anything."""
+        occ = self._require_occupation(inv)
+        if mode not in (MODE_SET, MODE_ADD):
+            raise ValidationError(f"Unknown mode {mode!r}.")
         current = load_points(self.conn, inv.id)
-        cur_o, cur_i = current.get(sd.key, (0, 0))
-        new_o = cur_o if occupation_points is None else (parse_int(occupation_points, "Occupation points", 0,
-                                                                         POINTS_MAX) or 0)
-        new_i = cur_i if interest_points is None else (parse_int(interest_points, "Interest points", 0,
-                                                                     POINTS_MAX) or 0)
-        bases = skill_bases(self.conn, inv)
-        base = bases.get(sd.key)
-        if base is None:
-            raise InvalidState(f"{sd.display_name}'s base needs characteristics that are not entered yet.")
-        manual = load_manual_values(self.conn, inv.id).get(sd.key)
-        if manual is not None and manual != base:
-            raise InvalidState(f"{sd.display_name} has a hand-entered value ({manual}). Reconcile it first "
-                               f"(convert to points or discard) on the Review step.")
-        spent = (sum(o for k, (o, _) in current.items() if k != sd.key),
-                 sum(i for k, (_, i) in current.items() if k != sd.key))
         budgets = (occupation_budget(occ, inv.characteristics, inv.skill_point_stat).total,
                    interest_budget(inv.characteristics).total)
-        err = allocation_error(occ, load_picks(self.conn, inv.id), sd.key, new_o, new_i, int(base), budgets, spent)
-        if err:
-            raise ValidationError(err)
+        names = skill_display_names(self.conn, list(proposals))
+        return evaluate_batch(occ, load_picks(self.conn, inv.id), current, proposals,
+                              skill_bases(self.conn, inv), budgets, mode, self.unreconciled(inv), names)
+
+    def allocate_batch(self, actor_id: object, investigator_id: int,
+                       proposals: Dict[str, Tuple[Optional[int], Optional[int]]],
+                       mode: str = MODE_SET) -> Tuple[Investigator, BatchResult]:
+        """Apply several allocation edits atomically: all of them, or none.
+
+        ``proposals`` maps skill key -> (occupation, interest); see
+        ``rules.evaluate_batch`` for the semantics of ``mode``. Raises
+        ``BatchRejected`` (nothing saved) if any edit or the final budgets break
+        the rules.
+        """
+        inv = self._draft(actor_id, investigator_id)
+        resolved: Dict[str, Tuple[Optional[int], Optional[int]]] = {}
+        for skill, value in proposals.items():
+            sd = resolve_skill(skill, conn=self.conn)
+            if sd is None:
+                raise ValidationError(Msg("unknown_skill", text=repr(str(skill))))
+            resolved[sd.key] = value
+        result = self.preview_batch(inv, resolved, mode)
+        if not result.ok:
+            raise BatchRejected(result)
+        if not result.changes:
+            return inv, result
         try:
-            if manual is not None:  # equal to base: carries no information
+            for ch in result.changes:
+                # a hand-entered value equal to base carries no information
                 self.conn.execute("DELETE FROM investigator_skills WHERE investigator_id=? AND skill_key=? "
-                                  "AND source='manual' AND specialization=''", (inv.id, sd.key))
-            if new_o == 0 and new_i == 0:
-                self.conn.execute("DELETE FROM investigator_skill_points WHERE investigator_id=? AND skill_key=?",
-                                  (inv.id, sd.key))
-            else:
-                self.conn.execute(
-                    """
-                    INSERT INTO investigator_skill_points (investigator_id, skill_key, occupation_points, interest_points)
-                    VALUES (?, ?, ?, ?)
-                    ON CONFLICT(investigator_id, skill_key)
-                    DO UPDATE SET occupation_points=excluded.occupation_points, interest_points=excluded.interest_points
-                    """,
-                    (inv.id, sd.key, new_o, new_i),
-                )
-            return self._commit_and_reload(actor_id, inv, "allocation")
+                                  "AND source='manual' AND specialization=''", (inv.id, ch.key))
+                o, i = ch.new
+                if o == 0 and i == 0:
+                    self.conn.execute("DELETE FROM investigator_skill_points WHERE investigator_id=? "
+                                      "AND skill_key=?", (inv.id, ch.key))
+                else:
+                    self.conn.execute(
+                        """
+                        INSERT INTO investigator_skill_points
+                          (investigator_id, skill_key, occupation_points, interest_points)
+                        VALUES (?, ?, ?, ?)
+                        ON CONFLICT(investigator_id, skill_key)
+                        DO UPDATE SET occupation_points=excluded.occupation_points,
+                                      interest_points=excluded.interest_points
+                        """,
+                        (inv.id, ch.key, o, i),
+                    )
+            return self._commit_and_reload(actor_id, inv, "allocation"), result
         except sqlite3.Error:
             self.conn.rollback()
             raise
@@ -322,7 +367,9 @@ class CreationService:
         if stat is not None:
             stat = str(stat).upper()
             if stat not in alts:
-                raise ValidationError(f"{occ.name_en} lets you choose from {', '.join(alts) or 'nothing'}.")
+                raise ValidationError(Msg("formula_choice_invalid", occupation={"en": occ.name_en,
+                                                                                 "zh": occ.name_zh or occ.name_en},
+                                          stats=", ".join(alts) or "—"))
         repo.update(self.conn, inv.id, {"skill_point_stat": stat})
         self.conn.commit()
         return self.investigators.get(actor_id, inv.id)
@@ -344,26 +391,27 @@ class CreationService:
         occ = self._require_occupation(inv)
         sd = resolve_skill(skill, conn=self.conn)
         if sd is None:
-            raise ValidationError(f"Unknown skill {skill!r}.")
+            raise ValidationError(Msg("unknown_skill", text=repr(str(skill))))
         manual = load_manual_values(self.conn, inv.id)
+        names = skill_display_names(self.conn, [sd.key])
         if sd.key not in manual:
-            raise NotFound(f"{sd.display_name} has no hand-entered value.")
+            raise NotFound(Msg("no_manual_value", names, skill=sd.key))
         value = manual[sd.key]
         if action == "discard":
             self.conn.execute("DELETE FROM investigator_skills WHERE investigator_id=? AND skill_key=? "
                               "AND source='manual' AND specialization=''", (inv.id, sd.key))
             return self._commit_and_reload(actor_id, inv)
         if action != "convert":
-            raise ValidationError("Action must be 'convert' or 'discard'.")
+            raise ValidationError(Msg("reconcile_action"))
 
         base = skill_bases(self.conn, inv).get(sd.key)
         if base is None:
-            raise InvalidState(f"{sd.display_name}'s base needs characteristics that are not entered yet.")
+            raise InvalidState(Msg("base_unknown", names, skill=sd.key))
         if sd.key == CTHULHU_MYTHOS:
-            raise ValidationError("Cthulhu Mythos cannot be bought with points at creation; discard it.")
+            raise ValidationError(Msg("mythos_cannot_convert"))
         needed = value - int(base)
         if needed < 0:
-            raise ValidationError(f"{sd.display_name} ({value}) is below its base ({base}); discard it instead.")
+            raise ValidationError(Msg("below_base", names, skill=sd.key, value=value, base=base))
         points = load_points(self.conn, inv.id)
         cur_o, cur_i = points.get(sd.key, (0, 0))
         spent_o = sum(o for k, (o, _) in points.items() if k != sd.key)
@@ -377,7 +425,7 @@ class CreationService:
         use_i = needed - use_o
         err = allocation_error(occ, picks, sd.key, use_o, use_i, int(base), (ob, ib), (spent_o, spent_i))
         if err:
-            raise ValidationError(f"Cannot convert {sd.display_name} {value} into points: {err}")
+            raise ValidationError(Msg("convert_failed", names, skill=sd.key, value=value, reason=err))
         try:
             self.conn.execute("DELETE FROM investigator_skills WHERE investigator_id=? AND skill_key=? "
                               "AND source='manual' AND specialization=''", (inv.id, sd.key))
@@ -396,5 +444,5 @@ class CreationService:
             raise
 
 
-__all__ = ["CharacterError", "CreationService", "STEPS", "load_picks", "load_points", "skill_bases",
+__all__ = ["BatchRejected", "CharacterError", "CreationService", "MODE_ADD", "MODE_SET", "STEPS", "load_picks", "load_points", "skill_bases",
            "sync_allocated_skills"]

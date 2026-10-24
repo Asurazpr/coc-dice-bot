@@ -13,8 +13,9 @@ Choices where the rules leave room are documented in docs/OCCUPATIONS.md §6.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import List, Mapping, Optional, Sequence, Tuple
+from typing import Dict, List, Mapping, Optional, Sequence, Tuple
 
+from cocbot.i18n import Msg
 from cocbot.occupations.catalogue import NOT_SELECTABLE, Occupation, SlotDef
 
 SKILL_CREATION_MAX = 99
@@ -23,9 +24,33 @@ CTHULHU_MYTHOS = "cthulhu_mythos"
 
 
 @dataclass(frozen=True)
+class BudgetTerm:
+    stat: str
+    mult: int
+    value: int
+    alternatives: Tuple[str, ...] = ()   # non-empty when the player could choose
+    chosen: bool = False                 # True: player's choice; False: suggestion
+
+
+@dataclass(frozen=True)
 class Budget:
-    total: Optional[int]          # None when a needed characteristic is missing
-    explanation: str
+    total: Optional[int]                 # None when a needed characteristic is missing
+    terms: Tuple[BudgetTerm, ...] = ()
+    missing: Tuple[str, ...] = ()
+
+    @property
+    def explanation(self) -> str:
+        """English summary (the UI renders localized text from ``terms``)."""
+        if self.total is None:
+            return f"needs {', '.join(self.missing)}"
+        parts = []
+        for t in self.terms:
+            note = ""
+            if t.alternatives:
+                alts = "/".join(t.alternatives)
+                note = f" (chosen from {alts})" if t.chosen else f" (suggested: higher of {alts})"
+            parts.append(f"{t.stat}×{t.mult}{note} = {t.value * t.mult}")
+        return " + ".join(parts)
 
 
 def alternative_stats(occ: Occupation) -> Tuple[str, ...]:
@@ -47,29 +72,27 @@ def occupation_budget(occ: Occupation, chars: Mapping[str, Optional[int]],
                       chosen_stat: Optional[str] = None) -> Budget:
     """Sum of formula terms. For a term with alternatives the player's choice is
     used; without a (valid) choice the higher value is suggested and used."""
-    total, parts = 0, []
+    total, terms = 0, []
     for term in occ.skill_points:
         values = {s: chars.get(s) for s in term["stats"]}
         known = {s: v for s, v in values.items() if v is not None}
         if len(known) < len(values):
-            missing = [s for s, v in values.items() if v is None]
-            return Budget(None, f"needs {', '.join(missing)}")
-        if len(values) > 1 and chosen_stat in values:
-            stat, value = chosen_stat, known[chosen_stat]
-            note = f" (chosen from {'/'.join(term['stats'])})"
+            return Budget(None, missing=tuple(s for s, v in values.items() if v is None))
+        alts = tuple(term["stats"]) if len(values) > 1 else ()
+        if alts and chosen_stat in values:
+            stat, value, chosen = chosen_stat, known[chosen_stat], True
         else:
-            stat, value = max(known.items(), key=lambda kv: kv[1])
-            note = f" (suggested: higher of {'/'.join(term['stats'])})" if len(values) > 1 else ""
+            (stat, value), chosen = max(known.items(), key=lambda kv: kv[1]), False
         total += value * term["mult"]
-        parts.append(f"{stat}×{term['mult']}{note} = {value * term['mult']}")
-    return Budget(total, " + ".join(parts))
+        terms.append(BudgetTerm(stat, term["mult"], value, alts, chosen))
+    return Budget(total, tuple(terms))
 
 
 def interest_budget(chars: Mapping[str, Optional[int]]) -> Budget:
     v = chars.get("INT")
     if v is None:
-        return Budget(None, "needs INT")
-    return Budget(v * 2, f"INT×2 = {v * 2}")
+        return Budget(None, missing=("INT",))
+    return Budget(v * 2, (BudgetTerm("INT", 2, v),))
 
 
 # --- picks -----------------------------------------------------------------------
@@ -104,15 +127,15 @@ def validate_pick(occ: Occupation, picks: Mapping[Tuple[int, int], str], slot_in
                   skill_key: str, all_skills: Sequence[str]) -> Optional[str]:
     """Error message, or None if the pick is allowed."""
     if not 0 <= slot_index < len(occ.slots):
-        return "That occupation has no such skill choice."
+        return Msg("pick_no_such")
     slot = occ.slots[slot_index]
     if slot.kind == "fixed" or not 0 <= pick_index < slot.count:
-        return "That occupation has no such skill choice."
+        return Msg("pick_no_such")
     if skill_key not in slot_options(slot, all_skills):
-        return "That skill is not one of the options for this choice."
+        return Msg("pick_not_option")
     taken = set(occ.fixed_skills) | {k for pos, k in picks.items() if pos != (slot_index, pick_index)}
     if skill_key in taken:
-        return "That skill is already one of your occupation skills."
+        return Msg("pick_taken")
     return None
 
 
@@ -178,10 +201,7 @@ def check_creation(
     hand (``manual_values``) that differs from the skill's base is an error
     until the player reconciles it (convert it into points, or discard it).
     """
-    names = skill_names or {}
-
-    def nm(k: str) -> str:
-        return names.get(k, k)
+    names = dict(skill_names or {})
 
     ob, ib = occupation_budget(occ, chars, chosen_stat), interest_budget(chars)
     occ_skills = occupation_skills(occ, picks)
@@ -197,39 +217,39 @@ def check_creation(
 
     c = CreationCheck(ob, ib, spent_o, spent_i, rows, missing)
     if ob.total is None or ib.total is None:
-        c.errors.append("Enter all characteristics first (" + "; ".join(
-            b.explanation for b in (ob, ib) if b.total is None) + ").")
+        missing_stats = list(dict.fromkeys(ob.missing + ib.missing))
+        c.errors.append(Msg("enter_characteristics", stats=", ".join(missing_stats)))
     if missing:
-        c.errors.append(f"{missing} occupation skill choice(s) still to make.")
+        c.errors.append(Msg("picks_missing", n=missing))
     if ob.total is not None and spent_o > ob.total:
-        c.errors.append(f"Occupation points overspent by {spent_o - ob.total}.")
+        c.errors.append(Msg("occ_overspent", n=spent_o - ob.total))
     if ib.total is not None and spent_i > ib.total:
-        c.errors.append(f"Personal interest points overspent by {spent_i - ib.total}.")
+        c.errors.append(Msg("int_overspent", n=spent_i - ib.total))
     for r in rows:
         if r.occupation_points and not r.is_occupation_skill:
-            c.errors.append(f"{nm(r.key)} is not an occupation skill but has occupation points.")
+            c.errors.append(Msg("not_occ_skill_has_points", names, skill=r.key))
         if r.key == CTHULHU_MYTHOS and (r.occupation_points or r.interest_points):
-            c.errors.append("Cthulhu Mythos cannot be raised during creation.")
+            c.errors.append(Msg("mythos_no_raise"))
         if r.total > SKILL_CREATION_MAX:
-            c.errors.append(f"{nm(r.key)} would be {r.total}; the maximum is {SKILL_CREATION_MAX}.")
+            c.errors.append(Msg("over_max", names, skill=r.key, total=r.total, max=SKILL_CREATION_MAX))
     cr = next(r for r in rows if r.key == CREDIT_RATING)
     if not occ.credit_min <= cr.total <= occ.credit_max:
-        c.errors.append(f"Credit Rating is {cr.total}; this occupation requires {occ.credit_min}-{occ.credit_max}.")
+        c.errors.append(Msg("credit_range", value=cr.total, min=occ.credit_min, max=occ.credit_max))
 
     if (c.occupation_remaining or 0) > 0:
-        c.warnings.append(f"{c.occupation_remaining} occupation points unspent (they are not carried over).")
+        c.warnings.append(Msg("warn_occ_unspent", n=c.occupation_remaining))
     if (c.interest_remaining or 0) > 0:
-        c.warnings.append(f"{c.interest_remaining} personal interest points unspent.")
+        c.warnings.append(Msg("warn_int_unspent", n=c.interest_remaining))
     for key, value in sorted((manual_values or {}).items()):
         base = bases.get(key)
         if key == CTHULHU_MYTHOS and value:
-            c.errors.append(f"Cthulhu Mythos is {value} (entered by hand); it must be 0 at creation. Discard it.")
+            c.errors.append(Msg("manual_mythos", value=value))
         elif base is None or value != base:
-            c.errors.append(f"{nm(key)} is {value}, entered by hand rather than paid for with points "
-                            f"(base {base if base is not None else '?'}). Reconcile it: convert to points or discard.")
+            c.errors.append(Msg("manual_value", names, skill=key, value=value,
+                                base=base if base is not None else "?"))
     if occ.issues:
-        c.warnings.append("Occupation data needs Keeper review: " + "; ".join(occ.issues[:3]))
-    c.warnings.append("Age adjustments (rulebook ch. 3) are not applied automatically; check them with your Keeper.")
+        c.warnings.append(Msg("warn_occ_issues", issues="; ".join(occ.issues[:3])))
+    c.warnings.append(Msg("warn_age"))
     return c
 
 
@@ -243,22 +263,141 @@ def allocation_error(
     budgets: Tuple[Optional[int], Optional[int]],
     spent_elsewhere: Tuple[int, int],
 ) -> Optional[str]:
-    """Validate one skill's allocation at the moment it is entered."""
+    """Validate one skill's allocation at the moment it is entered (used when converting)."""
     if new_occ < 0 or new_int < 0:
-        return "Points cannot be negative."
+        return Msg("points_negative")
     if skill_key == CTHULHU_MYTHOS and (new_occ or new_int):
-        return "Cthulhu Mythos cannot be raised during creation."
+        return Msg("mythos_no_raise")
     if new_occ and skill_key not in occupation_skills(occ, picks):
-        return "Occupation points can only go to this occupation's skills and Credit Rating."
+        return Msg("occ_points_not_allowed")
     if base + new_occ + new_int > SKILL_CREATION_MAX:
-        return f"That would make the skill {base + new_occ + new_int}; the maximum at creation is {SKILL_CREATION_MAX}."
+        return Msg("over_max_creation", total=base + new_occ + new_int, max=SKILL_CREATION_MAX)
     ob, ib = budgets
     if ob is None or ib is None:
-        return "Enter all characteristics first so the point budgets can be calculated."
+        return Msg("budgets_unknown")
     if spent_elsewhere[0] + new_occ > ob:
-        return f"Only {ob - spent_elsewhere[0]} occupation points are left."
+        return Msg("occ_left", n=ob - spent_elsewhere[0])
     if spent_elsewhere[1] + new_int > ib:
-        return f"Only {ib - spent_elsewhere[1]} personal interest points are left."
+        return Msg("int_left", n=ib - spent_elsewhere[1])
     if skill_key == CREDIT_RATING and base + new_occ + new_int > occ.credit_max:
-        return f"Credit Rating for this occupation is at most {occ.credit_max}."
+        return Msg("credit_max", max=occ.credit_max)
     return None
+
+
+# --- atomic batch allocation --------------------------------------------------------------
+
+MODE_SET = "set"      # values are the new totals per budget
+MODE_ADD = "add"      # values are signed deltas per budget
+
+
+@dataclass(frozen=True)
+class AllocationChange:
+    key: str
+    base: int
+    old: Tuple[int, int]      # (occupation, interest) before
+    new: Tuple[int, int]      # after
+
+    @property
+    def old_total(self) -> int:
+        return self.base + sum(self.old)
+
+    @property
+    def new_total(self) -> int:
+        return self.base + sum(self.new)
+
+
+@dataclass
+class BatchResult:
+    changes: List[AllocationChange]
+    errors: List[Msg]
+    budgets: Tuple[Optional[int], Optional[int]]
+    spent_before: Tuple[int, int]
+    spent_after: Tuple[int, int]
+    final_points: Dict[str, Tuple[int, int]]
+
+    @property
+    def ok(self) -> bool:
+        return not self.errors
+
+    @property
+    def remaining_after(self) -> Tuple[Optional[int], Optional[int]]:
+        ob, ib = self.budgets
+        return (None if ob is None else ob - self.spent_after[0],
+                None if ib is None else ib - self.spent_after[1])
+
+
+def evaluate_batch(
+    occ: Occupation,
+    picks: Mapping[Tuple[int, int], str],
+    current: Mapping[str, Tuple[int, int]],
+    proposals: Mapping[str, Tuple[Optional[int], Optional[int]]],
+    bases: Mapping[str, Optional[int]],
+    budgets: Tuple[Optional[int], Optional[int]],
+    mode: str = MODE_SET,
+    unreconciled: Optional[Mapping[str, int]] = None,
+    names: Optional[Mapping[str, str]] = None,
+) -> BatchResult:
+    """Validate a whole set of allocation edits against the *final* state.
+
+    ``proposals`` maps skill -> (occupation, interest); ``None`` leaves that
+    budget unchanged. In MODE_SET the numbers are new totals, in MODE_ADD
+    signed deltas. Budgets are checked on final totals only, so moving points
+    from one skill to another in one batch works even when the budget was
+    fully spent. A budget may stay over its limit (e.g. after EDU was lowered)
+    as long as the batch does not increase its spending. Nothing is written
+    here; the caller applies ``final_points`` only if ``ok``.
+    """
+    names = dict(names or {})
+    errors: List[Msg] = []
+    final: Dict[str, Tuple[int, int]] = {k: (int(o), int(i)) for k, (o, i) in current.items()}
+    occ_skills = set(occupation_skills(occ, picks))
+    changes: List[AllocationChange] = []
+
+    for key, (po, pi) in proposals.items():
+        old_o, old_i = final.get(key, (0, 0))
+        if mode == MODE_ADD:
+            new_o = old_o + (po or 0)
+            new_i = old_i + (pi or 0)
+            for delta, have in ((po, old_o), (pi, old_i)):
+                if delta is not None and have + delta < 0:
+                    errors.append(Msg("batch_remove_too_many", names, skill=key, n=-delta, have=have))
+            new_o, new_i = max(0, new_o), max(0, new_i)
+        else:
+            new_o = old_o if po is None else po
+            new_i = old_i if pi is None else pi
+            if new_o < 0 or new_i < 0:
+                errors.append(Msg("points_negative"))
+                continue
+        if (new_o, new_i) == (old_o, old_i):
+            continue
+        base = bases.get(key)
+        if base is None:
+            errors.append(Msg("base_unknown", names, skill=key))
+            continue
+        if unreconciled and key in unreconciled:
+            errors.append(Msg("reconcile_first", names, skill=key, value=unreconciled[key]))
+            continue
+        if key == CTHULHU_MYTHOS and (new_o or new_i):
+            errors.append(Msg("batch_mythos"))
+        if new_o and key not in occ_skills:
+            errors.append(Msg("batch_occ_not_allowed", names, skill=key))
+        total = int(base) + new_o + new_i
+        if total > SKILL_CREATION_MAX:
+            errors.append(Msg("batch_over_max", names, skill=key, total=total, max=SKILL_CREATION_MAX))
+        elif key == CREDIT_RATING and total > occ.credit_max:
+            errors.append(Msg("batch_credit_max", total=total, max=occ.credit_max))
+        final[key] = (new_o, new_i)
+        changes.append(AllocationChange(key, int(base), (old_o, old_i), (new_o, new_i)))
+
+    before = (sum(o for o, _ in current.values()), sum(i for _, i in current.values()))
+    after = (sum(o for o, _ in final.values()), sum(i for _, i in final.values()))
+    ob, ib = budgets
+    if changes and (ob is None or ib is None) and (after[0] > before[0] or after[1] > before[1]):
+        errors.append(Msg("budgets_unknown"))
+    if ob is not None and after[0] > ob and after[0] > before[0]:
+        errors.append(Msg("batch_occ_over", over=after[0] - ob, after=after[0], total=ob, left=ob - before[0]))
+    if ib is not None and after[1] > ib and after[1] > before[1]:
+        errors.append(Msg("batch_int_over", over=after[1] - ib, after=after[1], total=ib, left=ib - before[1]))
+
+    final = {k: v for k, v in final.items() if v != (0, 0)}
+    return BatchResult(changes, errors, (ob, ib), before, after, final)

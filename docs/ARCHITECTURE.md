@@ -19,7 +19,10 @@ cocbot/
     legacy_import.py        non-destructive import of pre-006 data
   occupations/              catalogue (JSON-synced + homebrew), rules.py (pure), service.py,
                             zh_parser.py (development-time import from the Excel sheet)
-  ui/                       embed builders; sheet_text.py and creation_text.py are Discord-free
+  ui/                       embed builders; sheet_text.py, creation_text.py and skill_picker.py
+                            are Discord-free
+  i18n.py                   message catalog (EN/ZH), Msg (localizable str), name lookups
+  preferences.py            per-user display language
 data/sql/NNN_*.sql|py       migrations (001–005 original, 006–007 new)
 tests/                      stdlib unittest, runnable with pytest
 ```

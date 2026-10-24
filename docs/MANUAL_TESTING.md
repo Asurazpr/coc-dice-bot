@@ -52,14 +52,14 @@ Use a fresh draft with characteristics entered (account A).
 - [ ] **Custom occupation**: name "Ghost Hunter", range `10-40`, formula `EDU*2+POW*2` → 8 free choices. A bad range (`40-10`) or formula (`EDU*3`) is rejected with a clear message. Account B cannot find A's custom occupation.
 
 ### Choices
-- [ ] Each choice shows only allowed skills (e.g. Soldier: Climb or Swim); skills already used elsewhere are not offered; "any skill" choices page through all skills.
+- [ ] Each choice shows only allowed skills (e.g. Soldier: Climb or Swim); skills already used elsewhere are not offered; "any skill" choices use the category picker (see the M2 UX section).
 - [ ] After the last choice the Points step opens automatically.
 
 ### Points
 - [ ] Budgets show "used / total / left" for occupation (formula) and personal interest (INT×2) separately.
 - [ ] **Occupation points** opens a form for the 5 skills on the page; page 2 holds the rest and Credit Rating.
 - [ ] Occupation points on a non-occupation skill (via **Other skill** is interest only; `/character allocate skill:Climb occupation_points:10`) are refused.
-- [ ] A skill above 99, Cthulhu Mythos, overspending either budget, or Credit Rating above the range are refused with a clear reason; valid entries in the same form are still saved.
+- [ ] A skill above 99, Cthulhu Mythos, overspending either budget, or Credit Rating above the range are refused with a clear reason, and **nothing in that form is saved** (see the M2 UX section).
 - [ ] `/check accounting` uses base + points immediately.
 - [ ] **Private Investigator** (EDU×2 + DEX or STR ×2): the Points step offers a characteristic choice with the higher one marked *suggested*; picking the other changes the budget, and the choice is still there after reopening.
 
@@ -72,3 +72,26 @@ Use a fresh draft with characteristics entered (account A).
 - [ ] Picking a different occupation after spending points asks for confirmation; interest points survive the change.
 - [ ] After finishing: badge "Created (occupation rules checked)", creation steps disappear, `/character skill` edits work again.
 - [ ] An M1 investigator (no occupation) still finishes with **Finish basic sheet** and its message says the occupation rules were not checked.
+
+## Milestone 2 UX polish — point forms, skill picker, language
+
+### Point forms (atomic)
+- [ ] **Occupation points** form: title shows the points left; each field shows the skill, its current points and base, pre-filled with the current allocation.
+- [ ] Spend the occupation budget to exactly 0 left. In one form, lower one skill by 30 and raise another by 30: saved; the reply lists both changes (old → new, ±) and "Left: occupation 0".
+- [ ] In one form, make one field valid and another over the limit (e.g. 200): the reply starts "Nothing was saved", names the problem field, and the valid field is **not** saved either.
+- [ ] Over-budget form: the reply says exactly how many points it exceeds the budget by.
+- [ ] **Mode: set totals** ↔ **Mode: add points** toggle: in add mode fields are empty and accept `+10` / `-5`; removing more points than a skill has is refused with the number it has. Text such as `abc` is refused without saving.
+- [ ] **Other skill** opens the skill picker for personal interest; choosing a skill opens a one-field form showing its current interest points and the interest points left.
+
+### Skill picker
+- [ ] For a choice with a short list (Soldier: Climb or Swim) the skills are shown directly.
+- [ ] For "any N skills" choices, a **category** menu appears first (Social, Perception & research, Knowledge, Physical & outdoors, Technical & vehicles, Art & Craft, Science, Fighting, Firearms) with counts; picking one shows its skills with base values.
+- [ ] **Search** finds skills by English (`spot`) or Chinese (`侦查`) name in any display language; skills already chosen are not offered; **All categories** clears the filter.
+- [ ] After picking, the next unfilled choice opens; the embed shows ✔ chosen skills, 👉 the current choice and "N remaining". **◀ Choice** goes back; picking another skill replaces the earlier choice.
+
+### Language
+- [ ] `/language` without an option shows the current language; `English`, `简体中文`, `Bilingual / 双语` change it, and the choice survives a bot restart.
+- [ ] A user who never chose and whose Discord client is Chinese sees Chinese by default.
+- [ ] In 简体中文: the creation steps, buttons, picker, point forms, and validation errors (e.g. occupation points on a non-occupation skill) are Chinese; skill and occupation names are Chinese.
+- [ ] In Bilingual: titles and messages show both languages; short labels that would not fit fall back to English.
+- [ ] Another user's language is unaffected.
