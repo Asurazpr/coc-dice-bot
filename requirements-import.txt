@@ -1,0 +1,5 @@
+# Optional: developer-only Excel import (scripts/import_master_from_excel.py).
+# Never needed by players or for normal bot operation.
+pandas>=2.0
+openpyxl>=3.1
+xlrd>=2.0

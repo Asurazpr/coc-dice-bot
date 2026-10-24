@@ -1,0 +1,4 @@
+# Optional: the (unfinished) web dashboard scaffold in apps/dashboard.
+fastapi>=0.110
+uvicorn>=0.29
+jinja2>=3.1

@@ -1,35 +1,28 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, Sequence, Tuple
+from typing import Optional, Sequence
 
 import discord
+
+from cocbot.mechanics.checks import SuccessLevel, success_level
 
 
 # --- CoC result labeling helpers ---
 
 def _success_band(roll: int, target: int) -> str:
-    """
-    CoC 7e success bands (common table):
-      - Critical success: roll == 1
-      - Fumble: roll == 100 OR (target < 50 and roll >= 96)
-      - Extreme: roll <= floor(target/5)
-      - Hard: roll <= floor(target/2)
-      - Regular: roll <= target
-      - Fail otherwise
-    """
-    if roll == 1:
-        return "CRITICAL SUCCESS"
-    # fumble rule
-    if roll == 100 or (target < 50 and roll >= 96):
-        return "FUMBLE"
-    if roll <= target // 5:
-        return "EXTREME SUCCESS"
-    if roll <= target // 2:
-        return "HARD SUCCESS"
-    if roll <= target:
-        return "SUCCESS"
-    return "FAILURE"
+    """Display label for a roll. Delegates to the single rules implementation."""
+    return _BAND_LABELS[success_level(roll, target)]
+
+
+_BAND_LABELS = {
+    SuccessLevel.CRITICAL: "CRITICAL SUCCESS",
+    SuccessLevel.EXTREME: "EXTREME SUCCESS",
+    SuccessLevel.HARD: "HARD SUCCESS",
+    SuccessLevel.SUCCESS: "SUCCESS",
+    SuccessLevel.FAIL: "FAILURE",
+    SuccessLevel.FUMBLE: "FUMBLE",
+}
 
 
 def _emoji_for_band(band: str) -> str:
@@ -122,7 +115,6 @@ def build_check_embed_old(inp: CheckEmbedInput) -> discord.Embed:
                     parts.append(f"`{r:02d}`*")
                 else:
                     parts.append(f"`{r:02d}`")
-            cand = " ".join(parts)
             desc_lines.append(f"**{mode} Dice ({inp.bp_dice}):** " + " ".join(parts))
         else:
             desc_lines.append(f"**{mode} Dice:** `{inp.bp_dice}`")

@@ -17,13 +17,30 @@ Built as a personal passion project to support real tabletop play rather than a 
   * Transparent **candidate roll visualization** (shows all possible tens combinations)
   * Success tiers: Fail, Success, Hard, Extreme, Critical, Fumble
 
+### Investigators (characters) — entirely inside Discord
+
+* **/character create** opens a form; a step-by-step editor (buttons + forms) handles
+  characteristics (enter them, or roll with the standard 3D6×5 / (2D6+6)×5 method),
+  trained skills, current HP / MP / SAN / Luck, and finishing the basic sheet
+* **"Finish basic sheet"** only means every characteristic and Luck is filled in, so the bot can
+  roll with it. It does **not** yet check full CoC 7e creation (occupation, skill-point
+  allocation, age adjustments); agree those with your Keeper until they are automated
+* Derived stats calculated automatically: HP, MP, SAN, Damage Bonus, Build, MOV (incl. age), Dodge
+* Each Discord user has a **personal collection** of investigators (draft, basic sheet complete, archived)
+* **Active investigator per user** — one player's choice never affects another's. You can choose one
+  for a specific server, and set a **default** (`everywhere:True`) used wherever you haven't chosen
+  one. A server-specific choice always overrides the default; `/character unselect` clears it
+* **/check** uses the invoking player's active investigator: trained skill values, derived bases,
+  characteristics, Luck and SAN. Numeric checks still work with no character at all
+* No spreadsheets: Excel files in `data/seed/` are optional developer resources only
+
 ### Skill System
 
 * Normalized **SQL / SQLite schema** for skills and categories
 * Canonical skill keys (language-independent)
 * **Multilingual support (EN / ZH)** via i18n tables and alias resolution
-* Supports derived skills (e.g. **Dodge = DEX / 2**)
-* Case-insensitive and alias-based skill lookup
+* Derived skills (e.g. **Dodge = DEX / 2**) computed from the active investigator
+* Case-insensitive lookup across languages, aliases and canonical keys
 
 ### UI & Readability
 
@@ -50,20 +67,22 @@ Built as a personal passion project to support real tabletop play rather than a 
 ```
 coc-dice-bot/
 ├─ apps/
-│  ├─ discord_bot/        # Discord slash-command app
-│  │  └─ main.py
-│  └─ dashboard/          # (Optional) web dashboard
-├─ cocbot/                # Core library
-│  ├─ mechanics/          # Dice, checks, rules logic
-│  ├─ db/                 # SQLite repositories
+│  ├─ discord_bot/        # Discord layer: main.py, characters_cog.py, views.py
+│  └─ dashboard/          # (Optional, unfinished) web dashboard scaffold
+├─ cocbot/                # Core library (no Discord imports outside ui/)
+│  ├─ mechanics/          # Dice, checks, derived stats, characteristic generation
+│  ├─ characters/         # Investigator model, ownership service, /check resolution
+│  ├─ db/                 # Connection, migrations, repositories
 │  └─ ui/                 # Embed builders
 ├─ data/
-│  ├─ sql/                # Schema & seed SQL (clean, keyed)
-│  └─ seed/               # Excel sources (skills, careers)
-├─ scripts/
-│  └─ apply_sql.py        # Apply SQL migrations
-└─ README.md
+│  ├─ sql/                # Versioned migrations (NNN_*.sql / NNN_*.py)
+│  └─ seed/               # Excel sources (optional, developer-only)
+├─ docs/                  # Audit, architecture, roadmap, manual test checklist
+├─ scripts/               # apply_sql.py (migrate), legacy import, Excel import
+└─ tests/                 # Automated tests
 ```
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the data model and design decisions.
 
 ---
 
@@ -112,40 +131,49 @@ source .venv/bin/activate
 Install dependencies:
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements.txt        # bot
+pip install -r requirements-dev.txt    # + test tools
 ```
 
 ---
 
 ### 4. Configure Environment Variables
 
-Create a `.env` file in the project root:
+```bash
+cp .env.example .env      # Windows: copy .env.example .env
+```
+
+Then edit `.env` (it is git-ignored — never commit it):
 
 ```env
 DISCORD_TOKEN=your_discord_bot_token_here
-DISCORD_GUILD_ID=your_test_guild_id_here  # optional but recommended for dev
+DISCORD_GUILD_ID=          # optional: your test server ID for instant command sync
+COC_DB_PATH=               # optional: database path (default data/coc_bot.sqlite3)
 ```
 
-* **DISCORD_TOKEN**: Bot token from Discord Developer Portal
-* **DISCORD_GUILD_ID**: Guild (server) ID for fast command sync during development
-
-  * If omitted, commands are registered globally (slower to update)
+* **DISCORD_TOKEN**: Bot token from the Discord Developer Portal
+* **DISCORD_GUILD_ID**: if omitted, commands are registered globally (can take a while to appear)
 
 ---
 
-### 5. Initialize Database
+### 5. Database
 
-Apply schema and seed data:
+The bot creates and upgrades its SQLite database automatically at start-up.
+To do it by hand (for example before a deploy):
 
 ```bash
-python scripts/apply_sql.py
+python scripts/apply_sql.py              # or: --db path/to/file.sqlite3
 ```
 
-This will create and populate:
+Migrations are versioned (`data/sql/NNN_*.sql|py`), recorded in `schema_migrations`,
+applied once each, and never drop existing data. Databases created by the old
+`apply_sql.py` upgrade in place. If an old database contains hand-made
+`characters` / `attributes` tables, migration 007 imports rows whose owner is known
+and leaves the originals untouched; assign the rest with:
 
-* Skill definitions
-* Bases and derived rules
-* EN / ZH language packs
+```bash
+python scripts/import_legacy_characters.py --owner <discord_user_id>
+```
 
 ---
 
@@ -159,13 +187,36 @@ You should see the bot log in and sync slash commands.
 
 ---
 
+### 7. Run the Tests
+
+```bash
+python -m pytest            # or, with no extra packages: python -m unittest discover -s tests -t .
+```
+
+Core tests need only Python. Discord-layer tests run when `discord.py` is installed
+and are skipped otherwise. Manual checks: [docs/MANUAL_TESTING.md](docs/MANUAL_TESTING.md).
+
+---
+
 ## Usage Examples
 
 ```
-/check spot hidden
+/character create                   form → editor with buttons for each part of the sheet
+/character list                     your collection (⭐ = active here)
+/character select Ada               use Ada for your rolls in this server
+/character select Ada everywhere:True   make Ada your default (servers with their own choice keep it)
+/character unselect                 clear this server's choice so your default applies here
+/character skill skill:Spot Hidden value:70   set a trained skill (active investigator)
+/character view public:True         show your sheet to the table
+/character edit | archive | restore | delete
+```
+
+```
+/check spot hidden        → your investigator's Spot Hidden
 /check 聆听
-/check dodge
-/check 60 bonus_penalty:1
+/check dodge              → DEX/2 of your investigator
+/check STR | luck | SAN
+/check 60 bonus_penalty:1 → plain target, no character needed
 ```
 
 ```
@@ -177,28 +228,18 @@ You should see the bot log in and sync slash commands.
 
 ## Adding a New Language
 
-Language support is fully data-driven.
-
-To add a new language:
-
-1. Create a new SQL file in `data/sql/lang/`
-2. Insert only into:
-
-   * `skill_def_i18n`
-   * `skill_def_aliases`
-3. Apply with `apply_sql.py`
-
-No code changes required.
+Language support is data-driven. Add a new numbered migration, e.g.
+`data/sql/008_seed_i18n_ja.sql`, that inserts only into `skill_def_i18n` and
+`skill_def_aliases` (copy the shape of `004_seed_i18n_en.sql`). It is applied
+automatically on the next start or `python scripts/apply_sql.py`.
 
 ---
 
 ## Roadmap
 
-* Keeper-configurable house rules (critical / fumble ranges)
-* Luck spending support
-* Career templates
-* Additional language packs
-* Optional dashboard features
+Next: occupations and skill-point allocation, age rules, pushed rolls and Luck
+spending, Sanity rolls, campaigns with Keeper permissions. Details in
+[docs/ROADMAP.md](docs/ROADMAP.md).
 
 ---
 
