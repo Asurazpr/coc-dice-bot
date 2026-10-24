@@ -411,16 +411,18 @@ class CampaignCheckTests(Base):
         self.assertEqual(plan_check(self.conn, ALICE, GUILD, CH_A, "45").target.value, 45)
 
     def test_rules_apply_to_everyone_rolling_in_the_channel(self):
-        from cocbot.campaigns.checks import plan_check, record_private_roll
+        from cocbot.campaigns.checks import plan_check
+        from cocbot.rolls.service import RollService
         self.svc.set_rules(KEEPER, self.camp.id, critical_max=4, roll_visibility="private")
         keeper = plan_check(self.conn, KEEPER, GUILD, CH_A, "60")
         self.assertEqual((keeper.rules.critical_max, keeper.private, keeper.context), (4, True, None))
         self.assertIn("critical 01-04", keeper.note)
         player = plan_check(self.conn, ALICE, GUILD, CH_A, "spot hidden")
-        record_private_roll(self.conn, player, "Spot Hidden 25: 03 (critical)")
-        record_private_roll(self.conn, keeper, "not logged: Keepers are not participants")
+        rolls_svc = RollService(self.conn)
+        mine = rolls_svc.roll_check(player, ALICE, channel_id=CH_A)
+        rolls_svc.roll_check(keeper, KEEPER, channel_id=CH_A)      # private, but Keepers are not participants
         rolls = [e for e in self.svc.history(KEEPER, self.camp.id) if e.kind == "roll"]
-        self.assertEqual([(e.new_value, e.actor_user_id) for e in rolls], [("Spot Hidden 25: 03 (critical)", ALICE)])
+        self.assertEqual([(e.ref_id, e.actor_user_id) for e in rolls], [(mine.id, ALICE)])
 
     def test_stale_confirmation_is_refused(self):
         self.svc.adjust(KEEPER, self.camp.id, self.ada.id, {"hp": 8}, confirmed=True)

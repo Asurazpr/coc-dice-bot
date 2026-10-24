@@ -82,9 +82,15 @@ class CheckEmbedInput:
     rules: CheckRules = RAW_RULES
     context_note: Optional[str] = None   # e.g. "Masks · rules v2 (critical 01-05)"
 
+    # Persistent roll records (M3B1)
+    level_override: Optional[SuccessLevel] = None   # Luck-adjusted level (the rolled number stays shown)
+    extra_lines: Sequence[str] = ()                 # required difficulty, Luck spent
+    roll_id: Optional[int] = None
+
 
 def build_check_embed_old(inp: CheckEmbedInput) -> discord.Embed:
-    band = _success_band(inp.rolled, inp.skill_value, inp.rules)
+    band = (_BAND_LABELS[inp.level_override] if inp.level_override is not None
+            else _success_band(inp.rolled, inp.skill_value, inp.rules))
     emoji = _emoji_for_band(band)
     color = _color_for_band(band)
 
@@ -137,10 +143,13 @@ def build_check_embed_old(inp: CheckEmbedInput) -> discord.Embed:
 
     if inp.notes:
         desc_lines.append(f"**Notes:** {inp.notes}")
+    desc_lines.extend(inp.extra_lines)
 
     e = discord.Embed(title=title, description="\n".join(desc_lines), color=color)
     footer = f"Check by {inp.actor_name}"
     if inp.context_note:
         footer += f" · {inp.context_note}"
+    if inp.roll_id is not None:
+        footer += f" · Roll #{inp.roll_id}"
     e.set_footer(text=footer)
     return e

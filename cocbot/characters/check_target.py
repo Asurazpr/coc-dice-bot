@@ -68,6 +68,7 @@ class CheckTarget:
     kind: str                       # "numeric" | "characteristic" | "skill"
     investigator: Optional[Investigator] = None
     base_value: Optional[int] = None
+    key: Optional[str] = None       # skill key or characteristic key ("LUCK", "SAN", ...); None for numbers
 
 
 def resolve_check_target(
@@ -104,7 +105,8 @@ def resolve_check_target(
         if value is None:
             raise CheckTargetError(f"**{inv.name}** has no {label} value yet. Set it with `/character edit`.")
         detail = "current" if stat == "SAN" else "characteristic"
-        return CheckTarget(value=int(value), label=label, detail=detail, kind="characteristic", investigator=inv)
+        return CheckTarget(value=int(value), label=label, detail=detail, kind="characteristic", investigator=inv,
+                           key=stat)
 
     skill = resolve_skill(text, lang=lang, conn=conn)
     if skill is None:
@@ -130,7 +132,7 @@ def resolve_check_target(
     if inv is not None and skill.key in inv.skills:
         return CheckTarget(
             value=int(inv.skills[skill.key]), label=skill.display_name, detail="trained",
-            kind="skill", investigator=inv, base_value=base,
+            kind="skill", investigator=inv, base_value=base, key=skill.key,
         )
 
     if inv is not None:
@@ -139,5 +141,5 @@ def resolve_check_target(
         detail = "base — no active investigator"
     return CheckTarget(
         value=int(base), label=skill.display_name, detail=detail,
-        kind="skill", investigator=inv, base_value=base,
+        kind="skill", investigator=inv, base_value=base, key=skill.key,
     )

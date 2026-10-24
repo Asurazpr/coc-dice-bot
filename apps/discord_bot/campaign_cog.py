@@ -292,15 +292,18 @@ class KeeperCog(_Base, group_name="keeper", group_description="Keeper Console fo
     @app_commands.command(name="rules", description="Show or change campaign rules (changes: primary Keeper only)")
     @app_commands.describe(critical_max="Rolls at or under this are criticals (1 = RAW, up to 5)",
                            fumble="Fumble rule", roll_visibility="Who sees /check results in campaign channels",
+                           luck_spending="Optional rule: players may spend campaign Luck to lower a roll",
                            campaign=CAMPAIGN_DESC)
     @app_commands.choices(fumble=FUMBLE_CHOICES, roll_visibility=VISIBILITY_CHOICES)
     async def rules(self, interaction: discord.Interaction,
                     critical_max: Optional[app_commands.Range[int, 1, 5]] = None,
                     fumble: Optional[app_commands.Choice[str]] = None,
                     roll_visibility: Optional[app_commands.Choice[str]] = None,
-                    campaign: Optional[str] = None) -> None:
+                    campaign: Optional[str] = None,
+                    luck_spending: Optional[bool] = None) -> None:
         ctx = self.ctx(interaction)
-        changing = critical_max is not None or fumble is not None or roll_visibility is not None
+        changing = (critical_max is not None or fumble is not None or roll_visibility is not None
+                    or luck_spending is not None)
         try:
             camp = self._resolve(interaction, campaign, (ROLE_KEEPER,) if changing else KEEPER_ROLES)
             with get_conn(self.db_path) as conn:
@@ -309,7 +312,8 @@ class KeeperCog(_Base, group_name="keeper", group_description="Keeper Console fo
                     version, current = svc.set_rules(
                         interaction.user.id, camp.id, critical_max=critical_max,
                         fumble=fumble.value if fumble else None,
-                        roll_visibility=roll_visibility.value if roll_visibility else None)
+                        roll_visibility=roll_visibility.value if roll_visibility else None,
+                        luck_spending=luck_spending)
                 else:
                     version, current = svc.rules(interaction.user.id, camp.id)
         except CharacterError as e:

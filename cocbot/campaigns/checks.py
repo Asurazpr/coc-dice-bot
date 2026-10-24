@@ -18,7 +18,7 @@ import sqlite3
 from dataclasses import dataclass
 from typing import Optional
 
-from cocbot.campaigns.rules import RAW_PROFILE, CampaignRules
+from cocbot.campaigns.rules import STANDALONE_PROFILE, CampaignRules
 from cocbot.campaigns.service import Campaign, CampaignContext, CampaignService
 from cocbot.characters.check_target import CheckTarget, resolve_check_target
 
@@ -26,7 +26,7 @@ from cocbot.characters.check_target import CheckTarget, resolve_check_target
 @dataclass(frozen=True)
 class CheckPlan:
     target: CheckTarget
-    rules: CampaignRules = RAW_PROFILE
+    rules: CampaignRules = STANDALONE_PROFILE
     campaign: Optional[Campaign] = None
     rules_version: Optional[int] = None
     context: Optional[CampaignContext] = None       # set when rolling as a campaign participant
@@ -40,16 +40,21 @@ class CheckPlan:
         """Footer text naming the campaign and rule profile used."""
         if self.campaign is None:
             return None
-        parts = [f"{self.campaign.name} · rules v{self.rules_version}"]
-        if not self.rules.is_raw:
-            extras = []
-            if self.rules.critical_max > 1:
-                extras.append(f"critical 01-{self.rules.critical_max:02d}")
-            if self.rules.fumble == "only_100":
-                extras.append("fumble 100 only")
-            if extras:
-                parts.append(", ".join(extras))
-        return " · ".join(parts)
+        return rules_note(self.campaign.name, self.rules_version, self.rules)
+
+
+def rules_note(campaign_name: str, version: Optional[int], rules: CampaignRules) -> str:
+    parts = [f"{campaign_name} · rules v{version}"]
+    extras = []
+    if rules.critical_max > 1:
+        extras.append(f"critical 01-{rules.critical_max:02d}")
+    if rules.fumble == "only_100":
+        extras.append("fumble 100 only")
+    if rules.luck_spending:
+        extras.append("Luck spending on")
+    if extras:
+        parts.append(", ".join(extras))
+    return " · ".join(parts)
 
 
 def plan_check(conn: sqlite3.Connection, user_id: object, guild_id: Optional[object],
@@ -64,9 +69,3 @@ def plan_check(conn: sqlite3.Connection, user_id: object, guild_id: Optional[obj
         return CheckPlan(target, ctx.rules, ctx.campaign, ctx.rules_version, ctx)
     version, rules = svc.channel_rules(camp.id)
     return CheckPlan(resolve_check_target(conn, user_id, guild_id, raw), rules, camp, version)
-
-
-def record_private_roll(conn: sqlite3.Connection, plan: CheckPlan, summary: str) -> None:
-    """Private campaign rolls by participants are kept in the campaign history for the Keepers."""
-    if plan.private and plan.context is not None:
-        CampaignService(conn).record_roll(plan.context, summary)

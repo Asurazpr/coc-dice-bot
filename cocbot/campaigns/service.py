@@ -694,11 +694,41 @@ class CampaignService:
                                  "AND status='active'", (int(investigator_id),)).fetchall()
         return [self._campaign(int(r[0])) for r in rows]  # type: ignore[misc]
 
-    def record_roll(self, ctx: CampaignContext, summary: str) -> int:
-        """Private rolls are logged so the Keepers can see them in the history."""
+    def record_roll(self, ctx: CampaignContext, summary: str, roll_id: Optional[int] = None,
+                    commit: bool = True) -> int:
+        """Private rolls are logged (with their roll ID) so the Keepers can see them in the history."""
+        if not commit:
+            return self._log(ctx.campaign.id, ctx.participant.user_id, "roll", ctx.participant.investigator_id,
+                             "roll", None, summary[:200], ref_id=roll_id)
         with self._tx():
             return self._log(ctx.campaign.id, ctx.participant.user_id, "roll", ctx.participant.investigator_id,
-                             "roll", None, summary[:200])
+                             "roll", None, summary[:200], ref_id=roll_id)
+
+    def participant_luck(self, campaign_id: int, investigator_id: int, user_id: object) -> Optional[int]:
+        """Campaign Luck of ``user_id``'s own active participation (None if not participating)."""
+        r = self.conn.execute("SELECT luck FROM campaign_investigators WHERE campaign_id=? AND investigator_id=? "
+                              "AND user_id=? AND status='active'",
+                              (int(campaign_id), int(investigator_id), str(user_id))).fetchone()
+        return None if r is None else r[0]
+
+    def spend_luck_in_tx(self, user_id: object, campaign_id: int, investigator_id: int, amount: int,
+                         expected_luck: int, roll_id: int) -> int:
+        """Deduct campaign Luck for a Luck spend on a roll. Runs inside the caller's transaction.
+
+        The update only applies if Luck still equals ``expected_luck``; otherwise
+        nothing changes and the caller rolls back. Logged as ``luck_spend``,
+        which is not Keeper-revertible because the roll result depends on it.
+        """
+        cur = self.conn.execute(
+            "UPDATE campaign_investigators SET luck=luck-?, updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') "
+            "WHERE campaign_id=? AND investigator_id=? AND user_id=? AND status='active' AND luck=? AND luck>=?",
+            (int(amount), int(campaign_id), int(investigator_id), str(user_id), int(expected_luck), int(amount)))
+        if cur.rowcount != 1:
+            raise InvalidState(Msg("luck_changed"))
+        new = int(expected_luck) - int(amount)
+        self._log(campaign_id, user_id, "luck_spend", investigator_id, "luck", expected_luck, new, None,
+                  ref_id=int(roll_id))
+        return new
 
 
 class _Transaction:
