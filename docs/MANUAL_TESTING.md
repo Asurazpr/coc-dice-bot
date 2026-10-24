@@ -165,7 +165,7 @@ Needs one finished investigator with Luck ≥ 40 selected in the server (e.g. ST
 - [ ] Before K enables it, P's failed check in the campaign channel shows no Luck button.
 - [ ] After enabling: P spends Luck → the campaign Luck drops (K's panel shows it at once), P's personal sheet outside the campaign is unchanged, and K's campaign history shows "spent Luck old → new" by P with the roll. That entry has no Revert option.
 - [ ] Q or X presses P's **Spend Luck…** button → "Only the player who rolled…"; nothing changes.
-- [ ] P opens the prompt; K then sets P's Luck lower with **Adjust**; P confirms → refused if Luck changed between reading and writing, or the options recalculated from the current Luck when reopened.
+- [ ] P opens the prompt; K then lowers P's campaign Luck with **Adjust**; P confirms → the spend uses the *current* Luck (Luck after = new value − cost), or is refused if that is no longer enough.
 - [ ] K turns `luck_spending` off while P has a prompt open → P's confirm is refused.
 - [ ] P leaves the campaign with a prompt open → confirm refused.
 - [ ] Same investigator in two campaigns: spending in one leaves the other's Luck unchanged.
