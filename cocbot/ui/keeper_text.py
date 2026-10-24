@@ -25,7 +25,8 @@ def resource_name(field: str, lang: str) -> str:
 def rules_summary(rules: CampaignRules, lang: str) -> str:
     return render("rules_summary", lang, critical=f"{rules.critical_max:02d}",
                   fumble=render(f"rules_fumble_{rules.fumble}", lang),
-                  visibility=render(f"rules_vis_{rules.roll_visibility}", lang))
+                  visibility=render(f"rules_vis_{rules.roll_visibility}", lang),
+                  luck=render("rules_on" if rules.luck_spending else "rules_off", lang))
 
 
 def role_name(role: str, lang: str) -> str:

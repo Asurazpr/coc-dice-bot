@@ -27,6 +27,7 @@ class CampaignRules:
     critical_max: int = 1          # rolls 01..N are Criticals (RAW: 1)
     fumble: str = "raw"            # "raw": 96-100 below skill 50, else 100; "only_100"
     roll_visibility: str = "public"
+    luck_spending: bool = False    # optional rule (Keeper Rulebook p. 99); off until the Keeper enables it
 
     def to_check_rules(self) -> CheckRules:
         return CheckRules(
@@ -49,7 +50,7 @@ RAW_PROFILE = CampaignRules()
 def validate(values: Mapping[str, Any]) -> CampaignRules:
     data: Dict[str, Any] = dict(values)
     data.pop("schema", None)
-    unknown = set(data) - {"critical_max", "fumble", "roll_visibility"}
+    unknown = set(data) - {"critical_max", "fumble", "roll_visibility", "luck_spending"}
     if unknown:
         raise RulesError(Msg("rules_unknown", keys=", ".join(sorted(unknown))))
     rules = CampaignRules(**{**asdict(RAW_PROFILE), **data})
@@ -60,7 +61,14 @@ def validate(values: Mapping[str, Any]) -> CampaignRules:
         raise RulesError(Msg("rules_fumble_mode", modes=", ".join(FUMBLE_MODES)))
     if rules.roll_visibility not in VISIBILITY_MODES:
         raise RulesError(Msg("rules_visibility_mode", modes=", ".join(VISIBILITY_MODES)))
+    if not isinstance(rules.luck_spending, bool):
+        raise RulesError(Msg("rules_luck_spending"))
     return rules
+
+
+# Outside campaigns there is no Keeper: RAW bands, public rolls, and the
+# player may spend their own personal Luck.
+STANDALONE_PROFILE = CampaignRules(luck_spending=True)
 
 
 def from_json(text: str) -> CampaignRules:
