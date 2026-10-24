@@ -38,6 +38,21 @@ Built as a personal passion project to support real tabletop play rather than a 
   characteristics, Luck and SAN. Numeric checks still work with no character at all
 * No spreadsheets: Excel files in `data/seed/` are optional developer resources only
 
+### Campaigns and the Keeper Console
+
+* **/campaign create** makes a campaign and links the channel; a server can host several campaigns
+* Keepers invite players (**/keeper invite**) or approve their requests; players join with one of
+  their own ready investigators (**/campaign join**). The investigator stays owned by the player
+* In a campaign channel, `/check` and the player's sheet use the campaign's HP / MP / SAN / Luck;
+  the personal sheet and other campaigns are never changed
+* **/keeper panel** (private): roster, investigator detail, adjust HP/MP/SAN/Luck (`7`, `+2`, `-3`,
+  with an optional reason; decreases and 0 need confirmation), condition labels, history with revert
+* Assistant Keepers (granted by the primary Keeper) can use the console; rules, channels and
+  assistants stay with the primary Keeper
+* **/keeper rules**: versioned per-campaign rules — critical range 01–05, fumble rule (RAW or 100
+  only), public or private rolls. Only rules the engine supports are offered
+* Every change records who did it, when, the old and new value and the reason
+
 ### Skill System
 
 * Normalized **SQL / SQLite schema** for skills and categories
@@ -225,6 +240,16 @@ and are skipped otherwise. Manual checks: [docs/MANUAL_TESTING.md](docs/MANUAL_T
 /check dodge              → DEX/2 of your investigator
 /check STR | luck | SAN
 /check 60 bonus_penalty:1 → plain target, no character needed
+```
+
+```
+/campaign create name:Masks         create a campaign in this channel; you are its Keeper
+/keeper invite user:@Alice          invite a player (or approve their request)
+/campaign join investigator:Ada     join this channel's campaign
+/keeper panel                       private Keeper Console
+/keeper assistant user:@Bob enabled:True
+/keeper rules critical_max:5 roll_visibility:Private
+/campaign info | /campaign leave | /keeper remove | /keeper channel link:True
 ```
 
 ```

@@ -66,18 +66,12 @@ Database triggers refuse an active selection whose investigator is not owned by 
 9. **Migrations run at bot start-up.** `scripts/apply_sql.py` remains for operators; both use the same runner. SQL migrations manage their own transaction; Python migrations run inside one committed by the runner.
 10. **Tests use the standard library.** Core tests (mechanics, persistence, ownership, check resolution) need nothing beyond Python; Discord-layer tests use mocked interactions and skip if discord.py is absent.
 
-## Extension path: campaigns and Keepers
+## Campaigns and Keepers (migration 013)
 
-Planned tables (not created yet):
+Implemented in M3A; the full design is in `CAMPAIGNS.md`. In short:
 
-```
-campaigns(campaign_id, guild_id, name, keeper_user_id, ruleset, house_rules_json, created_at)
-campaign_members(campaign_id, user_id, role)          -- keeper | player | spectator
-campaign_investigators(campaign_id, investigator_id,  -- an investigator *joins* a campaign
-                       joined_at, state_json)        -- session state: temp. insanity, conditions
-```
-
-* Joining a campaign links a user-owned investigator; it never transfers ownership.
-* Keeper permissions are checked in a new `CampaignService`; `InvestigatorService` stays the owner gate and gains an explicit "keeper may edit tracked resources of investigators in my campaign" path.
-* `resolution_scopes()` becomes `[campaign:<id>, guild:<id>, global]` when the channel is bound to a campaign.
-* Per-campaign `CheckRules` come from `house_rules_json`.
+* `campaigns`, `campaign_channels` (one campaign per channel, many per server), `campaign_members` (keeper / assistant / player; invited / requested / active / removed), `campaign_investigators` (a player-owned investigator's participation and its campaign HP/MP/SAN/Luck), `campaign_conditions`, `campaign_events` (append-only audit, enforced by triggers) and `campaign_rules` (versioned JSON rule profiles).
+* Joining links an investigator; ownership never transfers, and a trigger rejects participants who do not own the investigator.
+* `CampaignService` is the only permission check: every method takes the acting user and re-reads their role. Non-members get the same "not found" as for a missing campaign.
+* Campaign values are substituted into the `Investigator` (`campaign_view`), so `/check`, the player's sheet and the Keeper Console read the same numbers; maxima always come from the permanent characteristics.
+* Investigators active in a campaign cannot be archived or deleted.

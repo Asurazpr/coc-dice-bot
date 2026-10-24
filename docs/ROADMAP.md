@@ -35,9 +35,15 @@ Remaining:
 5. Opposed and combined rolls.
 6. Roll history per investigator.
 
-## M4 — Campaigns and Keeper tools
+## M3A — Campaigns and Keeper Console (draft PR for `feature/keeper-console`)
 
-Campaign tables (see `ARCHITECTURE.md`), Keeper role, players joining with an investigator from their library, campaign-scoped active selection, Keeper view of the party, Keeper-approved edits, per-campaign house rules (`CheckRules`), hidden rolls to the Keeper.
+Done in this slice (see `CAMPAIGNS.md`): persistent campaigns linked to channels, primary and assistant Keepers, invite/request/approve, players joining with an investigator from their collection, campaign-side HP/MP/SAN/Luck separate from the permanent sheet, condition labels, the private `/keeper panel` (roster, detail, adjust with confirmation, conditions, history, revert), versioned per-campaign rules (critical range, fumble rule, public/private rolls), campaign-aware `/check` and sheets, and an append-only audit log.
+
+Still open for later campaign work: delivering private rolls to Keepers by DM, Keeper-approved edits to permanent sheets, sharing homebrew occupations to a campaign, archiving campaigns from Discord, and the play-at-the-table mechanics of M3 (which will write through `CampaignService` so they are audited).
+
+## M4 — Further Keeper tools
+
+NPC sheets, handouts, session notes, spectators.
 
 ## M5 — Portability
 
