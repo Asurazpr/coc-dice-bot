@@ -78,6 +78,21 @@ def upgrade_targets(facts: RollFacts) -> List[str]:
             if _DIFFICULTY_RANK[d] >= _DIFFICULTY_RANK[facts.difficulty] and _DIFFICULTY_RANK[d] > natural_rank]
 
 
+def improvement_check_earned(subject_kind: str, attempt: str, natural_level: SuccessLevel,
+                             difficulty: str) -> bool:
+    """Whether a roll earns a skill improvement check (docs/ROLLS.md §2, "Improvement checks").
+
+    * Only skills improve through checks: characteristic, Luck, SAN and plain
+      numeric rolls never earn one.
+    * The success must come from the dice: a failure turned into a success with
+      Luck earns nothing (Keeper Rulebook p. 99).
+    * A natural success that Luck upgrades (e.g. Regular → Hard) keeps its check
+      (Chaosium staff ruling on BRP Central) — so the natural result decides.
+    * Pushed attempts are not judged yet (pushed rolls are not implemented).
+    """
+    return subject_kind == "skill" and attempt == "original" and meets(natural_level, difficulty)
+
+
 def luck_options(facts: RollFacts, luck_available: int) -> List[LuckOption]:
     """Every reachable upgrade (see ``upgrade_targets``) that the available Luck can pay for."""
     out: List[LuckOption] = []

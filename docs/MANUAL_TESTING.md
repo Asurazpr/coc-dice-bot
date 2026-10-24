@@ -154,6 +154,8 @@ Needs one finished investigator with Luck ≥ 40 selected in the server (e.g. ST
 - [ ] Roll again, then press **Spend Luck…** on the *previous* result → refused ("latest roll").
 - [ ] `/check luck`, `/check SAN`, `/check 45`, and a roll of 100 (or 96–99 on a skill under 50) → no Luck button.
 - [ ] A Regular success (e.g. 45 vs STR 60) shows **Spend Luck…** offering Hard (15) and Extreme (33), not Regular; a Hard success offers only Extreme; an Extreme success or a Critical shows no button. Upgrading keeps "the original roll is kept" and shows the new level.
+- [ ] `/rolls roll:N` on a skill roll shows "Improvement check: earned" for a natural success (also after upgrading it with Luck), "not earned — the required level was reached with Luck" after buying a failure up, and nothing for STR/Luck/SAN rolls.
+- [ ] Upgrade path (operators): stop the bot, keep a copy of a database that ran an older PR #5 build, start the new build → the log shows `[migrate] applied 015_rolls_target_range.py`; `/rolls` still lists the old rolls; a check on a 0-value skill now records.
 - [ ] Set a skill to 0 (e.g. Cthulhu Mythos) and to 150 with `/character skill`, then `/check` each: both post normally; 01 is still a Critical, 100 still a Fumble; the 0 skill never offers Luck.
 - [ ] Lower Luck to 1 in the sheet editor, fail a check → no button (not enough Luck).
 - [ ] Wait 30 minutes after a failed check, then press its button → refused ("too old").
