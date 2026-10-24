@@ -296,7 +296,16 @@ class CharacterCog(commands.GroupCog, group_name="character", group_description=
             render("alloc_reply", ctx.lang, inv=inv.name, skill=names.get(sd.key, skill) if sd else skill, value=shown)
             + "\n" + budget_line(check, ctx.lang), ephemeral=True)
 
+    @app_commands.command(name="import", description="Import an investigator from an Excel character sheet (.xlsx)")
+    @app_commands.describe(file="Your filled-in character sheet (.xlsx, CoC 7e 人物卡 v1.35)",
+                           update="Update this investigator instead of creating a new one (shows the differences)")
+    async def import_(self, interaction: discord.Interaction, file: discord.Attachment,
+                      update: Optional[str] = None) -> None:
+        from apps.discord_bot.import_views import start_import
+        await start_import(interaction, self.ctx(interaction), file, update)
+
     # autocomplete wiring
+    import_.autocomplete("update")(live_autocomplete)
     creation.autocomplete("investigator")(live_autocomplete)
     occupation.autocomplete("investigator")(live_autocomplete)
     occupation.autocomplete("occupation")(occupation_autocomplete)

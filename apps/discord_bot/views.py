@@ -67,6 +67,11 @@ def sheet_embed(svc: InvestigatorService, inv: Investigator, guild_id: Optional[
     names = skill_display_names(svc.conn, shown.skills.keys())
     active = svc.active(inv.owner_user_id, guild_id)
     embed = build_sheet_embed(shown, names, active_here=bool(active and active.id == inv.id))
+    from cocbot.imports.service import ImportService
+    from cocbot.ui.import_text import record_lines
+    record = ImportService(svc.conn)._latest(inv.id)      # inv was loaded for its owner
+    if record is not None:
+        embed.add_field(name="📥", value="\n".join(record_lines(record, lang))[:1024], inline=False)
     if cctx is not None:
         conditions = CampaignService(svc.conn).conditions(cctx.campaign.id, inv.id)
         title, text = campaign_sheet_note(cctx.campaign.name, [c.label for c in conditions], lang)

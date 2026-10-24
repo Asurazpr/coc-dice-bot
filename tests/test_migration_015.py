@@ -88,7 +88,7 @@ class Migration015Tests(unittest.TestCase):
         before = [tuple(r) for r in conn.execute("SELECT * FROM rolls ORDER BY roll_id")]
         events_before = [tuple(r) for r in conn.execute("SELECT * FROM roll_events")]
         applied = bootstrap(conn)
-        self.assertEqual([a for a in applied if a.startswith("01")], ["015_rolls_target_range.py"])
+        self.assertEqual([a for a in applied if a.startswith("015")], ["015_rolls_target_range.py"])
         self.assertFalse(self.m015.needs_upgrade(conn))
         self.assertIn("BETWEEN 0 AND 999", table_sql(conn))
         self.assertEqual([tuple(r) for r in conn.execute("SELECT * FROM rolls ORDER BY roll_id")], before)

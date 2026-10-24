@@ -1,3 +1,7 @@
 # Runtime dependencies for the Discord bot.
 discord.py>=2.4,<3
 python-dotenv>=1.0,<2
+# /character import: read .xlsx character sheets (never executes formulas or macros).
+openpyxl>=3.1,<4
+# Hardened XML parsing, used by openpyxl automatically when installed.
+defusedxml>=0.7,<1

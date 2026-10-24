@@ -491,6 +491,24 @@ class CampaignService:
             raise NotFound(Msg("not_in_campaign"))
         return RosterEntry(p, self._view(p), self.conditions(campaign_id, investigator_id))
 
+    def inspect(self, actor_id: object, campaign_id: int, investigator_id: int) -> Tuple[Investigator, str]:
+        """Full sheet of an investigator *in this campaign*, for its Keepers.
+
+        Allowed only for active participants (returned as the campaign view) and
+        investigators attached to a pending join request. Anything else — the
+        player's other investigators included — is "not found".
+        """
+        self._require(campaign_id, actor_id, KEEPER_ROLES)
+        p = self._participant(campaign_id, investigator_id)
+        if p is not None and p.status == "active":
+            return self._view(p), "participant"
+        r = self.conn.execute("SELECT user_id FROM campaign_members WHERE campaign_id=? AND status='requested' "
+                              "AND pending_investigator_id=?", (int(campaign_id), int(investigator_id))).fetchone()
+        inv = repo.get(self.conn, int(investigator_id)) if r else None
+        if inv is None or inv.owner_user_id != str(r[0]) or inv.is_archived:
+            raise NotFound(Msg("not_in_campaign"))
+        return inv, "pending"
+
     def preview_adjust(self, actor_id: object, campaign_id: int, investigator_id: int,
                        values: Dict[str, int]) -> List[ResourceChange]:
         """Validate new absolute values; nothing is saved."""

@@ -223,3 +223,29 @@ Written for a **new player who has never seen the bot**. Give them only: "Type `
 ### Languages and resuming
 - [ ] With `/language 简体中文` the group panel ("第 1/2 组", **保存选择**), interest screen (**兴趣技能**, **移除**, **确认移除**) and the edit menu are Chinese; Bilingual shows both and nothing is cut off badly.
 - [ ] Close Discord mid-creation, reopen with `/character edit` → **Occupation & skills**: saved groups are still ticked; unsaved ticks are gone (they were never saved).
+
+## Milestone 3C — Excel character import
+
+Prepare (outside Discord): a copy of `COC七版人物卡v1.35.xlsx` filled in for a test investigator — name, age, occupation number, all characteristics, Luck, a few occupation and interest points (including one Art/Craft specialization such as 摄影, a foreign language, and one custom skill in the free rows, e.g. 开锁), current HP below maximum. Save it **in Excel** (so it has saved values). Also prepare: the same file with STR deleted; an `.xls` or `.csv`; any unrelated `.xlsx`.
+
+### Player, single account
+- [ ] `/character import file:` the filled sheet → a private "Import preview" appears after a short "thinking" state; nobody else in the channel sees it.
+- [ ] The preview shows name/occupation/age/residence, all characteristics and Luck, HP x/max etc. "(recomputed)", the skills with points, the Art/Craft specialization as its own skill (e.g. Photography), the foreign language, and the custom skill under **Not mapped — kept**.
+- [ ] Status shows **Read**, **Complete**, and **Creation rules not verified**. If points were filled in, "Points on the sheet (advisory)" lists occupation/interest spent vs budget.
+- [ ] Change a total cell by hand in Excel (type a number over the formula), import again → a warning names that skill and says the typed total was used.
+- [ ] **Cancel** → "Import cancelled", nothing in `/character list`.
+- [ ] Import again → **Create investigator** → the normal sheet editor opens with "imported into your collection". `/character list` shows it; `/character view` shows a 📥 line "Imported from Excel … rules not verified".
+- [ ] `/character select` it, then `/check 侦查` (or another imported skill) uses the imported value; `/check dodge` uses DEX/2 or the imported Dodge.
+- [ ] Import the same sheet again → the preview says it is **already in your collection**; buttons **Create as *Name* (2)** and **Update *Name*…**. Change Luck in the file, re-import → **Update…** lists `LUCK: old → new`; **Confirm update** → "updated from the sheet (n change(s))"; still one investigator.
+- [ ] Open the update diff, then (in another window) change the investigator's Luck in the editor, then press **Confirm update** → refused "changed since this preview"; nothing overwritten.
+- [ ] The STR-deleted copy → preview says **Incomplete (missing STR)**; saving creates a **draft**, finishable in the editor.
+- [ ] `.xls`/`.csv` → "Attach the character sheet as an .xlsx file". The unrelated `.xlsx` → "does not match a supported character-sheet template"; nothing saved. A sheet without a name → **Create** disabled.
+- [ ] `/language 简体中文` → the preview, buttons and warnings are Chinese.
+- [ ] Restart the bot → the imported investigator and its 📥 status are still there.
+
+### Campaign and Keeper (needs a Keeper K and the player P)
+- [ ] P: `/campaign join investigator:` the imported investigator in K's campaign channel → "Request sent".
+- [ ] K: `/keeper panel` → **Review a join request…** → P's request → **📄 Full sheet**: characteristics, skills, occupation, "Imported from Excel … not verified" and the import warnings. P's other investigators are not visible anywhere.
+- [ ] K: **Back** → **Approve**. In the roster, pick the investigator → **📄 Full sheet** shows "campaign values".
+- [ ] K adjusts the investigator's HP and adds a condition. P re-imports an updated sheet with **Update** → the diff mentions the campaign and that campaign values are not changed; after confirming, K's panel still shows the adjusted HP and the condition, and the campaign history shows "updated the permanent sheet from Excel … campaign values unchanged" by P.
+- [ ] Another player X cannot press P's preview buttons, and `/keeper panel` refuses X.
