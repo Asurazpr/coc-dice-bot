@@ -86,8 +86,8 @@ Use a fresh draft with characteristics entered (account A).
 ### Skill picker
 - [ ] For a choice with a short list (Soldier: Climb or Swim) the skills are shown directly.
 - [ ] For "any N skills" choices, a **category** menu appears first (Social, Perception & research, Knowledge, Physical & outdoors, Technical & vehicles, Art & Craft, Science, Fighting, Firearms) with counts; picking one shows its skills with base values.
-- [ ] **Search** finds skills by English (`spot`) or Chinese (`侦查`) name in any display language; skills already chosen are not offered; **All categories** clears the filter.
-- [ ] After picking, the next unfilled choice opens; the embed shows ✔ chosen skills, 👉 the current choice and "N remaining". **◀ Choice** goes back; picking another skill replaces the earlier choice.
+- [ ] **Search** finds skills by English (`spot`) or Chinese (`侦查`) name in any display language; skills used by another group are not offered; **All categories** clears the filter.
+- [ ] (Superseded by grouped choices — see "Creation UX follow-up" below.)
 
 ### Language
 - [ ] `/language` without an option shows the current language; `English`, `简体中文`, `Bilingual / 双语` change it, and the choice survives a bot restart.
@@ -176,3 +176,50 @@ Needs one finished investigator with Luck ≥ 40 selected in the server (e.g. ST
 - [ ] With `roll_visibility:Private`: P's result, prompt and updated result are only visible to P; K sees one "private roll" history entry (with the roll number) plus the Luck spend; Q and X see nothing.
 - [ ] Two clients (P on phone and desktop) press Confirm at the same moment → Luck deducted once.
 - [ ] K (not a participant) rolls in the campaign channel with a personal investigator → no Luck option.
+
+## Creation UX follow-up — grouped choices and interest skills
+
+Written for a **new player who has never seen the bot**. Give them only: "Type `/character create`, then follow the buttons." Watch without helping; note where they hesitate.
+
+### Scenario 1 — an occupation with two choice groups (≈5 min)
+1. `/character create` → name the investigator → **Roll characteristics** → **Occupation & skills**.
+2. Search `film` and choose **Film Actor**.
+   - [ ] The choices panel says "Group 1/2: choose 2 of Charm, Fast Talk, Intimidate, Persuade" and shows those four in one menu that allows ticking two.
+3. Tick two skills in the menu.
+   - [ ] The panel lists "Selected (2/2): …" and "Not saved yet"; **Save choices** is enabled.
+4. Press **Save choices**.
+   - [ ] "✅ Saved: …"; the panel moves to "Group 2/2: any 2 skills" with a category menu.
+5. Pick the **Physical & outdoors** category, tick one skill; switch to **Knowledge**, tick one more.
+   - [ ] Both stay listed under "Selected (2/2)" even though they are in different categories.
+6. Try ticking a third skill.
+   - [ ] A private message says the group allows 2; the selection is unchanged.
+7. **Save choices** → the skill-points step opens with "All occupation skills chosen".
+8. Go back with **Choices** (bottom row), open group 1, swap one skill and save.
+   - [ ] If that skill already had occupation points, the panel warns before saving that they will be returned, and the budget line shows them back afterwards.
+
+### Scenario 2 — managing personal-interest skills (≈5 min)
+1. On the skill-points step press **🎯 Interest skills**.
+   - [ ] "No personal interest points yet. Use **Add skill**…"
+2. **Add skill** → pick a category → pick **Climb** → enter `20`.
+   - [ ] You land back on the interest screen with Climb selected (not on the first points page).
+3. **Add skill** again → **Occult** → `15`.
+4. Choose **Climb** in the menu → **Edit** → `25`.
+   - [ ] "Climb: Personal interest 20 → 25"; still on the interest screen.
+5. Choose **Occult**.
+   - [ ] An **Edit Climb again** button appears; it opens Climb's form directly.
+6. Choose **Occult** → **Remove** → the button turns into **Confirm remove** with a warning → press it.
+   - [ ] Occult disappears and its 15 points are back in the budget.
+7. Switch to **Mode: add points**, edit Climb with `+5` → 30. Type `abc` once → "Nothing was saved".
+8. **Overview** returns to the points page you came from.
+
+### Scenario 3 — one quick edit without paging (≈2 min)
+1. On the skill-points overview, use **Edit one skill…** and choose an occupation skill.
+   - [ ] One form with occupation points and personal interest for that skill; saving returns to the same page.
+2. Choose an interest-only skill there.
+   - [ ] The form has only the personal-interest field.
+3. Enter more points than the budget allows.
+   - [ ] "Nothing was saved"; neither field changed.
+
+### Languages and resuming
+- [ ] With `/language 简体中文` the group panel ("第 1/2 组", **保存选择**), interest screen (**兴趣技能**, **移除**, **确认移除**) and the edit menu are Chinese; Bilingual shows both and nothing is cut off badly.
+- [ ] Close Discord mid-creation, reopen with `/character edit` → **Occupation & skills**: saved groups are still ticked; unsaved ticks are gone (they were never saved).

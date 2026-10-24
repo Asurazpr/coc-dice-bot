@@ -506,8 +506,11 @@ class DiscordLayerTests(unittest.TestCase):
         self.assertIn("Accounting: Occupation 0 → 25 (+25)", kw["content"])
 
     def test_choice_picker_categories_search_and_navigation(self):
+        """Grouped choices: tick skills across categories and search, then save the group once."""
         from apps.discord_bot.creation_views import ChoicesStepView, SkillSearchModal, render_step
         from apps.discord_bot.views import Ctx
+        from cocbot.db.connection import get_conn
+        from cocbot.occupations.service import load_picks
         inv_id = self._draft_with_characteristics()
         it = fake_interaction(ALICE)
         self.arun(self.sub("occupation").callback(self.cog, it, "accountant", str(inv_id)))
@@ -517,50 +520,66 @@ class DiscordLayerTests(unittest.TestCase):
         self.assertTrue(hasattr(view, "category_select"))
         self.assertFalse(hasattr(view, "skill_select"))
         self.assertLessEqual(len(view.category_select.options), 25)
-        # pick a category
+        self.assertTrue(view.save_button.disabled)                 # nothing to save yet
+        # pick a category: a multi-select allowing up to 2
         it = fake_interaction(ALICE)
         self.arun(view.picker_navigate(it, category="social", query="", page=0))
         kw = it.response.calls[0][2]
         view = kw["view"]
         keys = [o.value for o in view.skill_select.options]
         self.assertIn("charm", keys)
-        self.assertNotIn("credit_rating", keys)                  # never selectable as a choice
+        self.assertNotIn("credit_rating", keys)                    # never selectable as a choice
+        self.assertEqual(view.skill_select.max_values, 2)
         self.assertIn("Category: **Social**", kw["embed"].description)
         self.assertIn("0/2 choices made · 2 remaining", kw["embed"].description)
-        # choose -> advances to the next choice
+        # tick Charm: shown as selected but not saved
         it = fake_interaction(ALICE)
-        self.arun(view.picker_selected(it, "charm"))
+        self.arun(view.picker_selected_many(it, ["charm"]))
         kw = it.response.calls[0][2]
-        self.assertEqual(kw["view"].pos, 1)
-        self.assertIn("1/2 choices made · 1 remaining", kw["embed"].description)
-        # search (Chinese) for the second choice; already chosen skills are not offered
+        self.assertIn("Selected (1/2): Charm", kw["embed"].description)
+        self.assertIn("Not saved yet", kw["embed"].description)
+        with get_conn(self.db) as conn:
+            self.assertEqual(load_picks(conn, inv_id), {})
+        # search (Chinese) keeps the selection; Charm is shown ticked
         modal = self.build(lambda: SkillSearchModal(kw["view"]))
         set_input(modal.query_input, "魅惑")
         it = fake_interaction(ALICE)
         self.arun(modal.on_submit(it))
         kw = it.response.calls[0][2]
-        self.assertFalse(hasattr(kw["view"], "skill_select"))   # Charm already taken by choice 1
-        self.assertIn("No available skill matches", kw["embed"].description)
+        self.assertEqual([(o.value, o.default) for o in kw["view"].skill_select.options], [("charm", True)])
         modal = self.build(lambda: SkillSearchModal(kw["view"]))
         set_input(modal.query_input, "psych")
         it = fake_interaction(ALICE)
         self.arun(modal.on_submit(it))
+        view = it.response.calls[0][2]["view"]
+        self.assertEqual([o.value for o in view.skill_select.options][:1], ["psychology"])
+        it = fake_interaction(ALICE)
+        self.arun(view.picker_selected_many(it, ["psychology"]))
         kw = it.response.calls[0][2]
-        self.assertEqual([o.value for o in kw["view"].skill_select.options][:1], ["psychology"])
+        self.assertIn("Selected (2/2): Charm, Psychology", kw["embed"].description)
+        # save the group -> allocation
         it = fake_interaction(ALICE)
-        self.arun(kw["view"].picker_selected(it, "psychology"))
+        self.arun(kw["view"].save_button.callback(it))
         self.assertIn("All occupation skills chosen", it.response.calls[0][2]["content"])
-        # go back to choice 1 and change it
-        _, view = self.build(lambda: render_step(Ctx(self.db, ALICE, GUILD), inv_id, "choices", pos=0))
-        self.assertEqual(view.pos, 0)
-        it = fake_interaction(ALICE)
-        self.arun(view.picker_navigate(it, category="physical", query="", page=0))
-        it2 = fake_interaction(ALICE)
-        self.arun(it.response.calls[0][2]["view"].picker_selected(it2, "dodge"))
-        from cocbot.db.connection import get_conn
-        from cocbot.occupations.service import load_picks
         with get_conn(self.db) as conn:
-            self.assertEqual(load_picks(conn, inv_id), {(6, 0): "dodge", (6, 1): "psychology"})
+            self.assertEqual(load_picks(conn, inv_id), {(6, 0): "charm", (6, 1): "psychology"})
+        # come back: saved choices are pre-ticked; swap Charm for Dodge
+        _, view = self.build(lambda: render_step(Ctx(self.db, ALICE, GUILD), inv_id, "choices", group=0))
+        self.assertEqual(view.draft, ("charm", "psychology"))
+        it = fake_interaction(ALICE)
+        self.arun(view.picker_navigate(it, category="social", query="", page=0))
+        social = it.response.calls[0][2]["view"]
+        still_ticked = [o.value for o in social.skill_select.options if o.default and o.value != "charm"]
+        it2 = fake_interaction(ALICE)
+        self.arun(social.picker_selected_many(it2, still_ticked))                  # untick Charm only
+        it3 = fake_interaction(ALICE)
+        self.arun(it2.response.calls[0][2]["view"].picker_navigate(it3, category="physical", query="", page=0))
+        it4 = fake_interaction(ALICE)
+        self.arun(it3.response.calls[0][2]["view"].picker_selected_many(it4, ["dodge"]))
+        it5 = fake_interaction(ALICE)
+        self.arun(it4.response.calls[0][2]["view"].save_button.callback(it5))
+        with get_conn(self.db) as conn:
+            self.assertEqual(load_picks(conn, inv_id), {(6, 0): "psychology", (6, 1): "dodge"})
 
     def test_interest_picker_opens_points_modal(self):
         from apps.discord_bot.creation_views import InterestPickerView, InterestPointsModal
@@ -584,9 +603,14 @@ class DiscordLayerTests(unittest.TestCase):
         set_input(modal.points_input, "30")
         it = fake_interaction(ALICE)
         self.arun(modal.on_submit(it))
-        content = it.response.calls[0][2]["content"]
+        kw = it.response.calls[0][2]
+        content = kw["content"]
         self.assertIn("Climb: Personal interest 0 → 30 (+30)", content)
         self.assertIn("personal interest 130", content)
+        # back in personal-interest management, with Climb selected
+        from apps.discord_bot.creation_views import InterestScreenView
+        self.assertIsInstance(kw["view"], InterestScreenView)
+        self.assertEqual(kw["view"].selected, "climb")
 
     def test_language_command_and_chinese_wizard(self):
         from apps.discord_bot.views import Ctx

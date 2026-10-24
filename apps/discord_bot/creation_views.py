@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Dict, Iterator, List, Optional, Tuple
+from typing import Dict, Iterator, List, Optional, Sequence, Tuple
 
 import discord
 
@@ -39,6 +39,7 @@ from cocbot.ui.creation_text import (
     choices_text,
     occupation_detail,
     occupation_label,
+    slot_text,
     review_text,
     rows_table,
     step_title,
@@ -161,9 +162,12 @@ class PickerMixin:
 
     def add_picker(self, pp: PickerPage, names: Dict[str, str], bases: Dict[str, Optional[int]],
                    placeholder: str, current: Optional[str] = None,
-                   extra_desc: Optional[Dict[str, str]] = None, nav_row: int = 2) -> None:
+                   extra_desc: Optional[Dict[str, str]] = None, nav_row: int = 2,
+                   multi: Optional[Tuple[Sequence[str], int]] = None) -> None:
+        """``multi=(selected keys, max)`` turns the skill menu into a multi-select (grouped choices)."""
         lang = self.ctx.lang
         self.picker = pp
+        self.multi = multi
         if pp.available > OPTIONS_PER_PAGE and pp.categories:
             cat = discord.ui.Select(
                 placeholder=label("picker_category_ph", lang, 150, n=pp.available), row=0,
@@ -180,9 +184,14 @@ class PickerMixin:
                 desc = render("picker_option_desc", lang, base=bases.get(k) if bases.get(k) is not None else "?")
                 if extra_desc and extra_desc.get(k):
                     desc += f" · {extra_desc[k]}"
+                chosen = (k in multi[0]) if multi else k == current
                 opts.append(discord.SelectOption(label=names.get(k, k)[:100], value=k, description=desc[:100],
-                                                 default=k == current))
-            sel = discord.ui.Select(placeholder=ph[:150], row=1, options=opts)
+                                                 default=chosen))
+            if multi:
+                sel = discord.ui.Select(placeholder=ph[:150], row=1, options=opts, min_values=0,
+                                        max_values=max(1, min(len(opts), multi[1])))
+            else:
+                sel = discord.ui.Select(placeholder=ph[:150], row=1, options=opts)
             sel.callback = self._on_skill  # type: ignore[assignment]
             self.skill_select = sel
             self.add_item(sel)  # type: ignore[attr-defined]
@@ -206,6 +215,9 @@ class PickerMixin:
         await self.picker_navigate(interaction, category=self.category_select.values[0], query="", page=0)
 
     async def _on_skill(self, interaction: discord.Interaction) -> None:
+        if getattr(self, "multi", None):
+            await self.picker_selected_many(interaction, list(self.skill_select.values))
+            return
         await self.picker_selected(interaction, self.skill_select.values[0])
 
     async def _on_search(self, interaction: discord.Interaction) -> None:
@@ -225,6 +237,10 @@ class PickerMixin:
         raise NotImplementedError
 
     async def picker_selected(self, interaction: discord.Interaction, skill_key: str) -> None:  # pragma: no cover
+        raise NotImplementedError
+
+    async def picker_selected_many(self, interaction: discord.Interaction,
+                                   keys: List[str]) -> None:  # pragma: no cover
         raise NotImplementedError
 
 
@@ -401,90 +417,177 @@ class HomebrewModal(discord.ui.Modal):
 
 
 # --- step: choices ----------------------------------------------------------------------
+#
+# One panel per choice *group* (an occupation slot such as "any two other skills"). The
+# player ticks skills in a multi-select — across categories, search results and pages —
+# sees the selection and any point refunds, and saves the whole group with one button.
+# Nothing is written until **Save choices**; switching group discards unsaved ticks.
 
-def _choices_step(r: R, pos: Optional[int] = None, category: Optional[str] = None, query: str = "",
-                  page: int = 0) -> Tuple[discord.Embed, discord.ui.View]:
+def choice_slots(occ) -> List[int]:
+    return [i for i, s in enumerate(occ.slots) if s.kind != "fixed"]
+
+
+def _choices_step(r: R, group: Optional[int] = None, draft: Optional[Sequence[str]] = None,
+                  category: Optional[str] = None, query: str = "", page: int = 0,
+                  pos: Optional[int] = None) -> Tuple[discord.Embed, discord.ui.View]:
     occ = r.svc.occupation_of(r.inv)
-    positions = pick_positions(occ)
+    slots = choice_slots(occ)
     picks = load_picks(r.svc.conn, r.inv.id)
     e = _base_embed(r, "choices")
-    if not positions:
+    if not slots:
         e.description = r.t("choices_none", occ=occupation_label(occ, r.lang))
-        return e, ChoicesStepView(r.ctx, r.inv.id, [], 0, None, None, r.names, {})
-    if pos is None:
-        pos = next((n for n, p in enumerate(positions) if p not in picks), 0)
-    pos = min(max(0, pos), len(positions) - 1)
-    slot_i, pick_i = positions[pos]
+        return e, ChoicesStepView(r.ctx, r.inv.id, [], 0, None, (), (), r.names, {}, 0)
+    if group is None and pos is not None:            # old callers: a pick position
+        positions = pick_positions(occ)
+        group = slots.index(positions[min(max(0, pos), len(positions) - 1)][0])
+    if group is None:                                # first group with an empty pick
+        group = next((g for g, i in enumerate(slots)
+                      if any((i, p) not in picks for p in range(occ.slots[i].count))), 0)
+    group = min(max(0, group), len(slots) - 1)
+    slot_i = slots[group]
     slot = occ.slots[slot_i]
-    options = r.svc.pick_options(r.inv, slot_i, pick_i)
+    saved = tuple(picks[(slot_i, p)] for p in range(slot.count) if (slot_i, p) in picks)
+    draft = tuple(saved if draft is None else draft)
+    # options: everything this slot allows that no other slot (or a fixed skill) uses
+    options = r.svc.pick_options(r.inv, slot_i, 0)
+    options = list(dict.fromkeys([*options, *[k for k in saved if k not in options]]))
     pp = picker_page(options, build_search_index(r.svc.conn), category, query, page,
                      keep_order=slot.kind == "choose")
+    refunds: List[Tuple[str, int]] = []
+    if draft != saved:
+        try:
+            _, refunds = r.svc.preview_slot_picks(r.inv, slot_i, draft)
+        except CharacterError:
+            refunds = []
+    positions = pick_positions(occ)
     done = sum(1 for p in positions if p in picks)
+    lines = [r.t("choices_header", occ=occupation_label(occ, r.lang), done=done, total=len(positions),
+                 left=len(positions) - done), "",
+             choices_text(occ, picks, r.names, current=(slot_i, 0) if slot.count == 1 else None, lang=r.lang), "",
+             r.t("group_title", i=group + 1, n=len(slots), slot=slot_text(slot, r.names, r.lang))]
+    chosen = ", ".join(r.names.get(k, k) for k in draft)
+    lines.append(r.t("group_selected", k=len(draft), n=slot.count, skills=chosen) if draft
+                 else r.t("group_selected_none"))
+    lines.append(r.t("group_unsaved") if draft != saved else r.t("group_saved_state") if saved else "")
+    for skill, points in refunds:
+        lines.append("↩️ " + r.t("group_refund", skill=r.names.get(skill, skill), points=points))
     status = _picker_status(r, pp)
-    e.description = (r.t("choices_header", occ=occupation_label(occ, r.lang), done=done, total=len(positions),
-                         left=len(positions) - done) + "\n\n"
-                     + choices_text(occ, picks, r.names, current=positions[pos], lang=r.lang)
-                     + (f"\n\n{status}" if status else ""))[:4096]
-    return e, ChoicesStepView(r.ctx, r.inv.id, positions, pos, pp, picks.get(positions[pos]), r.names,
-                              skill_bases(r.svc.conn, r.inv))
+    if status:
+        lines += ["", status]
+    e.description = "\n".join(x for x in lines if x is not None)[:4096]
+    return e, ChoicesStepView(r.ctx, r.inv.id, slots, group, pp, draft, saved, r.names,
+                              skill_bases(r.svc.conn, r.inv), slot.count)
 
 
 class ChoicesStepView(PickerMixin, StepView):
-    def __init__(self, ctx: Ctx, investigator_id: int, positions: list, pos: int, pp: Optional[PickerPage],
-                 current: Optional[str], names: Dict[str, str], bases: Dict[str, Optional[int]]):
+    def __init__(self, ctx: Ctx, investigator_id: int, slots: List[int], group: int, pp: Optional[PickerPage],
+                 draft: Sequence[str], saved: Sequence[str], names: Dict[str, str],
+                 bases: Dict[str, Optional[int]], count: int):
         StepView.__init__(self, ctx, investigator_id, "choices")
-        self.positions, self.pos = positions, pos
+        self.slots, self.group, self.draft, self.saved, self.count = slots, group, tuple(draft), tuple(saved), count
         lang = ctx.lang
         if pp is not None:
-            self.add_picker(pp, names, bases,
-                            label("picker_skill_ph", lang, 120, i=pos + 1, n=len(positions)), current)
-        for code, target, enabled in (("btn_prev_choice", pos - 1, pos > 0),
-                                      ("btn_next_choice", pos + 1, pos < len(positions) - 1)):
-            b = discord.ui.Button(label=label(code, lang, 80), row=2, style=discord.ButtonStyle.secondary,
-                                  disabled=not enabled)
-            b.callback = self._goto_choice(target)  # type: ignore[assignment]
-            self.add_item(b)
+            self.add_picker(pp, names, bases, label("group_ph", lang, 120, i=group + 1, n=len(slots), k=count),
+                            multi=(self.draft, count))
+        if len(slots) > 1:
+            for code, target in (("btn_prev_group", group - 1), ("btn_next_group", group + 1)):
+                b = discord.ui.Button(label=label(code, lang, 80), row=2, style=discord.ButtonStyle.secondary,
+                                      disabled=not 0 <= target < len(slots))
+                b.callback = self._goto_group(target)  # type: ignore[assignment]
+                self.add_item(b)
+        if slots:
+            self.save_button = discord.ui.Button(label=label("btn_save_group", lang, 80), emoji="✅", row=3,
+                                                 style=discord.ButtonStyle.success,
+                                                 disabled=self.draft == self.saved)
+            self.save_button.callback = self._save  # type: ignore[assignment]
+            self.add_item(self.save_button)
+            self.clear_button = discord.ui.Button(label=label("btn_clear_group", lang, 80), row=3,
+                                                  style=discord.ButtonStyle.secondary, disabled=not self.draft)
+            self.clear_button.callback = self._clear  # type: ignore[assignment]
+            self.add_item(self.clear_button)
 
-    def _goto_choice(self, target: int):
+    def _state(self, **kw):
+        pp = getattr(self, "picker", None)
+        state = {"group": self.group, "draft": self.draft, "category": pp.category if pp else None,
+                 "query": pp.query if pp else "", "page": pp.page if pp else 0}
+        state.update(kw)
+        return state
+
+    def _goto_group(self, target: int):
         async def cb(interaction: discord.Interaction) -> None:
-            await self.show(interaction, "choices", pos=target)
+            await self.show(interaction, "choices", group=target)
         return cb
 
     async def picker_navigate(self, interaction: discord.Interaction, category: Optional[str], query: str,
                               page: int) -> None:
-        await self.show(interaction, "choices", pos=self.pos, category=category, query=query, page=page)
+        await self.show(interaction, "choices", **self._state(category=category, query=query, page=page))
+
+    async def picker_selected_many(self, interaction: discord.Interaction, keys: List[str]) -> None:
+        """Ticks on this page replace this page's part of the draft; the rest of the draft stays."""
+        on_page = set(self.picker.keys)
+        new = [k for k in self.draft if k not in on_page] + [k for k in self.picker.keys if k in keys]
+        if len(new) > self.count:
+            await reply_error(interaction, InvalidState(Msg("group_too_many", n=self.count)), self.ctx)
+            return
+        await self.show(interaction, "choices", **self._state(draft=tuple(new)))
 
     async def picker_selected(self, interaction: discord.Interaction, skill_key: str) -> None:
-        await self.apply_pick(interaction, skill_key)
+        await self.picker_selected_many(interaction, [skill_key])
 
-    async def apply_pick(self, interaction: discord.Interaction, skill_key: str) -> None:
-        slot_i, pick_i = self.positions[self.pos]
+    async def _clear(self, interaction: discord.Interaction) -> None:
+        await self.show(interaction, "choices", **self._state(draft=()))
+
+    async def _save(self, interaction: discord.Interaction) -> None:
+        await self.save_group(interaction, self.draft)
+
+    async def save_group(self, interaction: discord.Interaction, keys: Sequence[str]) -> None:
+        if tuple(keys) == self.saved:
+            await self.show(interaction, "choices", content=self.t("group_unchanged"), **self._state())
+            return
+        slot_i = self.slots[self.group]
         try:
             with creation(self.ctx) as (inv_svc, svc):
-                svc.set_pick(self.ctx.owner_id, self.investigator_id, slot_i, pick_i, skill_key)
+                svc.set_slot_picks(self.ctx.owner_id, self.investigator_id, slot_i, list(keys))
                 inv = inv_svc.get(self.ctx.owner_id, self.investigator_id)
+                occ = svc.occupation_of(inv)
                 picks = load_picks(svc.conn, inv.id)
-                remaining = [n for n, p in enumerate(self.positions) if p not in picks]
+                names = skill_names(svc.conn, self.ctx.lang)
         except CharacterError as e:
             await reply_error(interaction, e, self.ctx)
             return
-        if remaining:
-            # advance to the next unfilled choice after this one, else the first unfilled one
-            later = [n for n in remaining if n > self.pos]
-            await self.show(interaction, "choices", pos=(later or remaining)[0])
-        else:
-            await self.show(interaction, "allocation", content=self.t("choices_done"))
+        saved = self.t("group_saved_msg", skills=", ".join(names.get(k, k) for k in keys) or "—")
+        open_groups = [g for g, i in enumerate(self.slots)
+                       if any((i, p) not in picks for p in range(occ.slots[i].count))]
+        if not open_groups:
+            await self.show(interaction, "allocation", content=saved + "\n" + self.t("choices_done"))
+            return
+        if self.group in open_groups:                # partly filled: stay here
+            await self.show(interaction, "choices", content=saved, group=self.group)
+            return
+        later = [g for g in open_groups if g > self.group]
+        await self.show(interaction, "choices", content=saved, group=(later or open_groups)[0])
+
+    async def apply_pick(self, interaction: discord.Interaction, skill_key: str) -> None:
+        """Add one skill to this group and save it (used by commands and tests)."""
+        keys = [k for k in self.draft if k != skill_key] + [skill_key]
+        if len(keys) > self.count:
+            keys = keys[-self.count:]
+        await self.save_group(interaction, keys)
 
 
 # --- step: allocation -----------------------------------------------------------------
 
 def _allocation_step(r: R, page: int = 0, mode: str = MODE_SET, picking: bool = False,
                      category: Optional[str] = None, query: str = "", ppage: int = 0,
+                     screen: str = "overview", selected: Optional[str] = None, last: Optional[str] = None,
+                     confirm_remove: bool = False, origin: str = "overview",
                      ) -> Tuple[discord.Embed, discord.ui.View]:
     check = r.svc.check_for(r.inv)
     left = (check.occupation_remaining, check.interest_remaining)
     if picking:
-        return _interest_picker_step(r, check, mode, page, category, query, ppage)
+        return _interest_picker_step(r, check, mode, page, category, query, ppage, origin, last)
+    if screen == "interest":
+        return _interest_screen(r, check, mode, page, selected, last, confirm_remove)
     pages, other = allocation_pages(check)
     page = min(max(0, page), len(pages) - 1)
     e = _base_embed(r, "allocation")
@@ -512,19 +615,38 @@ def _allocation_step(r: R, page: int = 0, mode: str = MODE_SET, picking: bool = 
             r.t("formula_choose", formula=occ.formula_text())
             + (r.t("formula_chosen", stat=chosen) if chosen else r.t("formula_suggested", stat=suggested)))[:1024],
             inline=False)
+    editable = sorted((row for row in check.rows if row.is_occupation_skill or row.interest_points),
+                      key=lambda row: (not row.is_occupation_skill, r.names.get(row.key, row.key)))
     return e, AllocationStepView(r.ctx, r.inv.id, [row.key for row in pages[page]], page, len(pages), r.names,
                                  {row.key: (row.base, row.occupation_points, row.interest_points)
                                   for row in check.rows},
-                                 stat_options, mode, left)
+                                 stat_options, mode, left,
+                                 [(row.key, row.is_occupation_skill) for row in editable][:25])
 
 
 class AllocationStepView(StepView):
     def __init__(self, ctx: Ctx, investigator_id: int, keys: List[str], page: int, pages: int, names: dict,
                  values: dict, stat_options: Optional[list] = None, mode: str = MODE_SET,
-                 left: Tuple[Optional[int], Optional[int]] = (None, None)):
+                 left: Tuple[Optional[int], Optional[int]] = (None, None),
+                 editable: Optional[List[Tuple[str, bool]]] = None):
         super().__init__(ctx, investigator_id, "allocation")
         self.keys, self.page, self.names, self.values, self.mode, self.left = keys, page, names, values, mode, left
+        self.occupation_keys = {k for k, occ in (editable or []) if occ}
         lang = ctx.lang
+        if editable:
+            opts = []
+            for key, _ in editable:
+                base, o, i = values.get(key, (0, 0, 0))
+                opts.append(discord.SelectOption(
+                    label=names.get(key, key)[:100], value=key,
+                    description=render("edit_one_desc", lang, occ=o, interest=i, total=(base or 0) + o + i)[:100]))
+            self.edit_select = discord.ui.Select(placeholder=label("edit_one_ph", lang, 150), row=3, options=opts)
+            self.edit_select.callback = self._on_edit_one  # type: ignore[assignment]
+            self.add_item(self.edit_select)
+        interest = discord.ui.Button(label=label("btn_interest_skills", lang, 80), emoji="🎯", row=0,
+                                     style=discord.ButtonStyle.secondary)
+        interest.callback = self._interest  # type: ignore[assignment]
+        self.add_item(interest)
         if stat_options:
             sel = discord.ui.Select(placeholder=label("stat_placeholder", lang, 150), row=2, options=[
                 discord.SelectOption(label=text[:100], value=stat, default=default)
@@ -582,6 +704,13 @@ class AllocationStepView(StepView):
     async def _other(self, interaction: discord.Interaction) -> None:
         await self.show(interaction, "allocation", page=self.page, mode=self.mode, picking=True)
 
+    async def _interest(self, interaction: discord.Interaction) -> None:
+        await self.show(interaction, "allocation", page=self.page, mode=self.mode, screen="interest")
+
+    async def _on_edit_one(self, interaction: discord.Interaction) -> None:
+        key = self.edit_select.values[0]
+        await interaction.response.send_modal(SkillEditModal(self, key, key in self.occupation_keys))
+
     async def submit_batch(self, interaction: discord.Interaction,
                            proposals: Dict[str, Tuple[Optional[int], Optional[int]]],
                            parse_errors: List[Msg]) -> None:
@@ -590,7 +719,7 @@ class AllocationStepView(StepView):
 
 async def submit_batch(view: StepView, interaction: discord.Interaction,
                        proposals: Dict[str, Tuple[Optional[int], Optional[int]]], parse_errors: List[Msg],
-                       page: int, mode: str) -> None:
+                       page: int, mode: str, **state) -> None:
     """Validate and save a whole form at once; show what changed, or why nothing was saved."""
     from cocbot.occupations.rules import BatchResult
     with creation(view.ctx) as (_, svc):
@@ -607,7 +736,7 @@ async def submit_batch(view: StepView, interaction: discord.Interaction,
                 await reply_error(interaction, e, view.ctx)
                 return
     await view.show(interaction, "allocation", page=page, mode=mode,
-                    content=batch_result_text(result, names, view.ctx.lang, nbl))
+                    content=batch_result_text(result, names, view.ctx.lang, nbl), **state)
 
 
 class PointsModal(discord.ui.Modal):
@@ -658,7 +787,8 @@ class PointsModal(discord.ui.Modal):
 # --- allocation: personal interest skill picker -------------------------------------------------
 
 def _interest_picker_step(r: R, check, mode: str, page: int, category: Optional[str], query: str,
-                          ppage: int) -> Tuple[discord.Embed, discord.ui.View]:
+                          ppage: int, origin: str = "overview",
+                          last: Optional[str] = None) -> Tuple[discord.Embed, discord.ui.View]:
     keys = [k for k in r.names if k != CTHULHU_MYTHOS]
     pp = picker_page(keys, build_search_index(r.svc.conn), category, query, ppage)
     points = load_points(r.svc.conn, r.inv.id)
@@ -668,15 +798,17 @@ def _interest_picker_step(r: R, check, mode: str, page: int, category: Optional[
                      + (f"\n\n{status}" if status else ""))[:4096]
     extra = {k: f"+{points[k][1]}" for k in pp.keys if points.get(k, (0, 0))[1]}
     return e, InterestPickerView(r.ctx, r.inv.id, pp, r.names, skill_bases(r.svc.conn, r.inv), extra, page, mode,
-                                 (check.occupation_remaining, check.interest_remaining), points)
+                                 (check.occupation_remaining, check.interest_remaining), points, origin, last)
 
 
 class InterestPickerView(PickerMixin, StepView):
     def __init__(self, ctx: Ctx, investigator_id: int, pp: PickerPage, names: Dict[str, str],
                  bases: Dict[str, Optional[int]], extra: Dict[str, str], alloc_page: int, mode: str,
-                 left: Tuple[Optional[int], Optional[int]], points: Dict[str, Tuple[int, int]]):
+                 left: Tuple[Optional[int], Optional[int]], points: Dict[str, Tuple[int, int]],
+                 origin: str = "overview", last: Optional[str] = None):
         StepView.__init__(self, ctx, investigator_id, "allocation")
         self.alloc_page, self.mode, self.left, self.points, self.names = alloc_page, mode, left, points, names
+        self.origin, self.last = origin, last
         self.bases = bases
         self.add_picker(pp, names, bases, label("picker_skill_ph_any", ctx.lang, 120), extra_desc=extra)
         back = discord.ui.Button(label=label("btn_back", ctx.lang, 80), emoji="↩️", row=2,
@@ -685,20 +817,26 @@ class InterestPickerView(PickerMixin, StepView):
         self.add_item(back)
 
     async def _back(self, interaction: discord.Interaction) -> None:
+        if self.origin == "interest":
+            await self.show(interaction, "allocation", page=self.alloc_page, mode=self.mode, screen="interest",
+                            last=self.last)
+            return
         await self.show(interaction, "allocation", page=self.alloc_page, mode=self.mode)
 
     async def picker_navigate(self, interaction: discord.Interaction, category: Optional[str], query: str,
                               page: int) -> None:
         await self.show(interaction, "allocation", page=self.alloc_page, mode=self.mode, picking=True,
-                        category=category, query=query, ppage=page)
+                        category=category, query=query, ppage=page, origin=self.origin, last=self.last)
 
     async def picker_selected(self, interaction: discord.Interaction, skill_key: str) -> None:
         await interaction.response.send_modal(InterestPointsModal(self, skill_key))
 
     async def submit_batch(self, interaction: discord.Interaction,
                            proposals: Dict[str, Tuple[Optional[int], Optional[int]]],
-                           parse_errors: List[Msg]) -> None:
-        await submit_batch(self, interaction, proposals, parse_errors, self.alloc_page, self.mode)
+                           parse_errors: List[Msg], skill_key: Optional[str] = None) -> None:
+        # after an edit, stay in personal-interest management with that skill selected
+        await submit_batch(self, interaction, proposals, parse_errors, self.alloc_page, self.mode,
+                           screen="interest", selected=skill_key, last=skill_key or self.last)
 
 
 class InterestPointsModal(discord.ui.Modal):
@@ -721,9 +859,181 @@ class InterestPointsModal(discord.ui.Modal):
         try:
             value = parse_points(self.points_input.value, self.parent.mode, self.current)
         except ValueError as e:
-            await self.parent.submit_batch(interaction, {}, [Msg("batch_bad_number", skill=self.key, text=str(e))])
+            await self.parent.submit_batch(interaction, {}, [Msg("batch_bad_number", skill=self.key, text=str(e))],
+                                           skill_key=self.key)
             return
         proposals = {} if value is None else {self.key: (None, value)}
+        await self.parent.submit_batch(interaction, proposals, [], skill_key=self.key)
+
+    async def on_error(self, interaction: discord.Interaction, error: Exception) -> None:  # type: ignore[override]
+        await reply_error(interaction, error, self.parent.ctx)
+
+
+# --- allocation: personal interest management --------------------------------------------------
+
+def _interest_screen(r: R, check, mode: str, page: int, selected: Optional[str], last: Optional[str],
+                     confirm_remove: bool) -> Tuple[discord.Embed, discord.ui.View]:
+    rows = sorted((row for row in check.rows if row.interest_points),
+                  key=lambda row: r.names.get(row.key, row.key))
+    by_key = {row.key: row for row in rows}
+    if selected not in by_key:
+        selected = None
+        confirm_remove = False
+    e = _base_embed(r, "allocation")
+    e.description = budget_line(check, r.lang)[:4096]
+    listing = [("👉 " if row.key == selected else "• ")
+               + r.t("interest_row", skill=r.names.get(row.key, row.key), interest=row.interest_points,
+                     total=row.total) for row in rows] or [r.t("interest_none")]
+    e.add_field(name=r.t("interest_screen_field")[:256], value="\n".join(listing)[:1024], inline=False)
+    if selected:
+        row = by_key[selected]
+        text = r.t("interest_selected", skill=r.names.get(selected, selected), interest=row.interest_points,
+                   total=row.total)
+        if confirm_remove:
+            text += "\n" + r.t("interest_remove_confirm", skill=r.names.get(selected, selected),
+                                points=row.interest_points)
+        e.add_field(name="🎯", value=text[:1024], inline=False)
+    how = r.t("alloc_how_set" if mode == MODE_SET else "alloc_how_add")
+    e.add_field(name=r.t("alloc_how_field")[:256], value=how[:1024], inline=False)
+    points = load_points(r.svc.conn, r.inv.id)
+    return e, InterestScreenView(r.ctx, r.inv.id, [row.key for row in rows][:25], selected, last, confirm_remove,
+                                 page, mode, r.names, points, (check.occupation_remaining, check.interest_remaining))
+
+
+class InterestScreenView(StepView):
+    """Browse the skills that have interest points; edit, remove or add one, then come back here."""
+
+    def __init__(self, ctx: Ctx, investigator_id: int, keys: List[str], selected: Optional[str],
+                 last: Optional[str], confirm_remove: bool, alloc_page: int, mode: str, names: Dict[str, str],
+                 points: Dict[str, Tuple[int, int]], left: Tuple[Optional[int], Optional[int]]):
+        StepView.__init__(self, ctx, investigator_id, "allocation")
+        self.keys, self.selected, self.last, self.confirm_remove = keys, selected, last, confirm_remove
+        self.alloc_page, self.mode, self.names, self.points, self.left = alloc_page, mode, names, points, left
+        lang = ctx.lang
+        if keys:
+            self.skill_select = discord.ui.Select(
+                placeholder=label("interest_pick_ph", lang, 150), row=0,
+                options=[discord.SelectOption(label=names.get(k, k)[:100], value=k, default=k == selected,
+                                              description=f"+{points.get(k, (0, 0))[1]}") for k in keys])
+            self.skill_select.callback = self._on_select  # type: ignore[assignment]
+            self.add_item(self.skill_select)
+        self.edit_button = discord.ui.Button(label=label("btn_edit_skill", lang, 80), emoji="✏️", row=1,
+                                             style=discord.ButtonStyle.primary, disabled=selected is None)
+        self.edit_button.callback = self._edit  # type: ignore[assignment]
+        self.remove_button = discord.ui.Button(
+            label=label("btn_confirm_remove" if confirm_remove else "btn_remove_skill", lang, 80), emoji="🗑️", row=1,
+            style=discord.ButtonStyle.danger, disabled=selected is None)
+        self.remove_button.callback = self._remove  # type: ignore[assignment]
+        self.add_button = discord.ui.Button(label=label("btn_add_skill", lang, 80), emoji="➕", row=1,
+                                            style=discord.ButtonStyle.success)
+        self.add_button.callback = self._add  # type: ignore[assignment]
+        for b in (self.edit_button, self.remove_button, self.add_button):
+            self.add_item(b)
+        if last and last != selected:
+            self.previous_button = discord.ui.Button(
+                label=label("btn_edit_previous", lang, 80, skill=names.get(last, last)), emoji="↩️", row=2,
+                style=discord.ButtonStyle.secondary)
+            self.previous_button.callback = self._edit_previous  # type: ignore[assignment]
+            self.add_item(self.previous_button)
+        toggle = discord.ui.Button(label=label("btn_mode_set" if mode == MODE_SET else "btn_mode_add", lang, 80),
+                                   emoji="✏️" if mode == MODE_SET else "➕", row=2, style=discord.ButtonStyle.success)
+        toggle.callback = self._toggle_mode  # type: ignore[assignment]
+        self.add_item(toggle)
+        self.overview_button = discord.ui.Button(label=label("btn_overview", lang, 80), emoji="📊", row=2,
+                                                 style=discord.ButtonStyle.secondary)
+        self.overview_button.callback = self._overview  # type: ignore[assignment]
+        self.add_item(self.overview_button)
+
+    def _here(self, **kw):
+        state = {"page": self.alloc_page, "mode": self.mode, "screen": "interest", "selected": self.selected,
+                 "last": self.last}
+        state.update(kw)
+        return state
+
+    async def _on_select(self, interaction: discord.Interaction) -> None:
+        await self.show(interaction, "allocation", **self._here(selected=self.skill_select.values[0]))
+
+    async def _edit(self, interaction: discord.Interaction) -> None:
+        await interaction.response.send_modal(InterestPointsModal(self, self.selected))
+
+    async def _edit_previous(self, interaction: discord.Interaction) -> None:
+        await interaction.response.send_modal(InterestPointsModal(self, self.last))
+
+    async def _remove(self, interaction: discord.Interaction) -> None:
+        if not self.confirm_remove:
+            await self.show(interaction, "allocation", **self._here(confirm_remove=True))
+            return
+        await self.submit_batch(interaction, {self.selected: (None, 0)}, [], skill_key=self.selected,
+                                mode=MODE_SET, keep_selection=False)
+
+    async def _add(self, interaction: discord.Interaction) -> None:
+        await self.show(interaction, "allocation", page=self.alloc_page, mode=self.mode, picking=True,
+                        origin="interest", last=self.last or self.selected)
+
+    async def _toggle_mode(self, interaction: discord.Interaction) -> None:
+        await self.show(interaction, "allocation", **self._here(mode=MODE_ADD if self.mode == MODE_SET else MODE_SET))
+
+    async def _overview(self, interaction: discord.Interaction) -> None:
+        await self.show(interaction, "allocation", page=self.alloc_page, mode=self.mode)
+
+    async def submit_batch(self, interaction: discord.Interaction,
+                           proposals: Dict[str, Tuple[Optional[int], Optional[int]]],
+                           parse_errors: List[Msg], skill_key: Optional[str] = None, mode: Optional[str] = None,
+                           keep_selection: bool = True) -> None:
+        mode = mode or self.mode
+        from cocbot.occupations.rules import BatchResult
+        with creation(self.ctx) as (_, svc):
+            nbl = localized_names(svc.conn)
+            names = skill_names(svc.conn, self.ctx.lang)
+            if parse_errors:
+                result = BatchResult([], list(parse_errors), (None, None), (0, 0), (0, 0), {})
+            else:
+                try:
+                    _, result = svc.allocate_batch(self.ctx.owner_id, self.investigator_id, proposals, mode)
+                except BatchRejected as e:
+                    result = e.result
+                except CharacterError as e:
+                    await reply_error(interaction, e, self.ctx)
+                    return
+        await self.show(interaction, "allocation", content=batch_result_text(result, names, self.ctx.lang, nbl),
+                        **self._here(selected=skill_key if keep_selection else None, last=skill_key or self.last,
+                                     confirm_remove=False))
+
+
+class SkillEditModal(discord.ui.Modal):
+    """One skill, both budgets (occupation points only for occupation skills), saved as one atomic batch."""
+
+    def __init__(self, parent: AllocationStepView, skill_key: str, is_occupation: bool):
+        lang = parent.ctx.lang
+        name = parent.names.get(skill_key, skill_key)
+        super().__init__(title=name[:45], timeout=PANEL_TIMEOUT)
+        self.parent, self.key = parent, skill_key
+        _, o, i = parent.values.get(skill_key, (0, 0, 0))
+        self.current = (o, i)
+        set_mode = parent.mode == MODE_SET
+        ph = label("field_ph_set" if set_mode else "field_ph_add", lang, 100)
+        self.occ_input = None
+        if is_occupation:
+            self.occ_input = _text(label("skill_modal_occ", lang, 45, current=o), o if set_mode else None,
+                                   max_length=3 if set_mode else 4, placeholder=ph)
+            self.add_item(self.occ_input)
+        self.int_input = _text(label("skill_modal_int", lang, 45, current=i), i if set_mode else None,
+                               max_length=3 if set_mode else 4, placeholder=ph)
+        self.add_item(self.int_input)
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        values: List[Optional[int]] = []
+        for ti, current in ((self.occ_input, self.current[0]), (self.int_input, self.current[1])):
+            if ti is None:
+                values.append(None)
+                continue
+            try:
+                values.append(parse_points(ti.value, self.parent.mode, current))
+            except ValueError as e:
+                await self.parent.submit_batch(interaction, {}, [Msg("batch_bad_number", skill=self.key,
+                                                                     text=str(e))])
+                return
+        proposals = {} if values == [None, None] else {self.key: (values[0], values[1])}
         await self.parent.submit_batch(interaction, proposals, [])
 
     async def on_error(self, interaction: discord.Interaction, error: Exception) -> None:  # type: ignore[override]
