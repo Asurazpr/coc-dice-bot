@@ -8,7 +8,7 @@ and are mirrored into ``investigator_skills`` (source='allocation') so that
 from __future__ import annotations
 
 import sqlite3
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple
 
 from cocbot.characters.models import STATUS_DRAFT, Investigator
 from cocbot.characters.service import (
@@ -225,6 +225,71 @@ class CreationService:
             if old and old != sd.key:
                 self._drop_occupation_points(inv.id, old, occ, {**picks, (slot_index, pick_index): sd.key})
             done = len(load_picks(self.conn, inv.id)) == len(pick_positions(occ))
+            return self._commit_and_reload(actor_id, inv, "allocation" if done else "choices")
+        except sqlite3.Error:
+            self.conn.rollback()
+            raise
+
+    def preview_slot_picks(self, inv: Investigator, slot_index: int, keys: Sequence[str]
+                           ) -> Tuple[List[str], List[Tuple[str, int]]]:
+        """Validate a whole group of picks for one slot without saving.
+
+        Returns (resolved keys, refunds) where refunds lists (skill, occupation
+        points) that saving would return to the budget because the skill stops
+        being an occupation skill.
+        """
+        occ = self._require_occupation(inv)
+        if not 0 <= slot_index < len(occ.slots) or occ.slots[slot_index].kind == "fixed":
+            raise ValidationError(Msg("pick_no_such"))
+        slot = occ.slots[slot_index]
+        resolved: List[str] = []
+        for k in keys:
+            sd = resolve_skill(k, conn=self.conn)
+            if sd is None:
+                raise ValidationError(Msg("unknown_skill", text=repr(str(k))))
+            if sd.key in resolved:
+                raise ValidationError(Msg("pick_taken"))
+            resolved.append(sd.key)
+        if len(resolved) > slot.count:
+            raise ValidationError(Msg("group_too_many", n=slot.count))
+        picks = load_picks(self.conn, inv.id)
+        others = {pos: k for pos, k in picks.items() if pos[0] != slot_index}
+        new_picks = dict(others)
+        all_keys = all_skill_keys(self.conn)
+        for p, key in enumerate(resolved):
+            err = validate_pick(occ, new_picks, slot_index, p, key, all_keys)
+            if err:
+                raise ValidationError(err)
+            new_picks[(slot_index, p)] = key
+        still = set(occupation_skills(occ, new_picks))
+        points = load_points(self.conn, inv.id)
+        refunds = [(k, points[k][0]) for pos, k in picks.items()
+                   if pos[0] == slot_index and k not in still and points.get(k, (0, 0))[0]]
+        return resolved, refunds
+
+    def set_slot_picks(self, actor_id: object, investigator_id: int, slot_index: int,
+                       keys: Sequence[str]) -> Investigator:
+        """Replace every pick of one slot at once (all or nothing).
+
+        Occupation points on skills that leave the occupation are refunded;
+        personal-interest points stay.
+        """
+        inv = self._draft(actor_id, investigator_id)
+        occ = self._require_occupation(inv)
+        resolved, _ = self.preview_slot_picks(inv, slot_index, keys)
+        picks = load_picks(self.conn, inv.id)
+        removed = [k for pos, k in picks.items() if pos[0] == slot_index and k not in resolved]
+        try:
+            self.conn.execute("DELETE FROM investigator_occupation_picks WHERE investigator_id=? AND slot_index=?",
+                              (inv.id, slot_index))
+            for p, key in enumerate(resolved):
+                self.conn.execute("INSERT INTO investigator_occupation_picks (investigator_id, slot_index, "
+                                  "pick_index, skill_key) VALUES (?, ?, ?, ?)", (inv.id, slot_index, p, key))
+            new_picks = {**{pos: k for pos, k in picks.items() if pos[0] != slot_index},
+                         **{(slot_index, p): k for p, k in enumerate(resolved)}}
+            for k in removed:
+                self._drop_occupation_points(inv.id, k, occ, new_picks)
+            done = len(new_picks) == len(pick_positions(occ))
             return self._commit_and_reload(actor_id, inv, "allocation" if done else "choices")
         except sqlite3.Error:
             self.conn.rollback()

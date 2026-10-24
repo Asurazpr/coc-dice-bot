@@ -22,7 +22,11 @@ Built as a personal passion project to support real tabletop play rather than a 
 * **/character create** opens a form; a step-by-step editor (buttons + forms) handles
   characteristics (enter them, or roll with the standard 3D6×5 / (2D6+6)×5 method),
   trained skills, current HP / MP / SAN / Luck, and finishing the basic sheet
-* **Occupation & skills**: choose from 113 occupations (searchable in English and Chinese) or a
+* **Occupation & skills**: occupation skill choices are made one group at a time — tick several skills in
+  one menu (with category filter and EN/中文 search), check the selection, then **Save choices**. A
+  dedicated **Interest skills** screen lists your personal-interest skills to edit, remove or add, and
+  **Edit one skill…** changes a single skill without paging through forms
+* Choose from 113 occupations (searchable in English and Chinese) or a
   custom one, make the occupation's skill choices, then spend occupation points (from the
   occupation's formula) and personal interest points (INT×2) with both budgets tracked. The bot
   enforces occupation-only spending, the Credit Rating range and the 99 cap, and saves every step
